@@ -68,7 +68,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->createQueryBuilder();
         $queryBuilder->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND (t.correction IS NULL OR t.correction = 0))');
+            ->where('(t.user = ' .  $userId . ' AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NULL)');
         $query = $queryBuilder->getQuery();
         return $query->getResult();
     }
