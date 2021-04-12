@@ -73,6 +73,7 @@ class ClassroomTest extends TestCase
             'name' => 'default',
             'school' => 'default',
             'isChanged' => false,
+            'isBlocked' => false,
             'groupe' => null
         ];
         $serialized = $classroom->jsonSerialize();
