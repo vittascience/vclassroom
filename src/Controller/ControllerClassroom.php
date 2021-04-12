@@ -97,15 +97,11 @@ class ControllerClassroom extends Controller
                 return $studyGroup; //synchronized
 
             }, 'update' => function ($data) {
-                try {
-                    $studyGroup =  $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                        ->findBy(array("link" => $data['link']))[0];
-                } catch (Exception $e) {
-                    var_dump($this->entityManager->getRepository('Classroom\Entity\Classroom')
-                        ->findBy(array("link" => $data['link'])));
-                }
+                $studyGroup =  $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    ->findBy(array("link" => $data['link']))[0];
                 $studyGroup->setName($data['name']);
                 $studyGroup->setSchool($data['school']);
+                $studyGroup->setIsBlocked($data['isBlocked']);
                 $studyGroup->setLink();
                 $this->entityManager->persist($studyGroup);
                 $this->entityManager->flush();
