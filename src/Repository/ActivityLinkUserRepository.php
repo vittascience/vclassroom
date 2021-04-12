@@ -92,4 +92,14 @@ class ActivityLinkUserRepository extends EntityRepository
         $query = $queryBuilder->getQuery();
         return $query->getResult();
     }
+    function getSavedActivities($userId)
+    {
+        $queryBuilder = $this->getEntityManager()
+            ->createQueryBuilder();
+        $queryBuilder->select('t')
+            ->from(ActivityLinkUser::class, 't')
+            ->where('(t.user = ' .  $userId . ' AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NOT NULL)');
+        $query = $queryBuilder->getQuery();
+        return $query->getResult();
+    }
 }

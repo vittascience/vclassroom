@@ -38,6 +38,8 @@ class ControllerActivityLinkUser extends Controller
                     ->getCurrentActivities($this->user['id']);
                 $arrayData['doneActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->getDoneActivities($this->user['id']);
+                $arrayData['savedActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getSavedActivities($this->user['id']);
                 return $arrayData;
             },
             'add_users' => function ($data) {
