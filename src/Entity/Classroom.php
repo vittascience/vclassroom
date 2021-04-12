@@ -47,12 +47,19 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $isChanged = false;
 
+    /**
+     * @ORM\Column(name="is_blocked", type="boolean", nullable=true)
+     * @var bool
+     */
+    private $isBlocked = false;
+
     public function __construct($name = "default", $school = "default")
     {
         $this->setName($name);
         $this->setSchool($school);
         $this->setLink();
         $this->setIsChanged(false);
+        $this->setIsBlocked(false);
     }
     /**
      * @return int
@@ -171,6 +178,25 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
         }
     }
 
+    /**
+     * @return bool
+     */
+    public function getIsBlocked()
+    {
+        return $this->isBlocked;
+    }
+    /**
+     * @param bool $isBlocked
+     */
+    public function setIsBlocked($isBlocked)
+    {
+        if (is_bool($isBlocked)) {
+            $this->isBlocked = $isBlocked;
+        } else {
+            throw new EntityDataIntegrityException("isBlocked needs to be boolean");
+        }
+    }
+
 
     public function jsonSerialize()
     {
@@ -181,6 +207,7 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
             'groupe' => $this->getGroupe(),
             'link' => $this->getLink(),
             'isChanged' => $this->getIsChanged(),
+            'isBlocked' => $this->getIsBlocked(),
         ];
     }
 
