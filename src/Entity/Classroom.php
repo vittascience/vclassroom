@@ -190,10 +190,17 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setIsBlocked($isBlocked)
     {
+        if ($isBlocked == "false") {
+            $isBlocked = false;
+        }
+        if ($isBlocked == "true") {
+            $isBlocked = true;
+        }
         if (is_bool($isBlocked)) {
+
             $this->isBlocked = $isBlocked;
         } else {
-            throw new EntityDataIntegrityException("isBlocked needs to be boolean");
+            throw new EntityDataIntegrityException("isBlocked needs to be boolean  ");
         }
     }
 
