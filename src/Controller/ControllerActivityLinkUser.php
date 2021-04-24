@@ -74,7 +74,7 @@ class ControllerActivityLinkUser extends Controller
                 if (isset($data['commentary'])) {
                     $activity->setCommentary($data['commentary']);
                 }
-                if (isset($data['project'])) {
+                if (isset($data['project']) && $data['project'] != null) {
                     $project = $this->entityManager->getRepository('Interfaces\Entity\Project')
                         ->findOneBy(array("id" => $data['project']));
                     $activity->setProject($project);

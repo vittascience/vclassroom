@@ -52,6 +52,39 @@ class ControllerClassroomLinkUser extends Controller
                 return $passwords; //synchronized
 
             },
+            'add_users_by_csv' => function ($data) {
+                foreach ($data['users'] as $u) {
+                    $user = new User();
+                    $user->setSurname('surname');
+                    $user->setFirstname('firstname');
+                    $user->setPseudo($u['apprenant']);
+                    if (isset($u['mot de passe'])) {
+                        $password = $u['mot de passe'];
+                    } else {
+                        $password = passwordGenerator();
+                    }
+                    $user->setPassword($password);
+                    $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
+                    $user->setId($lastQuestion->getId() + 1);
+                    $this->entityManager->persist($user);
+                    $this->entityManager->flush();
+
+                    $classroomUser = new ClassroomUser($user);
+                    $classroomUser->setGarId(null);
+                    $classroomUser->setSchoolId(null);
+                    $classroomUser->setIsTeacher(false);
+                    $classroomUser->setMailTeacher(NULL);
+                    $this->entityManager->persist($classroomUser);
+
+                    $studyGroup = $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                        ->findOneBy(array('link' => $data['classroom']));
+                    $linkClassroomUserToGroup = new ClassroomLinkUser($user, $studyGroup);
+                    $linkClassroomUserToGroup->setRights(0);
+                    $this->entityManager->persist($linkClassroomUserToGroup);
+                }
+                $this->entityManager->flush();
+                return true;
+            },
             'get_teachers_by_classroom' => function ($data) {
                 $studyGroup = $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findOneBy(array('link' => $data['classroom']));
