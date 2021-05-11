@@ -4,6 +4,11 @@ namespace Classroom\Controller;
 
 use Classroom\Entity\ClassroomLinkUser;
 use User\Entity\User;
+/**
+ * @ THOMAS MODIF 2 lines just below
+ */
+use DAO\RegularDAO;
+use models\Regular;
 use User\Entity\ClassroomUser;
 
 class ControllerClassroomLinkUser extends Controller
@@ -13,6 +18,32 @@ class ControllerClassroomLinkUser extends Controller
         parent::__construct($entityManager, $user);
         $this->actions = array(
             'add_users' => function ($data) {
+                /**
+                 * Limiting learner number @THOMAS MODIF
+                 */
+                $currentUserId = $this->user["id"];
+                $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
+                $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findBy(array("user" => $currentUserId));
+                $nbApprenants = 0;
+                foreach ($classrooms as $c) {
+                    $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                        ->getAllStudentsInClassroom($c->getClassroom()->getId(), 0);
+                    $nbApprenants += count($students);
+                }
+
+                $learnerNumberCheck = ["idUser"=>$currentUserId, "isPremium"=>$isPremium, "learnerNumber"=>$nbApprenants];
+
+                if(!$learnerNumberCheck["isPremium"]){
+                    $addedLearnerNumber = count($data['users']);
+                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+                    if($totalLearnerCount>20){
+                        return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
+                    }
+                }
+                /**
+                 * End of learner number limiting
+                 */
                 $passwords = [];
                 foreach ($data['users'] as $u) {
                     $user = new User();
@@ -49,8 +80,8 @@ class ControllerClassroomLinkUser extends Controller
                 }
 
                 $this->entityManager->flush();
-                return $passwords; //synchronized
 
+                return ["isUsersAdded"=>true, "passwords"=>$passwords];
             },
             'add_users_by_csv' => function ($data) {
                 foreach ($data['users'] as $u) {
