@@ -37,7 +37,7 @@ class ControllerClassroomLinkUser extends Controller
                 if(!$learnerNumberCheck["isPremium"]){
                     $addedLearnerNumber = count($data['users']);
                     $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
-                    if($totalLearnerCount>20){
+                    if($totalLearnerCount>50){
                         return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
                     }
                 }
