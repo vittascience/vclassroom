@@ -7,6 +7,10 @@ use User\Entity\Regular;
 use User\Entity\ClassroomUser;
 use Classroom\Entity\Classroom;
 use Classroom\Entity\ClassroomLinkUser;
+/**
+ * @ THOMAS MODIF line just below
+ */
+use DAO\RegularDAO;
 
 class ControllerClassroom extends Controller
 {
@@ -54,6 +58,30 @@ class ControllerClassroom extends Controller
                     ->findBy(array("link" => $data['link']));
             },
             'add' => function ($data) {
+                /**
+                 * Limiting learner number @THOMAS MODIF
+                 */
+                $currentUserId = $this->user["id"];
+                $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
+                $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findBy(array("user" => $currentUserId));
+                $nbClassroom = 0;
+                foreach ($classrooms as $c) {
+                    $nbClassroom++;
+                }
+
+                $learnerNumberCheck = ["idUser"=>$currentUserId, "isPremium"=>$isPremium, "classroomNumber"=>$nbClassroom];
+
+                if(!$learnerNumberCheck["isPremium"]){
+                    if($nbClassroom+1>1){
+                        return false;
+                    }
+                }
+                /**
+                 * End of learner number limiting
+                 */
+
+
                 $studyGroup = new Classroom();
                 $studyGroup->setName($data['name']);
                 $studyGroup->setSchool($data['school']);
