@@ -60,9 +60,13 @@ class ControllerClassroom extends Controller
             'add' => function ($data) {
                 /**
                  * Limiting learner number @THOMAS MODIF
+                 * Added the possibility for Admins to add more than 1 classroom @MODIF NASER
                  */
                 $currentUserId = $this->user["id"];
+
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
+                $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
+
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $currentUserId));
                 $nbClassroom = 0;
@@ -70,9 +74,17 @@ class ControllerClassroom extends Controller
                     $nbClassroom++;
                 }
 
-                $learnerNumberCheck = ["idUser"=>$currentUserId, "isPremium"=>$isPremium, "classroomNumber"=>$nbClassroom];
+                $learnerNumberCheck = [
+                    "idUser"=>$currentUserId, 
+                    "isPremium"=>$isPremium, 
+                    "isAdmin"=> $isAdmin,
+                    "classroomNumber"=>$nbClassroom
+                ];
 
-                if(!$learnerNumberCheck["isPremium"]){
+                // set the $isAllowed flag to true if the current user is admin or premium to allow them more possibilities
+                $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
+
+                if(!$isAllowed ){
                     if($nbClassroom+1>1){
                         return false;
                     }
