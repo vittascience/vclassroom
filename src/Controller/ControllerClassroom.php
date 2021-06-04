@@ -61,6 +61,7 @@ class ControllerClassroom extends Controller
                 /**
                  * Limiting learner number @THOMAS MODIF
                  * Added the possibility for Admins to add more than 1 classroom @MODIF NASER
+                 * Added the max classroom limit at 40 for premium users @MODIF NASER
                  */
                 $currentUserId = $this->user["id"];
 
@@ -87,6 +88,18 @@ class ControllerClassroom extends Controller
                 if(!$isAllowed ){
                     if($nbClassroom+1>1){
                         return false;
+                    }
+                }
+
+                // check the classroom number for premium users 
+                if($learnerNumberCheck['isPremium']){
+                    if($nbClassroom + 1 > 40){
+
+                        // the current classroom number is reached, return an error
+                        return [
+                            "isClassroomAdded"=>false, 
+                            "classroomNumberLimit"=>$nbClassroom
+                        ];                        
                     }
                 }
                 /**
