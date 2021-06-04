@@ -72,6 +72,21 @@ class ControllerClassroomLinkUser extends Controller
                 /**
                  * End of learner number limiting
                  */
+                /**
+                 * check that teacher does not add a vittademo user @MODIF naser
+                 */
+                    if(in_array('vittademo',array_map('strtolower',$data['users']))){
+                        return [
+                            "isUsersAdded"=>false, 
+                            "errorType"=> "reservedNickname",
+                            "currentNickname"=> "vittademo"
+                        ];
+                }
+               /**
+                * 
+                */
+
+
                 $passwords = [];
                 foreach ($data['users'] as $u) {
                     $user = new User();
