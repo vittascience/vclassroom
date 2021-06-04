@@ -67,20 +67,33 @@ class ControllerClassroomLinkUser extends Controller
                         return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
                     }
                 }
-               
+                
+                if($learnerNumberCheck["isPremium"])
+                {
+
+                    // if the total exceed the limit max, return an error
+                    if($totalLearnerCount > 400 ){
+                        return [
+                            "isUsersAdded" => false, 
+                            "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], 
+                            "addedLearnerNumber"=>$addedLearnerNumber
+                        ];
+                    }
+                }
                 
                 /**
                  * End of learner number limiting
                  */
+
                 /**
                  * check that teacher does not add a vittademo user @MODIF naser
                  */
-                    if(in_array('vittademo',array_map('strtolower',$data['users']))){
-                        return [
-                            "isUsersAdded"=>false, 
-                            "errorType"=> "reservedNickname",
-                            "currentNickname"=> "vittademo"
-                        ];
+                if(in_array('vittademo',array_map('strtolower',$data['users']))){
+                    return [
+                        "isUsersAdded"=>false, 
+                        "errorType"=> "reservedNickname",
+                        "currentNickname"=> "vittademo"
+                    ];
                 }
                /**
                 * 
