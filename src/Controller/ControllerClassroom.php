@@ -93,7 +93,7 @@ class ControllerClassroom extends Controller
 
                 // check the classroom number for premium users 
                 if($learnerNumberCheck['isPremium']){
-                    if($nbClassroom + 1 > 40){
+                    if($nbClassroom + 1 > 20){
 
                         // the current classroom number is reached, return an error
                         return [
