@@ -142,7 +142,10 @@ class ControllerClassroom extends Controller
                 $studyGroup->setName($data['name']);
                 $studyGroup->setSchool($data['school']);
                 $studyGroup->setIsBlocked($data['isBlocked']);
-                $studyGroup->setLink();
+
+                // commented setLink to avoid link classroom link to change
+                //$studyGroup->setLink();
+
                 $this->entityManager->persist($studyGroup);
                 $this->entityManager->flush();
                 return $studyGroup; //synchronized
