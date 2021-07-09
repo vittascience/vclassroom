@@ -84,11 +84,15 @@ class ControllerClassroom extends Controller
                 // set the $isAllowed flag to true if the current user is admin or premium to allow them more possibilities
                 $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
 
-                if(!$isAllowed ){
+                ///////////////////////////////////
+                // remove the limitations for CABRI
+                /* if(!$isAllowed ){
                     if($nbClassroom+1>1){
                         return false;
                     }
-                }
+                } */
+                // end remove the limitations for CABRI
+                ///////////////////////////////////////
                 /**
                  * End of learner number limiting
                  */
