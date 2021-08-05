@@ -53,6 +53,12 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $isBlocked = false;
 
+    /**
+     * @ORM\Column(name="uai",type="string",nullable=true)
+     * @var string
+     */
+    private $uai;
+
     public function __construct($name = "default", $school = "default")
     {
         $this->setName($name);
@@ -204,6 +210,29 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
         }
     }
 
+    /**
+     * Get the value of uai
+     *
+     * @return  string
+     */ 
+    public function getUai()
+    {
+        return $this->uai;
+    }
+
+    /**
+     * Set the value of uai
+     *
+     * @param  string  $uai
+     *
+     * @return  self
+     */ 
+    public function setUai($uai)
+    {
+        $this->uai = $uai;
+
+        return $this;
+    }
 
     public function jsonSerialize()
     {
