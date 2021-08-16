@@ -28,7 +28,7 @@ class ControllerClassroom extends Controller
                 if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
 
                 // accept only connected user
-                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsNotRetrivedNotAuthenticated"];
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsNotRetrievedNotAuthenticated"];
 
                 // sanitize data
                 $userId = intval($_SESSION['id']);
