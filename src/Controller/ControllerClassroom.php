@@ -23,13 +23,33 @@ class ControllerClassroom extends Controller
                     ->findAll();
             },
             'get_by_user' => function () {
+
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsNotRetrivedNotAuthenticated"];
+
+                // sanitize data
+                $userId = intval($_SESSION['id']);
+
+                // get all classrooms where the user is the teacher (rights = 2)
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("user" => $this->user));
+                    ->findBy(array("user" => $userId, 'rights'=> 2));
+
+                //no classrooms found, return an empty array    
+                if(!$classrooms){
+                    return $classrooms = [];
+                }
+
+                // some classrooms found, push them into $classrooms array
                 $i = 0;
-                foreach ($classrooms as $c) {
-                    $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->getAllStudentsInClassroom($c->getClassroom()->getId(), 0);
-                    $classrooms[$i] = array("classroom" => $c->getClassroom(), "students" => $students);
+                foreach ($classrooms as $classroom) {
+                    $students = $this->entityManager
+                                        ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                        ->getAllStudentsInClassroom($classroom->getClassroom()->getId(), 0);
+
+                    $classrooms[$i] = array("classroom" => $classroom->getClassroom(), "students" => $students);
                     $i++;
                 }
                 return $classrooms;
