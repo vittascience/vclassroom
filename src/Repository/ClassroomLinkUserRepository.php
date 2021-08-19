@@ -3,6 +3,9 @@
 namespace Classroom\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Classroom\Entity\Classroom;
+use Classroom\Entity\ClassroomLinkUser;
+use User\Entity\User;
 
 class ClassroomLinkUserRepository extends EntityRepository
 {
