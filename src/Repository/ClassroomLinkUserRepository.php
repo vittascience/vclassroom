@@ -106,7 +106,7 @@ class ClassroomLinkUserRepository extends EntityRepository
     public function getStudentClassroomsAndRelatedTeacher($classroomName,$uai){
         $studentClassroomsAndRelatedTeacher = $this->getEntityManager()
                                                     ->createQueryBuilder()
-                                                    ->select('c.name,c.groupe,c.link,u.pseudo AS teacher,clu.rights')
+                                                    ->select('c.id,c.name,c.groupe,c.link,u.pseudo AS teacher,clu.rights')
                                                     ->from(Classroom::class,'c')
                                                     ->Join(ClassroomLinkUser::class,'clu','WITH','c.id = clu.classroom')
                                                     ->join(User::class,'u','WITH','u.id = clu.user')
