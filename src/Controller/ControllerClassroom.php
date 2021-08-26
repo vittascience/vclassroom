@@ -121,7 +121,7 @@ class ControllerClassroom extends Controller
                 $studyGroup = new Classroom();
                 $studyGroup->setName($data['name']);
                 $studyGroup->setSchool($data['school']);
-                $studyGroup->setIsBlocked($data['isBlocked']);
+                $studyGroup->setIsBlocked($data['isBlocked'] ?? 0);
                 $studyGroup->setLink();
                 $this->entityManager->persist($studyGroup);
                 //add the teacher to the classroom
