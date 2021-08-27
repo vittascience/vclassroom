@@ -177,6 +177,7 @@ class ControllerClassroom extends Controller
 
             },
             'delete' => function () {
+               
                 // accept only POST request
                 if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
 
@@ -214,67 +215,62 @@ class ControllerClassroom extends Controller
                 if(!$teacherFound) return array('errorTeacherNotExists'=> true );
 
                 // the current $classroom is not related to the GAR
-                if($classroomFound->getUai() === null){
-                    // start cleaning the db
-                    // get all students of the classroom
-                    $classroomStudentsData = $this->entityManager
-                                                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                                                    ->findBy(array(
-                                                        'classroom' => $classroomFound->getId(),
-                                                        'rights'=> 0
+            
+                // start cleaning the db
+                // get all students of the classroom
+                $classroomStudentsData = $this->entityManager
+                                                ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                                ->findBy(array(
+                                                    'classroom' => $classroomFound->getId(),
+                                                    'rights'=> 0
+                                                ));
+
+                // delete students from user_classroom_users 
+                foreach ($classroomStudentsData as $studentData) {
+                    // check if student exists
+                    $classroomStudentExists = $this->entityManager
+                                                    ->getRepository('User\Entity\User')
+                                                    ->findOneBy(array(
+                                                        'id' => $studentData->getUser()->getId()
                                                     ));
-
-                    // delete students from user_classroom_users 
-                    foreach ($classroomStudentsData as $studentData) {
-                        // check if student exists
-                        $classroomStudentExists = $this->entityManager
-                                                        ->getRepository('User\Entity\ClassroomUser')
-                                                        ->findOneBy(array(
-                                                            'id' => $studentData->getUser()->getId()
-                                                        ));
-
-                        if ($classroomStudentExists) {
-                            // delete the student
-                            $this->entityManager->remove($classroomStudentExists);
-                        }
-
-                       
-                        // get all records from classroom_users_link_classrooms
-                        $userActivitiesFound = $this->entityManager
-                                                    ->getRepository('Classroom\Entity\ActivityLinkUser')
-                                                    ->findBy(array(
-                                                        'user' => $studentData->getUser()
-                                                    ));
-                       
-                        if($userActivitiesFound){
-                            // delete each record found
-                            foreach($userActivitiesFound as $userActivity){
-                               $this->entityManager->remove($userActivity);
-                            }
-                        }
+                    
+                    
+                    if ($classroomStudentExists) {
+                        // delete the student
+                        $this->entityManager->remove($classroomStudentExists);
                     }
 
-                    // set the data to return
-                    $name = $classroomFound->getName();
-                    $link = $classroomFound->getLink();
                     
-                    // remove the classroom 
-                    $this->entityManager->remove($classroomFound);   
+                    // get all records from classroom_users_link_classrooms
+                    $userActivitiesFound = $this->entityManager
+                                                ->getRepository('Classroom\Entity\ActivityLinkUser')
+                                                ->findBy(array(
+                                                    'user' => $studentData->getUser()
+                                                ));
                     
-                    // delete all necessary records in each table and clear doctrine memory
-                    $this->entityManager->flush(); 
-                    $this->entityManager->clear();
-                    
-                    return [
-                        'name' => $name,
-                        'link' => $link
-                    ];
+                    if($userActivitiesFound){
+                        // delete each record found
+                        foreach($userActivitiesFound as $userActivity){
+                            $this->entityManager->remove($userActivity);
+                        }
+                    }
                 }
-                else{
-                    // the current $classroom is related to the GAR
-                   return array('msg' => 'TO BE IMPLEMENTED');
-                }
+
+                // set the data to return
+                $name = $classroomFound->getName();
+                $link = $classroomFound->getLink();
                 
+                // remove the classroom 
+                $this->entityManager->remove($classroomFound);   
+                
+                // delete all necessary records in each table and clear doctrine memory
+                $this->entityManager->flush(); 
+                $this->entityManager->clear();
+                
+                return [
+                    'name' => $name,
+                    'link' => $link
+                ];    
             },
             'get_vittademo_account' => function ($data) {
                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
