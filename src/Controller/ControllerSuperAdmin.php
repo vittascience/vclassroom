@@ -22,6 +22,16 @@ class ControllerSuperAdmin extends Controller
         // Vérifie si l'utilisateur actuel est admin, si il ne l'est pas alors lui refuser toutes actions
         $Autorisation = $this->entityManager->getRepository('User\Entity\Regular')->findOneBy(['user' => htmlspecialchars($_SESSION['id'])]);
         if (!$Autorisation || $Autorisation->getIsAdmin() == false || $_SERVER['REQUEST_METHOD'] != 'POST') {
+            $this->actions = array(
+                'is_user_admin' => function() {
+                    $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => htmlspecialchars($_SESSION['id'])]);
+                    $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user]);
+                    if ($userR->getIsAdmin()) {
+                        return ['Admin' => true];
+                    }
+                    return ['Admin' => false];
+                }
+            );
             return false;
         } else if ($Autorisation->getIsAdmin() == true) {
             $this->actions = array(
