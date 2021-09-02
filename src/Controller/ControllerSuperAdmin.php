@@ -607,7 +607,7 @@ class ControllerSuperAdmin extends Controller
 
                         // create the confirmation account link and set the email template to be used      
                         $accountConfirmationLink = $_ENV['VS_HOST']."/classroom/password_manager.php?page=update&token=$token";
-                        $emailTtemplateBody = $userLang."_reset_password";
+                        $emailTtemplateBody = $userLang."_confirm_account";
 
                         // init i18next instance
                         if(is_dir(__DIR__."/../../../../../openClassroom")){

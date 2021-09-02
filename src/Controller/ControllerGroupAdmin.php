@@ -685,7 +685,7 @@ class ControllerGroupAdmin extends Controller
 
         $userLang = isset($_COOKIE['lng']) ? htmlspecialchars($_COOKIE['lng']) : 'fr'; 
         $accountConfirmationLink = $_ENV['VS_HOST']."/classroom/password_manager.php?page=update&token=$token";
-        $emailTtemplateBody = $userLang."_reset_password";
+        $emailTtemplateBody = $userLang."_confirm_account";
 
         if(is_dir(__DIR__."/../../../../../openClassroom")){
             i18next::init($userLang,__DIR__."/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
