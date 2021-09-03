@@ -111,6 +111,18 @@ class ControllerClassroom extends Controller
                         return false;
                     }
                 }
+
+                // check the classroom number for premium users 
+                if($learnerNumberCheck['isPremium']){
+                    if($nbClassroom + 1 > 20){
+
+                        // the current classroom number is reached, return an error
+                        return [
+                            "isClassroomAdded"=>false, 
+                            "classroomNumberLimit"=>$nbClassroom
+                        ];                        
+                    }
+                }
                 // end remove the limitations for CABRI
                 ///////////////////////////////////////
                 /**
