@@ -388,7 +388,7 @@ class ControllerSuperAdmin extends Controller
                             <p>$textBeforeLink $accountConfirmationLink
                         ";
                         
-                        $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody, "remi.cointe@vittascience.com", "Rémi"); 
+                        $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody); 
                         /////////////////////////////////////
 
                         return ['message' => 'success', 'mail' => $emailSent];

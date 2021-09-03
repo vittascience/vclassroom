@@ -141,7 +141,7 @@ class ControllerGroupAdmin extends Controller
                         <p>$textBeforeLink $accountConfirmationLink
                     ";
                     
-                    $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody, "remi.cointe@vittascience.com", "Rémi"); 
+                    $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody); 
                     /////////////////////////////////////
 
                     return ['response' => 'success', 'mail' => $emailSent];
@@ -318,7 +318,7 @@ class ControllerGroupAdmin extends Controller
                                 <p>$textBeforeName $userMail $textAfterName $groupName.
                             ";
                             foreach($adminMail as $value) { 
-                                $emailSent = Mailer::sendMail($value, $emailSubject, $body, strip_tags($body), $emailTtemplateBody, "remi.cointe@vittascience.com", "Rémi"); 
+                                $emailSent = Mailer::sendMail($value, $emailSubject, $body, strip_tags($body), $emailTtemplateBody); 
                             }
                         }
                         return ['message' => 'success'];
@@ -640,7 +640,7 @@ class ControllerGroupAdmin extends Controller
             <br>
             <p>$textBeforeLink $accountConfirmationLink
         ";
-        $emailSent = Mailer::sendMail($email, $emailSubject, $body, strip_tags($body), $emailTtemplateBody, "remi.cointe@vittascience.com", "Rémi"); 
+        $emailSent = Mailer::sendMail($email, $emailSubject, $body, strip_tags($body), $emailTtemplateBody); 
 
         return ['emailSent' => $emailSent, 'link' => $accountConfirmationLink];
     }
@@ -671,7 +671,7 @@ class ControllerGroupAdmin extends Controller
             <p>$textBeforeLink $accountConfirmationLink
         ";
         
-        $emailSent = Mailer::sendMail($email, $emailSubject, $body, strip_tags($body), $emailTtemplateBody, "remi.cointe@vittascience.com", "Rémi"); 
+        $emailSent = Mailer::sendMail($email, $emailSubject, $body, strip_tags($body), $emailTtemplateBody); 
 
         return ['emailSent' => $emailSent, 'link' => $accountConfirmationLink];
     }
