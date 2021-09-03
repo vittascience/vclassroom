@@ -364,8 +364,18 @@ class ControllerGroupAdmin extends Controller
                     $Authorization = $this->getAuthorization($this->entityManager, $user_id);
                     if ($Authorization['message'] == "not_allowed")
                         return ['message' => 'not_allowed'];
-                    else
-                        return $this->entityManager->getRepository(UsersLinkGroups::class)->getUsersWithHisGroupsGA($user_id);
+                    else {
+                        $user = $this->entityManager->getRepository(UsersLinkGroups::class)->getUsersWithHisGroupsGA($user_id);
+                        // Delete all the group where the requester is not admin
+                        foreach ($user[0]['groups'] as $clef => $valeur) {
+                            $groupID = $valeur['id'];
+                            $isRequesterAdminOfGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $groupID, 'rights' => 1, 'user' => $_SESSION['id']]);
+                            if (empty($isRequesterAdminOfGroup)) {
+                               unset($user[0]['groups'][$clef]);
+                            }
+                        }
+                        return $user;
+                    }
                 }
             },
             'disable_user' => function($data) {
@@ -446,6 +456,16 @@ class ControllerGroupAdmin extends Controller
 
                     // Obtient la totalité des groupes de l'utilisateur
                     $AllGroupsFromUser = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
+
+                    // A group where the requester is not admin cannot be updated
+                    foreach ($AllGroupsFromUser as $clef => $valeur) {
+                        $groupID = $valeur->getGroup();
+                        $isRequesterAdminOfGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $groupID, 'rights' => 1, 'user' => $_SESSION['id']]);
+                        if (empty($isRequesterAdminOfGroup)) {
+                            unset($AllGroupsFromUser[$clef]);
+                        }
+                    }
+
                     foreach ($groups as $key => $value) {
                         if ($value[1] != -1) {
                             $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);

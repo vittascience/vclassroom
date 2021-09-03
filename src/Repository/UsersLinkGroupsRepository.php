@@ -223,7 +223,6 @@ class UsersLinkGroupsRepository extends EntityRepository
                 ->getQuery()
                 ->getScalarResult();
 
-
         foreach ($LinkUserAndGroups as $key_2 => $value_2) {
             if ((int)$User[0]['id'] == (int)$value_2['user']) {
                 $User[0]['groups'][] = ['id' => $value_2['group'], 'rights' => $value_2['rights']];
