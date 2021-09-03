@@ -108,7 +108,11 @@ class ControllerClassroom extends Controller
                 // remove the limitations for CABRI
                 if(!$isAllowed ){
                     if($nbClassroom+1>1){
-                        return false;
+                       // the current classroom number is reached, return an error
+                        return [
+                            "isClassroomAdded"=>false, 
+                            "classroomNumberLimit"=>$nbClassroom
+                        ];   
                     }
                 }
 
