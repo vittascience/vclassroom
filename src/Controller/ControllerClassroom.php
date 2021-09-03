@@ -106,11 +106,11 @@ class ControllerClassroom extends Controller
 
                 ///////////////////////////////////
                 // remove the limitations for CABRI
-                /* if(!$isAllowed ){
+                if(!$isAllowed ){
                     if($nbClassroom+1>1){
                         return false;
                     }
-                } */
+                }
                 // end remove the limitations for CABRI
                 ///////////////////////////////////////
                 /**

@@ -59,7 +59,7 @@ class ControllerClassroomLinkUser extends Controller
                 // if not admin or premium
                 ///////////////////////////////////
                 // remove the limitations for CABRI
-                /* if(!$isAllowed ){
+                if(!$isAllowed ){
                     // get the number of students to add and compute the sum with the number of student already registered
                     $addedLearnerNumber = count($data['users']);
                     $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
@@ -69,7 +69,7 @@ class ControllerClassroomLinkUser extends Controller
                         return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
                     }
                 }
-                */
+               
                 // end remove the limitations for CABRI
                 /////////////////////////////////////////
                 /**
