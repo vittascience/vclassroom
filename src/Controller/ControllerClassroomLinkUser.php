@@ -70,6 +70,16 @@ class ControllerClassroomLinkUser extends Controller
                     }
                 }
                
+                if($learnerNumberCheck['isPremium']){
+                    // get the number of students to add and compute the sum with the number of student already registered
+                    $addedLearnerNumber = count($data['users']);
+                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+
+                    // if the total exceed the limit max, return an error
+                    if($totalLearnerCount > 400 ){
+                        return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
+                    }
+                }
                 // end remove the limitations for CABRI
                 /////////////////////////////////////////
                 /**
