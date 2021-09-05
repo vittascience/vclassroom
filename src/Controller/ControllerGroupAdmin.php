@@ -282,7 +282,9 @@ class ControllerGroupAdmin extends Controller
                 $adminMail = [];
                 foreach($admins as $value) { 
                     $admin = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $value->getUser()]);
-                    $adminMail[] = $admin->getEmail();
+                    if ($admin) {
+                        $adminMail[] = $admin->getEmail();
+                    }
                 }
                 
                 if ($userR && $group) {
