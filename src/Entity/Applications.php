@@ -38,20 +38,20 @@ class Applications
     private $image;
 
     /**
-     * @ORM\Column(name="maxStudentsPerGroups", type="integer", nullable=true)
+     * @ORM\Column(name="max_students_per_groups", type="integer", nullable=true)
      * @var integer
      */
     private $maxStudentsPerGroups;
 
     /**
-     * @ORM\Column(name="maxTeachersPerGroups", type="integer", nullable=true)
+     * @ORM\Column(name="max_teachers_per_groups", type="integer", nullable=true)
      * @var integer
      */
     private $maxTeachersPerGroups;
 
 
     /**
-     * @ORM\Column(name="maxStudentsPerTeachers", type="integer", nullable=true)
+     * @ORM\Column(name="max_students_per_teachers", type="integer", nullable=true)
      * @var integer
      */
     private $maxStudentsPerTeachers;

@@ -8,6 +8,7 @@ use User\Entity\Regular;
 use User\Entity\Teacher;
 use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
+use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkGroups;
 use Doctrine\ORM\EntityManager;
 
@@ -84,6 +85,14 @@ class ControllerGroupAdmin extends Controller
                     // link the user to the group with his right
                     if ($groups[1] != -1) {
                         $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
+
+                        // Check restrictions via applications
+                        $canAddUser = $this->isGroupFull($groups[1]);
+                        if (!$canAddUser) {
+                            return ['message' => 'Group\'s limit reached'];
+                        }
+                        // Check restrictions via applications
+
                         // Vérifie si l'utilisateur qui demande la liaison a un group est bien admin de celui-ci
                         $adminOfTheGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $admin, 'group' => $group]);
                         $rightsOfRequester = $adminOfTheGroups ? $adminOfTheGroups->getRights() : 0;
@@ -270,6 +279,14 @@ class ControllerGroupAdmin extends Controller
                 // bind incoming data to the value provided or null
                 $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                 $group_id = isset($data['group_id']) ? htmlspecialchars($data['group_id']) : null;
+
+
+                // Check restrictions via applications
+                $canAddUser = $this->isGroupFull($group_id);
+                if (!$canAddUser) {
+                    return ['message' => 'Group\'s limit reached'];
+                }
+                // Check restrictions via applications
 
                 $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
                 $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
@@ -470,6 +487,12 @@ class ControllerGroupAdmin extends Controller
 
                     foreach ($groups as $key => $value) {
                         if ($value[1] != -1) {
+                            // Check restrictions via applications
+                            $canAddUser = $this->isGroupFull($value[1]);
+                            if (!$canAddUser) {
+                                return ['message' => 'Group\'s limit reached'];
+                            }
+                            // Check restrictions via applications
                             $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);
                             $AlreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $value[1]]);
                             $rights = $value[0] == true ? 1 : 0;
@@ -635,6 +658,28 @@ class ControllerGroupAdmin extends Controller
                 }
             }
         );
+    }
+
+    private function isGroupFull(Int $group_id) :?bool {
+        // Check restrictions via applications
+        $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['group' => $group_id]);
+        $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id]);
+
+        $maxTeacher = 0;
+        foreach ($applicationsOfGroup as $app) {
+            if (!empty($app->getmaxTeachersPerGroups())) {
+                if ($app->getmaxTeachersPerGroups() > $maxTeacher)  {
+                    $maxTeacher = $app->getmaxTeachersPerGroups();
+                }
+            }
+        }
+        if ($maxTeacher != 0) {
+            if ($nbUsersInGroups > $maxTeacher) {
+                return false;
+            }
+        }
+        return true;
+        // Check restrictions via applications
     }
 
     private function sendActivationAndLinkToGroupLink(String $email, String $confirmationToken, String $groupCode) {
