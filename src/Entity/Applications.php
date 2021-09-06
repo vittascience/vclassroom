@@ -25,19 +25,36 @@ class Applications
      */
     private $name;
 
-    // TBD : nullable ? 
     /**
      * @ORM\Column(name="description", type="string", length=255, nullable=true)
      * @var string
      */
     private $description;
 
-    // Link of the Application image
     /**
      * @ORM\Column(name="image", type="string", length=255, nullable=true)
      * @var string
      */
     private $image;
+
+    /**
+     * @ORM\Column(name="maxStudentsPerGroups", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxStudentsPerGroups;
+
+    /**
+     * @ORM\Column(name="maxTeachersPerGroups", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxTeachersPerGroups;
+
+
+    /**
+     * @ORM\Column(name="maxStudentsPerTeachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxStudentsPerTeachers;
 
     /**
      * @return Integer
@@ -101,13 +118,70 @@ class Applications
         return $this;
     }
 
+    /**
+     * @return Integer
+     */
+    public function getmaxStudentsPerGroups()
+    {
+        return $this->maxStudentsPerGroups;
+    }
+
+    /**
+     * @param Integer $image
+     * @return Applications
+     */
+    public function setmaxStudentsPerGroups(Int $maximum): self
+    {
+        $this->maxStudentsPerGroups = $maximum;
+        return $this;
+    }
+
+    /**
+     * @return Integer
+     */
+    public function getmaxTeachersPerGroups(): ?string
+    {
+        return $this->maxTeachersPerGroups;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return Applications
+     */
+    public function setmaxTeachersPerGroups(Int $maximum): self
+    {
+        $this->maxTeachersPerGroups = $maximum;
+        return $this;
+    }
+
+    /**
+     * @return Integer
+     */
+    public function getmaxStudentsPerTeachers()
+    {
+        return $this->maxStudentsPerTeachers;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return Applications
+     */
+    public function setmaxStudentsPerTeachers(Int $maximum): self
+    {
+        $this->maxStudentsPerTeachers = $maximum;
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
             'id' => $this->getId(),
             'name' => $this->getName(),
             'description' => $this->getDescription(),
-            'image' => $this->getImage()
+            'image' => $this->getImage(),
+            'maxStudentsPerGroup' => $this->getmaxStudentsPerGroups(),
+            'maxTeachersPerGroup' => $this->getmaxTeachersPerGroups(),
+            'maxStudentsPerTeachers' => $this->getmaxStudentsPerTeachers()
         ];
     }
 
