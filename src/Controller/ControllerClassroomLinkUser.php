@@ -59,7 +59,7 @@ class ControllerClassroomLinkUser extends Controller
                 // if not admin or premium
                 ///////////////////////////////////
                 // remove the limitations for CABRI
-                /* if(!$isAllowed ){
+                if(!$isAllowed ){
                     // get the number of students to add and compute the sum with the number of student already registered
                     $addedLearnerNumber = count($data['users']);
                     $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
@@ -69,7 +69,17 @@ class ControllerClassroomLinkUser extends Controller
                         return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
                     }
                 }
-                */
+               
+                if($learnerNumberCheck['isPremium']){
+                    // get the number of students to add and compute the sum with the number of student already registered
+                    $addedLearnerNumber = count($data['users']);
+                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+
+                    // if the total exceed the limit max, return an error
+                    if($totalLearnerCount > 400 ){
+                        return ["isUsersAdded"=>false, "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], "addedLearnerNumber"=>$addedLearnerNumber];
+                    }
+                }
                 // end remove the limitations for CABRI
                 /////////////////////////////////////////
                 /**
@@ -130,34 +140,119 @@ class ControllerClassroomLinkUser extends Controller
                 return ["isUsersAdded"=>true, "passwords"=>$passwords];
             },
             'add_users_by_csv' => function ($data) {
-                foreach ($data['users'] as $u) {
+                // get all students for this teacher
+               
+                $currentUserId = intval($_SESSION['id']);
+                $classroomLink = htmlspecialchars(strip_tags(trim($data['classroom'])));
+                
+                // get the statuses for the current user
+                $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
+                $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
+            
+                // retrieve all classrooms of the current user
+                $teacherClassrooms = $this->entityManager
+                                            ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                            ->findBy(array(
+                                                'user' => $currentUserId,
+                                                'rights'=> 2
+                                            ));
+                
+                $learnerNumber = 0;
+                foreach($teacherClassrooms as $classroomObject){
+                    // retrieve all student for the current classroom
+                    $studentsInClassroom = $this->entityManager
+                                                ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                                ->findBy(array(
+                                                    'classroom' => $classroomObject->getClassroom()->getId(),
+                                                    'rights'=> 0
+                                                ));
+                    // add classroom students to the total
+                    $learnerNumber += count($studentsInClassroom);
+                }
+                
+                $learnerNumberCheck = [
+                    "idUser"=>$currentUserId,
+                    "isPremium"=>$isPremium, 
+                    "isAdmin"=> $isAdmin,
+                    "learnerNumber"=>$learnerNumber
+                ];
+                
+                // set the $isAllowed flag to true if the current user is admin or premium
+                $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
+                
+                
+                // if not admin or premium
+                ///////////////////////////////////
+                // remove the limitations for CABRI
+                if(!$isAllowed ){
+                    // get the number of students to add and compute the sum with the number of student already registered
+                    $addedLearnerNumber = count($data['users']);
+                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+                    
+                    // if the total exceed the limit max, return an error
+                    if($totalLearnerCount > 50 ){
+                        return [
+                            "isUsersAdded"=>false, 
+                            "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], 
+                            "addedLearnerNumber"=>$addedLearnerNumber
+                        ];
+                    }
+                    
+                }
+               
+                if($learnerNumberCheck['isPremium']){
+                    // get the number of students to add and compute the sum with the number of student already registered
+                    $addedLearnerNumber = count($data['users']);
+                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+            
+                    // if the total exceed the limit max, return an error
+                    if($totalLearnerCount > 400 ){
+                        return [
+                            "isUsersAdded"=>false, 
+                            "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], 
+                            "addedLearnerNumber"=>$addedLearnerNumber
+                        ];
+                    }
+                }
+                // end remove the limitations for CABRI
+                /////////////////////////////////////////
+            
+                foreach ($data['users'] as $userToAdd) {
+                    // bind and sanitize incoming data
+                    $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
+                    $studentPassword = !empty($userToAdd['mot_de_passe'])
+                                            ? htmlspecialchars(strip_tags(trim($userToAdd['mot_de_passe'])))
+                                            : passwordGenerator();
+                    
+                    // create the user
                     $user = new User();
                     $user->setSurname('surname');
                     $user->setFirstname('firstname');
-                    $user->setPseudo($u['apprenant']);
-                    if (isset($u['mot de passe'])) {
-                        $password = $u['mot de passe'];
-                    } else {
-                        $password = passwordGenerator();
-                    }
-                    $user->setPassword($password);
-                    $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                    $user->setId($lastQuestion->getId() + 1);
+                    $user->setPseudo($studentPseudo);
+                    $user->setPassword($studentPassword);
                     $this->entityManager->persist($user);
                     $this->entityManager->flush();
-
+                    // retrieve the las insert Id for next query
+                    $user->setId($user->getId());
+            
+                    // create the classroomUser to insert in user_classroom_users
                     $classroomUser = new ClassroomUser($user);
                     $classroomUser->setGarId(null);
                     $classroomUser->setSchoolId(null);
                     $classroomUser->setIsTeacher(false);
                     $classroomUser->setMailTeacher(NULL);
                     $this->entityManager->persist($classroomUser);
-
-                    $studyGroup = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                        ->findOneBy(array('link' => $data['classroom']));
-                    $linkClassroomUserToGroup = new ClassroomLinkUser($user, $studyGroup);
-                    $linkClassroomUserToGroup->setRights(0);
-                    $this->entityManager->persist($linkClassroomUserToGroup);
+            
+                    // retrieve the classroom by its link
+                    $classroom = $this->entityManager
+                                        ->getRepository('Classroom\Entity\Classroom')
+                                        ->findOneBy(array('link' => $classroomLink));
+                    
+                    // create the link between the user and its classroom to be stored in classroom_activities_link_classroom_users
+                    $classroomLinkUser = new ClassroomLinkUser($user,$classroom);
+                    $classroomLinkUser->setRights(0);
+                    $this->entityManager->persist($classroomLinkUser);
+                    
                 }
                 $this->entityManager->flush();
                 return true;

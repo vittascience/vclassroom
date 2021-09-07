@@ -106,11 +106,27 @@ class ControllerClassroom extends Controller
 
                 ///////////////////////////////////
                 // remove the limitations for CABRI
-                /* if(!$isAllowed ){
+                if(!$isAllowed ){
                     if($nbClassroom+1>1){
-                        return false;
+                       // the current classroom number is reached, return an error
+                        return [
+                            "isClassroomAdded"=>false, 
+                            "classroomNumberLimit"=>$nbClassroom
+                        ];   
                     }
-                } */
+                }
+
+                // check the classroom number for premium users 
+                if($learnerNumberCheck['isPremium']){
+                    if($nbClassroom + 1 > 20){
+
+                        // the current classroom number is reached, return an error
+                        return [
+                            "isClassroomAdded"=>false, 
+                            "classroomNumberLimit"=>$nbClassroom
+                        ];                        
+                    }
+                }
                 // end remove the limitations for CABRI
                 ///////////////////////////////////////
                 /**
