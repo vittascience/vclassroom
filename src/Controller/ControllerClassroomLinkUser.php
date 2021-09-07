@@ -171,7 +171,7 @@ class ControllerClassroomLinkUser extends Controller
                 }
                 
                 $learnerNumberCheck = [
-                    "idUser"=>$currentUserId, 
+                    "idUser"=>$currentUserId,
                     "isPremium"=>$isPremium, 
                     "isAdmin"=> $isAdmin,
                     "learnerNumber"=>$learnerNumber
