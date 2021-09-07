@@ -57,16 +57,28 @@ class UsersLinkGroupsRepository extends EntityRepository
             foreach ($id_members_in_groups as $key => $value) {
                 $users_id[] = $value['user'];
             }
-            $result = $this->getEntityManager()
-                ->createQueryBuilder()
-                ->select("u.id, u.surname, u.firstname, u.pseudo")
-                ->from(User::class,'u')
-                ->innerJoin(Regular::class,'r', Join::WITH, 'r.user = u.id')
-                ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
-                ->andWhere('r.active = 1')
-                ->setParameter('ids', $users_id)
-                ->orderBy($orderby)
-                ->getQuery();
+            if (!empty($users_id)) {
+                $result = $this->getEntityManager()
+                    ->createQueryBuilder()
+                    ->select("u.id, u.surname, u.firstname, u.pseudo")
+                    ->from(User::class,'u')
+                    ->innerJoin(Regular::class,'r', Join::WITH, 'r.user = u.id')
+                    ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
+                    ->andWhere('r.active = 1')
+                    ->setParameter('ids', $users_id)
+                    ->orderBy($orderby)
+                    ->getQuery();
+            } else {
+                // in the case where $users_id is empty, we can't use the notIn statement
+                $result = $this->getEntityManager()
+                    ->createQueryBuilder()
+                    ->select("u.id, u.surname, u.firstname, u.pseudo")
+                    ->from(User::class,'u')
+                    ->innerJoin(Regular::class,'r', Join::WITH, 'r.user = u.id')
+                    ->where('r.active = 1')
+                    ->orderBy($orderby)
+                    ->getQuery();
+            }
         } else if ($group_id == -2) {
             $result = $this->getEntityManager()
                 ->createQueryBuilder()

@@ -88,7 +88,7 @@ class ControllerGroupAdmin extends Controller
 
                         // Check restrictions via applications
                         $canAddUser = $this->isGroupFull($groups[1]);
-                        if (!$canAddUser) {
+                        if (!$canAddUser['response']) {
                             return ['message' => 'Group\'s limit reached'];
                         }
                         // Check restrictions via applications
@@ -283,10 +283,17 @@ class ControllerGroupAdmin extends Controller
 
                 // Check restrictions via applications
                 $canAddUser = $this->isGroupFull($group_id);
-                if (!$canAddUser) {
-                    return ['message' => 'Group\'s limit reached'];
+                if (!$canAddUser['response']) {
+                    return ['message' => 'limit'];
                 }
                 // Check restrictions via applications
+                
+                // Only one group at the same time
+                $userGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
+                if (count($userGroups) > 0) {
+                    return ['message' => 'User already in group'];
+                }
+                // Only one group at the same time
 
                 $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
                 $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
@@ -489,7 +496,7 @@ class ControllerGroupAdmin extends Controller
                         if ($value[1] != -1) {
                             // Check restrictions via applications
                             $canAddUser = $this->isGroupFull($value[1]);
-                            if (!$canAddUser) {
+                            if (!$canAddUser['response']) {
                                 return ['message' => 'Group\'s limit reached'];
                             }
                             // Check restrictions via applications
@@ -674,11 +681,12 @@ class ControllerGroupAdmin extends Controller
             }
         }
         if ($maxTeacher != 0) {
-            if ($nbUsersInGroups > $maxTeacher) {
+            if (count($nbUsersInGroups) > $maxTeacher) {
                 return false;
             }
         }
-        return true;
+        var_dump(['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true]);
+        return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true];
         // Check restrictions via applications
     }
 
