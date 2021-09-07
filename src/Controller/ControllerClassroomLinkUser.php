@@ -220,10 +220,10 @@ class ControllerClassroomLinkUser extends Controller
                 foreach ($data['users'] as $userToAdd) {
                     // bind and sanitize incoming data
                     $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
-                    $studentPassword = !empty($userToAdd['mot de passe'])
-                                            ? htmlspecialchars(strip_tags(trim($userToAdd['mot de passe'])))
+                    $studentPassword = !empty($userToAdd['mot_de_passe'])
+                                            ? htmlspecialchars(strip_tags(trim($userToAdd['mot_de_passe'])))
                                             : passwordGenerator();
-
+                    
                     // create the user
                     $user = new User();
                     $user->setSurname('surname');
