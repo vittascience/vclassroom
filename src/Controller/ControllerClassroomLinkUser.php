@@ -190,7 +190,7 @@ class ControllerClassroomLinkUser extends Controller
                     $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
                     
                     // if the total exceed the limit max, return an error
-                    if($totalLearnerCount > 5 ){
+                    if($totalLearnerCount > 50 ){
                         return [
                             "isUsersAdded"=>false, 
                             "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], 
@@ -206,7 +206,7 @@ class ControllerClassroomLinkUser extends Controller
                     $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
             
                     // if the total exceed the limit max, return an error
-                    if($totalLearnerCount > 10 ){
+                    if($totalLearnerCount > 400 ){
                         return [
                             "isUsersAdded"=>false, 
                             "currentLearnerCount"=>$learnerNumberCheck["learnerNumber"], 
