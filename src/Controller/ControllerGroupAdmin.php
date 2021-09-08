@@ -664,6 +664,20 @@ class ControllerGroupAdmin extends Controller
                 } else {
                     return ['success' => false, 'message' => "missing data"];
                 }
+            },
+            'is_group_full' => function($data) {
+                if (isset($data['group_id']) && $data['group_id'] != null) {
+                    $group_id = htmlspecialchars($data['group_id']);
+                    // Check restrictions via applications
+                    $canAddUser = $this->isGroupFull($group_id);
+                    if (!$canAddUser['response']) {
+                        return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
+                    } else {
+                        return ['message' => true];
+                    }
+                } else {
+                    return ['success' => false, 'message' => "missing data"];
+                }
             }
         );
     }
