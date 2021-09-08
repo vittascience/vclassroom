@@ -8,9 +8,10 @@ use User\Entity\Regular;
 use User\Entity\Teacher;
 use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
-use Classroom\Entity\GroupsLinkApplications;
-use Classroom\Entity\UsersLinkGroups;
 use Doctrine\ORM\EntityManager;
+use Classroom\Entity\Applications;
+use Classroom\Entity\UsersLinkGroups;
+use Classroom\Entity\GroupsLinkApplications;
 
 class ControllerGroupAdmin extends Controller
 {
@@ -89,7 +90,7 @@ class ControllerGroupAdmin extends Controller
                         // Check restrictions via applications
                         $canAddUser = $this->isGroupFull($groups[1]);
                         if (!$canAddUser['response']) {
-                            return ['message' => 'Group\'s limit reached'];
+                            return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
                         }
                         // Check restrictions via applications
 
@@ -284,7 +285,7 @@ class ControllerGroupAdmin extends Controller
                 // Check restrictions via applications
                 $canAddUser = $this->isGroupFull($group_id);
                 if (!$canAddUser['response']) {
-                    return ['message' => 'limit'];
+                    return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
                 }
                 // Check restrictions via applications
                 
@@ -497,7 +498,7 @@ class ControllerGroupAdmin extends Controller
                             // Check restrictions via applications
                             $canAddUser = $this->isGroupFull($value[1]);
                             if (!$canAddUser['response']) {
-                                return ['message' => 'Group\'s limit reached'];
+                                return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
                             }
                             // Check restrictions via applications
                             $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);
@@ -667,13 +668,14 @@ class ControllerGroupAdmin extends Controller
         );
     }
 
-    private function isGroupFull(Int $group_id) :?bool {
-        // Check restrictions via applications
-        $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['group' => $group_id]);
-        $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id]);
+    // Check restrictions via applications
+    private function isGroupFull(Int $group_id) :?array {
+        $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
+        $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
         $maxTeacher = 0;
-        foreach ($applicationsOfGroup as $app) {
+        foreach ($applicationsOfGroup as $application) {
+            $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
             if (!empty($app->getmaxTeachersPerGroups())) {
                 if ($app->getmaxTeachersPerGroups() > $maxTeacher)  {
                     $maxTeacher = $app->getmaxTeachersPerGroups();
@@ -681,13 +683,12 @@ class ControllerGroupAdmin extends Controller
             }
         }
         if ($maxTeacher != 0) {
-            if (count($nbUsersInGroups) > $maxTeacher) {
-                return false;
+            if (count($nbUsersInGroups) >= $maxTeacher) {
+                return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => false];
             }
         }
-        var_dump(['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true]);
+
         return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true];
-        // Check restrictions via applications
     }
 
     private function sendActivationAndLinkToGroupLink(String $email, String $confirmationToken, String $groupCode) {
