@@ -3,10 +3,11 @@
 namespace Classroom\Repository;
 
 use Classroom\Entity\Groups;
-use Classroom\Entity\Applications;
-use Classroom\Entity\GroupsLinkApplications;
 use Doctrine\ORM\Query\Expr\Join;
+use Classroom\Entity\Applications;
 use Doctrine\ORM\EntityRepository;
+use Classroom\Entity\UsersLinkGroups;
+use Classroom\Entity\GroupsLinkApplications;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
@@ -177,14 +178,10 @@ class GroupsRepository extends EntityRepository
             // Get the students, from the teachers in the group
             $usersFromGroup = $this->getEntityManager()->getRepository(UsersLinkGroups::class)->findBy(['group' => $group[0]->getGroup()]);
             foreach ($usersFromGroup as $teacher) {
-                $teacherClassrooms = $this->getEntityManager()->
-                                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                                    ->findBy(['user' => $teacher->getUser(), 'rights'=> 2]);
+                $teacherClassrooms = $this->getEntityManager()->getRepository('Classroom\Entity\ClassroomLinkUser')->findBy(['user' => $teacher->getUser(), 'rights'=> 2]);
                 foreach($teacherClassrooms as $classroomObject) {
                     // retrieve all student for the current classroom
-                    $studentsInClassroom = $this->getEntityManager()->
-                                                ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                                                ->findBy(['classroom' => $classroomObject->getClassroom()->getId(),'rights'=> 0]);
+                    $studentsInClassroom = $this->getEntityManager()->getRepository('Classroom\Entity\ClassroomLinkUser')->findBy(['classroom' => $classroomObject->getClassroom()->getId(),'rights'=> 0]);
                     // add classroom students to the total
                     if ($teacher->getUser() == $teacher_id) {
                         $totalStudentsTeacher += count($studentsInClassroom);
