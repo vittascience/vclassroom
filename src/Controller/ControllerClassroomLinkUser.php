@@ -2,18 +2,19 @@
 
 namespace Classroom\Controller;
 
-use DAO\RegularDAO;
-use models\Regular;
+use Classroom\Entity\ClassroomLinkUser;
 use User\Entity\User;
-use Classroom\Entity\Groups;
-use User\Entity\ClassroomUser;
 /**
  * @ THOMAS MODIF 2 lines just below
  */
-use Classroom\Entity\Applications;
-use Classroom\Entity\UsersLinkGroups;
-use Classroom\Entity\ClassroomLinkUser;
-use Classroom\Entity\GroupsLinkApplications;
+use DAO\RegularDAO;
+use models\Regular;
+use User\Entity\ClassroomUser;
+/**
+ * @ Rémi added 1 line just below
+ */
+use Classroom\Entity\Groups;
+
 
 class ControllerClassroomLinkUser extends Controller
 {
@@ -237,7 +238,10 @@ class ControllerClassroomLinkUser extends Controller
                 // end remove the limitations for CABRI
                 /////////////////////////////////////////
 
-                // Groups and teacher limitation per application
+                /**
+                 * Update Rémi COINTE
+                 */
+                // Groups and teacher limitations per application
                 $limitationsReached = $this->entityManager->getRepository(Groups::class)->isStudentsLimitReachedForTeacherInGroup($currentUserId);
                 if (!$limitationsReached['studentsPerTeachers'] || !$limitationsReached['studentsPerGroups']) {
                     return [
@@ -250,7 +254,7 @@ class ControllerClassroomLinkUser extends Controller
                         "function" => "limitationApplication"
                     ];
                 }
-                // Groups and teacher limitation per application
+                // Groups and teacher limitations per application
 
 
                 foreach ($data['users'] as $userToAdd) {
@@ -365,79 +369,6 @@ class ControllerClassroomLinkUser extends Controller
             }
         );
     }
-
-        /**
-     * 'StudentsPerTeachers' -> return false if the limit is reached
-     * 'StudentsPerGroups' -> return false if the limit is reached
-     * @var Integer $teacher_id
-     * @return Array
-     */
-    /* private function isStudentsLimitReachedFor(Int $teacher_id): ?array {
-        $limitationStudentsPerTeachers = 0;
-        $limitationStudentsPerGroups = 0;
-        $totalStudentsTeacher = 0;
-        $totalStudentsGroup = 0;
-
-        $group = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $teacher_id]);
-        if ($group) {
-            // Get the limitation for the group and teacher
-            $applications = $this->entityManager->getRepository(GroupsLinkApplications::class)->findAll(['group' => $group[0]->getGroup()]);
-            if ($applications) {
-                foreach ($applications as $application) {
-                    $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
-                    // get the limitation for the group
-                    if (!empty($app->getmaxStudentsPerGroups())) {
-                        if ($app->getmaxStudentsPerGroups() > $limitationStudentsPerGroups) {
-                            $limitationStudentsPerGroups = $app->getmaxStudentsPerGroups();
-                        }
-                    }
-                    // get the limitation for the teacher
-                    if (!empty($app->getmaxStudentsPerTeachers())) {
-                        if ($app->getmaxStudentsPerTeachers() > $limitationStudentsPerTeachers) {
-                            $limitationStudentsPerTeachers = $app->getmaxStudentsPerTeachers();
-                        }
-                    }  
-                }
-            }
-            // Get the students, from the teachers in the group
-            $usersFromGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group[0]->getGroup()]);
-            foreach ($usersFromGroup as $teacher) {
-                $teacherClassrooms = $this->entityManager
-                                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                                    ->findBy(['user' => $teacher->getUser(), 'rights'=> 2]);
-                foreach($teacherClassrooms as $classroomObject) {
-                    // retrieve all student for the current classroom
-                    $studentsInClassroom = $this->entityManager
-                                                ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                                                ->findBy(['classroom' => $classroomObject->getClassroom()->getId(),'rights'=> 0]);
-                    // add classroom students to the total
-                    if ($teacher->getUser() == $teacher_id) {
-                        $totalStudentsTeacher += count($studentsInClassroom);
-                    }
-                    $totalStudentsGroup += count($studentsInClassroom);
-                }
-            }
-        }
-
-        if ($limitationStudentsPerGroups != 0) {
-            $groupLimit = ($totalStudentsGroup < $limitationStudentsPerGroups);
-        } else {
-            $groupLimit = true;
-        }
-
-        if ($limitationStudentsPerTeachers != 0) {
-            $teacherLimit = ($totalStudentsTeacher < $limitationStudentsPerTeachers);
-        } else {
-            $teacherLimit = true;
-        }
-
-        return ['studentsPerTeachers' => $teacherLimit, 
-        'studentsPerGroups' => $groupLimit, 
-        'totalStudentsTeacher' => $totalStudentsTeacher, 
-        'totalStudentsGroup' => $totalStudentsGroup,
-        'limitStudentsTeacher' => $limitationStudentsPerTeachers,
-        'limitStudentsGroup' => $limitationStudentsPerGroups];
-    } */
 }
 
 function passwordGenerator()
