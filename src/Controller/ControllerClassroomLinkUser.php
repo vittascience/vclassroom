@@ -3,6 +3,8 @@
 namespace Classroom\Controller;
 
 use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\GroupsLinkApplications;
+use Classroom\Entity\UsersLinkGroups;
 use User\Entity\User;
 /**
  * @ THOMAS MODIF 2 lines just below
@@ -59,7 +61,7 @@ class ControllerClassroomLinkUser extends Controller
                 // if not admin or premium
                 ///////////////////////////////////
                 // remove the limitations for CABRI
-                if(!$isAllowed ){
+                if(!$isAllowed){
                     // get the number of students to add and compute the sum with the number of student already registered
                     $addedLearnerNumber = count($data['users']);
                     $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
@@ -98,6 +100,16 @@ class ControllerClassroomLinkUser extends Controller
                /**
                 * 
                 */
+
+                // Groups and teacher limitation per application
+                $limitationsReached = $this->isStudentsLimitReachedFor((int)$currentUserId);
+                if (!$limitationsReached['studentsPerTeachers'] || !$limitationsReached['studentsPerGroups']) {
+                    return [
+                        "isUsersAdded" => false, 
+                        "currentLearnerCount" => $limitationsReached["totalStudents"], 
+                    ];
+                }
+                // Groups and teacher limitation per application
 
 
                 $passwords = [];
@@ -214,9 +226,21 @@ class ControllerClassroomLinkUser extends Controller
                         ];
                     }
                 }
+
                 // end remove the limitations for CABRI
                 /////////////////////////////////////////
-            
+
+                // Groups and teacher limitation per application
+                $limitationsReached = $this->isStudentsLimitReachedFor($currentUserId);
+                if (!$limitationsReached['studentsPerTeachers'] || !$limitationsReached['studentsPerGroups']) {
+                    return [
+                        "isUsersAdded" => false, 
+                        "currentLearnerCount" => $limitationsReached["totalStudents"], 
+                    ];
+                }
+                // Groups and teacher limitation per application
+
+
                 foreach ($data['users'] as $userToAdd) {
                     // bind and sanitize incoming data
                     $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
@@ -329,6 +353,66 @@ class ControllerClassroomLinkUser extends Controller
             }
         );
     }
+
+    /**
+     * 'StudentsPerTeachers' -> return false if the limit is reached
+     * 'StudentsPerGroups' -> return false if the limit is reached
+     * @var Integer $teacher_id
+     * @return Array
+     */
+    private function isStudentsLimitReachedFor(Int $teacher_id): ?array {
+        $limitationStudentsPerTeachers = 0;
+        $limitationStudentsPerGroups = 0;
+        $totalStudents = 0;
+        $group = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $teacher_id]);
+        if ($group) {
+            // Get the limitation for the group and teacher
+            $applications = $this->entityManager->getRepository(GroupsLinkApplications::class)->findAll(['group' => $group->getId()]);
+            if ($applications) {
+                foreach ($applications as $application) {
+                    // get the limitation for the group
+                    if (!empty($application->maxStudentsPerGroups())) {
+                        if ($application->maxStudentsPerGroups() > $limitationStudentsPerGroups) {
+                            $limitationStudentsPerGroups = $application->maxStudentsPerGroups();
+                        }
+                    }
+                    // get the limitation for the teacher
+                    if (!empty($application->maxStudentsPerTeachers())) {
+                        if ($application->maxStudentsPerTeachers() > $limitationStudentsPerTeachers) {
+                            $limitationStudentsPerTeachers = $application->maxStudentsPerTeachers();
+                        }
+                    }  
+                }
+            }
+            // Get the students, from the teachers in the group
+            $usersFromGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group->getId()]);
+            // retrieve all classrooms of the current user
+            $teacherClassrooms = $this->entityManager
+                                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                    ->findBy(array('user' => $teacher_id, 'rights'=> 2));
+            foreach($teacherClassrooms as $classroomObject){
+                // retrieve all student for the current classroom
+                $studentsInClassroom = $this->entityManager
+                                            ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                            ->findBy(['classroom' => $classroomObject->getClassroom()->getId(),'rights'=> 0]);
+                // add classroom students to the total
+                $totalStudents += count($studentsInClassroom);
+            }
+        }
+
+        if ($limitationStudentsPerGroups != 0) {
+            $groupLimit = ($totalStudents < $limitationStudentsPerGroups);
+        } else {
+            $groupLimit = true;
+        }
+        if ($limitationStudentsPerTeachers != 0) {
+            $teacherLimit = ($totalStudents < $limitationStudentsPerTeachers);
+        } else {
+            $teacherLimit = true;
+        }
+
+        return ['studentsPerTeachers' => $teacherLimit, 'studentsPerGroups' => $groupLimit, 'totalStuendens' => $totalStudents];
+    }
 }
 
 function passwordGenerator()
@@ -339,3 +423,5 @@ function passwordGenerator()
     }
     return $password;
 }
+
+
