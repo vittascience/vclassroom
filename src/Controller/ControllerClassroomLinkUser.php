@@ -2,17 +2,18 @@
 
 namespace Classroom\Controller;
 
-use Classroom\Entity\Applications;
-use Classroom\Entity\ClassroomLinkUser;
-use Classroom\Entity\GroupsLinkApplications;
-use Classroom\Entity\UsersLinkGroups;
+use DAO\RegularDAO;
+use models\Regular;
 use User\Entity\User;
+use Classroom\Entity\Groups;
+use User\Entity\ClassroomUser;
 /**
  * @ THOMAS MODIF 2 lines just below
  */
-use DAO\RegularDAO;
-use models\Regular;
-use User\Entity\ClassroomUser;
+use Classroom\Entity\Applications;
+use Classroom\Entity\UsersLinkGroups;
+use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\GroupsLinkApplications;
 
 class ControllerClassroomLinkUser extends Controller
 {
