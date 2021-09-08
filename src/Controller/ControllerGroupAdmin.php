@@ -79,9 +79,7 @@ class ControllerGroupAdmin extends Controller
 
                     $hash = password_hash($password, PASSWORD_DEFAULT);
                     $user->setPassword($hash);
-                    //$lastUser = $this->entityManager->getRepository(User::class)->findOneBy([], ['id' => 'desc']);
                     $this->entityManager->persist($user);
-                    $this->entityManager->flush();
 
                     // link the user to the group with his right
                     if ($groups[1] != -1) {
@@ -112,6 +110,8 @@ class ControllerGroupAdmin extends Controller
                             return ['message' => 'noadmin'];
                         }
                     }
+                    // wait the return of restrictions to flush the user
+                    $this->entityManager->flush();
 
                     // Create Regular and Teacher entity on need
                     $confirmationToken = bin2hex(random_bytes(16));
