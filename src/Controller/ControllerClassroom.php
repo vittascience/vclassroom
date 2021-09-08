@@ -302,7 +302,7 @@ class ControllerClassroom extends Controller
             'get_demo_student_account' => function ($data) {
                 $demoStudent = !empty($this->envVariables['demoStudent'])
                                 ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
-                                : 'demo student';
+                                : 'demostudent';
 
                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findOneBy(array('link' => $data['link']));
