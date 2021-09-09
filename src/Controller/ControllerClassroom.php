@@ -25,6 +25,11 @@ class ControllerClassroom extends Controller
 
         $this->actions = array(
             'get_all' => function () {
+                /**
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
+                 * last check => September 2021
+                 */
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findAll();
             },
@@ -61,12 +66,23 @@ class ControllerClassroom extends Controller
                 return $classrooms;
             },
             'get_users_and_activities' => function ($data) {
+                /**
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
+                 * last check => September 2021
+                 */
                 $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->getAllStudentsInClassroom($data['classroom'], 0);
 
                 return $students;
             },
             'get_my_sandbox_projects' => function () {
+                /**
+                 * @Naser
+                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
+                 * @ToBeDeleted 
+                 * last check => September 2021
+                 */
                 $arrayResults = [];
                 $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
                     ->findBy(array("user" => $this->user));
@@ -79,9 +95,25 @@ class ControllerClassroom extends Controller
                     "shared" => $arrayResults
                 ];
             },
-            'get_by_link' => function ($data) {
+            'get_by_link' => function () {
+                
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize incoming data
+                $link = !empty($_POST['link']) 
+                        ? htmlspecialchars(strip_tags(trim($_POST['link']))) 
+                        : '';
+                
+                // no link received, return an error
+                if(empty($link)) return array('errorLinkNotExists'=> true );
+
+                //no error, we can process the data and return the result
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['link']));
+                    ->findBy(array("link" => $link));
             },
             'add' => function ($data) {
                 /**
