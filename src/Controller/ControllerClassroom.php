@@ -25,6 +25,11 @@ class ControllerClassroom extends Controller
 
         $this->actions = array(
             'get_all' => function () {
+                /**
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
+                 * last check => September 2021
+                 */
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findAll();
             },
