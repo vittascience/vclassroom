@@ -66,6 +66,11 @@ class ControllerClassroom extends Controller
                 return $classrooms;
             },
             'get_users_and_activities' => function ($data) {
+                /**
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
+                 * last check => September 2021
+                 */
                 $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->getAllStudentsInClassroom($data['classroom'], 0);
 
