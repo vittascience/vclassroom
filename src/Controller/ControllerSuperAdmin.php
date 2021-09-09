@@ -78,7 +78,7 @@ class ControllerSuperAdmin extends Controller
                         return $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
                     }
                 },
-                'get_all_applications' => function ($data) {
+                'get_all_applications' => function () {
                     $apps = $this->entityManager->getRepository(Applications::class)->findAll();
     
                     $Result_array=[];
