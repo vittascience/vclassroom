@@ -32,6 +32,11 @@ class ControllerClassroomLinkUser extends Controller
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
 
+                // bind and sanitize .env demoStudent
+                $demoStudent = !empty($this->envVariables['demoStudent'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                                : 'demostudent';
+                
                 // get all classrooms for the current user
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $currentUserId));
@@ -86,14 +91,14 @@ class ControllerClassroomLinkUser extends Controller
                  * End of learner number limiting
                  */
                 /**
-                 * check that teacher does not add a vittademo user @MODIF naser
+                 * check that teacher does not add a demoStudent user @MODIF naser
                  */
-                    if(in_array('vittademo',array_map('strtolower',$data['users']))){
-                        return [
-                            "isUsersAdded"=>false, 
-                            "errorType"=> "reservedNickname",
-                            "currentNickname"=> "vittademo"
-                        ];
+                if(in_array($demoStudent,array_map('strtolower',$data['users']))){
+                    return [
+                        "isUsersAdded"=>false, 
+                        "errorType"=> "reservedNickname",
+                        "currentNickname"=> $demoStudent
+                    ];
                 }
                /**
                 * 
