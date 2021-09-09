@@ -77,6 +77,12 @@ class ControllerClassroom extends Controller
                 return $students;
             },
             'get_my_sandbox_projects' => function () {
+                /**
+                 * @Naser
+                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
+                 * @ToBeDeleted 
+                 * last check => September 2021
+                 */
                 $arrayResults = [];
                 $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
                     ->findBy(array("user" => $this->user));
