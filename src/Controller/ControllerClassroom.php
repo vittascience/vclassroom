@@ -2,6 +2,7 @@
 
 namespace Classroom\Controller;
 
+use Dotenv\Dotenv;
 use User\Entity\User;
 use User\Entity\Regular;
 use User\Entity\ClassroomUser;
@@ -17,6 +18,11 @@ class ControllerClassroom extends Controller
     public function __construct($entityManager, $user)
     {
         parent::__construct($entityManager, $user);
+
+        $dotenv = Dotenv::createImmutable(__DIR__."/../");
+        $dotenv->safeLoad();
+        $this->envVariables = $_ENV;
+
         $this->actions = array(
             'get_all' => function () {
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
@@ -288,13 +294,22 @@ class ControllerClassroom extends Controller
                     'link' => $link
                 ];    
             },
-            'get_vittademo_account' => function ($data) {
+            'get_teacher_account' => function () {
+                $_SESSION['id'] = $_SESSION['idProf'];
+                unset($_SESSION['idProf']);
+                return true;
+            },
+            'get_demo_student_account' => function ($data) {
+                $demoStudent = !empty($this->envVariables['demoStudent'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                                : 'demostudent';
+
                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findOneBy(array('link' => $data['link']));
                 $userLinkClassroom = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array('classroom' => $classroom->getId()));
                 foreach ($userLinkClassroom as $u) {
-                    if ($u->getUser()->getPseudo() == 'vittademo') {
+                    if ($u->getUser()->getPseudo() == $demoStudent) {
                         $_SESSION['idProf'] = $_SESSION['id'];
                         $_SESSION['id'] = $u->getUser()->getId();
                         return $_SESSION['id'];
@@ -304,7 +319,7 @@ class ControllerClassroom extends Controller
                 $user = new User();
                 $user->setFirstName("élève");
                 $user->setSurname("modèl");
-                $user->setPseudo('vittademo');
+                $user->setPseudo($demoStudent);
                 $password = passwordGenerator();
                 $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
                 $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
@@ -325,11 +340,6 @@ class ControllerClassroom extends Controller
                 $_SESSION['id'] = $lastQuestion->getId() + 1;
                 return $_SESSION['id'];
             },
-            'get_teacher_account' => function () {
-                $_SESSION['id'] = $_SESSION['idProf'];
-                unset($_SESSION['idProf']);
-                return true;
-            }
         );
     }
 }
