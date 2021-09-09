@@ -121,10 +121,12 @@ class ControllerClassroom extends Controller
                  * Added the possibility for Admins to add more than 1 classroom @MODIF NASER
                  */
                 $currentUserId = $this->user["id"];
-
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
-
+                $demoStudent = !empty($this->envVariables['demoStudent'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                                : 'demostudent';
+                
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $currentUserId));
                 $nbClassroom = 0;
@@ -185,11 +187,11 @@ class ControllerClassroom extends Controller
                 $linkteacherToGroup->setRights(2);
                 $this->entityManager->persist($linkteacherToGroup);
 
-                //create vittademo account and add it to the classroom
+                //create demoStudent account and add it to the classroom
                 $user = new User();
                 $user->setFirstName("élève");
                 $user->setSurname("modèl");
-                $user->setPseudo('vittademo');
+                $user->setPseudo($demoStudent);
                 $password = passwordGenerator();
                 $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
                 $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
@@ -215,7 +217,8 @@ class ControllerClassroom extends Controller
                 $this->entityManager->flush();
                 return $studyGroup; //synchronized
 
-            }, 'update' => function ($data) {
+            }, 
+            'update' => function ($data) {
                 $studyGroup =  $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findBy(array("link" => $data['link']))[0];
                 $studyGroup->setName($data['name']);
