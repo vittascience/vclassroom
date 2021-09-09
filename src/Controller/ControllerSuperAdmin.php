@@ -643,7 +643,8 @@ class ControllerSuperAdmin extends Controller
                 },
                 'update_user_app' => function($data) {
                     if (isset($data['user_id']) && $data['user_id'] != null &&
-                    isset($data['user_app']) && $data['user_app'] != null ) {
+                    isset($data['user_app']) && $data['user_app'] != null) {
+
                         $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                         $user_app = json_decode($data['user_app']);
 
@@ -664,6 +665,7 @@ class ControllerSuperAdmin extends Controller
                                             $AppExist->setUser($user);
                                             $AppExist->setDateBegin($date_begin);
                                             $AppExist->setDateEnd($date_end);
+                                            $AppExist->setmaxStudentsPerTeachers($value[4]);
                                             $this->entityManager->persist($AppExist);
                                         } else {
                                             $Applications = new UsersLinkApplications();
@@ -671,6 +673,7 @@ class ControllerSuperAdmin extends Controller
                                             $Applications->setUser($user);
                                             $Applications->setDateBegin($date_begin);
                                             $Applications->setDateEnd($date_end);
+                                            $Applications->setmaxStudentsPerTeachers($value[4]);
                                             $this->entityManager->persist($Applications);
                                         }
                                     } else {
