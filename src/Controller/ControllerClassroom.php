@@ -95,9 +95,25 @@ class ControllerClassroom extends Controller
                     "shared" => $arrayResults
                 ];
             },
-            'get_by_link' => function ($data) {
+            'get_by_link' => function () {
+                
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize incoming data
+                $link = !empty($_POST['link']) 
+                        ? htmlspecialchars(strip_tags(trim($_POST['link']))) 
+                        : '';
+                
+                // no link received, return an error
+                if(empty($link)) return array('errorLinkNotExists'=> true );
+
+                //no error, we can process the data and return the result
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['link']));
+                    ->findBy(array("link" => $link));
             },
             'add' => function ($data) {
                 /**
