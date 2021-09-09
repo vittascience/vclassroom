@@ -18,11 +18,6 @@ class ControllerClassroom extends Controller
     public function __construct($entityManager, $user)
     {
         parent::__construct($entityManager, $user);
-
-        $dotenv = Dotenv::createImmutable(__DIR__."/../");
-        $dotenv->safeLoad();
-        $this->envVariables = $_ENV;
-
         $this->actions = array(
             'get_all' => function () {
                 /**
