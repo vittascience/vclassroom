@@ -497,15 +497,6 @@ class ControllerSuperAdmin extends Controller
                         // get all groups from user
                         $AllGroupsFromUser = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
 
-                        // A group where the requester is not admin cannot be updated
-                        foreach ($AllGroupsFromUser as $clef => $valeur) {
-                            $groupID = $valeur->getGroup();
-                            $isRequesterAdminOfGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $groupID, 'rights' => 1, 'user' => $_SESSION['id']]);
-                            if (empty($isRequesterAdminOfGroup)) {
-                                unset($AllGroupsFromUser[$clef]);
-                            }
-                        }
-
                         $group = "";
                         if (!empty($groups)) {
                             if ($groups[1] != -1) {
