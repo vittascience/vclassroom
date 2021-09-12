@@ -80,7 +80,13 @@ class GroupsRepository extends EntityRepository
                         ->getResult();
 
         $GroupApplications = $this->getEntityManager()
-                                    ->createQueryBuilder()->select("IDENTITY(gla.application) as application_id, gla.dateBegin as date_begin, gla.dateEnd as date_end")
+                                    ->createQueryBuilder()
+                                    ->select("IDENTITY(gla.application) as application_id, 
+                                    gla.dateBegin as date_begin, 
+                                    gla.dateEnd as date_end, 
+                                    gla.maxTeachersPerGroups as max_teachers_per_groups,
+                                    gla.maxStudentsPerGroups as max_students_per_groups,
+                                    gla.maxStudentsPerTeachers as max_students_per_teachers")
                                     ->from(GroupsLinkApplications::class,'gla')
                                     ->where('gla.group = :id')
                                     ->setParameter('id',$group_id)
@@ -142,4 +148,50 @@ class GroupsRepository extends EntityRepository
         return $records;
     } 
 
+    public function findAllWithApps() {
+        $Groups = $this->getEntityManager()
+                        ->createQueryBuilder()
+                        ->select("g.id, g.name, g.description")
+                        ->from(Groups::class, 'g')
+                        ->innerJoin(UsersLinkGroups::class, 'ulg')
+                        ->groupBy('g.id')
+                        ->getQuery()
+                        ->getScalarResult();
+
+        // Récupère les applications liées à des groupes
+        $ApplicationsOfGroups = $this->getEntityManager()
+        ->createQueryBuilder()->select("a.id AS application_id, 
+                                        a.name as application_name,
+                                        a.image AS application_image, 
+                                        g.id AS group_id, 
+                                        gla.dateBegin as application_date_begin, 
+                                        gla.dateEnd as application_date_end, 
+                                        gla.maxStudentsPerTeachers as max_students_per_teachers,
+                                        gla.maxStudentsPerGroups as max_students_per_groups,
+                                        gla.maxTeachersPerGroups as max_teachers_per_groups")
+            ->from(Applications::class,'a')
+            ->innerJoin(GroupsLinkApplications::class,'gla', Join::WITH, 'a.id = gla.application')
+            ->innerJoin(Groups::class,'g', Join::WITH, 'g.id = gla.group')
+            ->getQuery()
+            ->getScalarResult();
+
+
+            // Set les applications aux groupes qui les possèdent dans le resultat initial
+        foreach ($Groups as $key => $value) {
+            foreach ($ApplicationsOfGroups as $key2 => $value2) {
+                if ((int)$value['id'] == (int)$value2['group_id']) {
+                    $Groups[$key]['applications'][] = ['id' => $value2['application_id'], 
+                    'name' => $value2['application_name'],
+                    'image' => $value2['application_image'],
+                    'dateBegin' => $value2['application_date_begin'],
+                    'dateEnd' => $value2['application_date_end'],
+                    'maxStudentsPerTeachers' => $value2['max_students_per_teachers'],
+                    'maxStudentsPerGroups' => $value2['max_students_per_groups'],
+                    'maxTeachersPerGroups' => $value2['max_teachers_per_groups']];
+                }
+            }
+        }
+        
+        return $Groups;
+    }
 }
