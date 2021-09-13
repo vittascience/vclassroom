@@ -330,46 +330,74 @@ class ControllerClassroom extends Controller
                 return true;
             },
             'get_demo_student_account' => function ($data) {
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
-                                : 'demostudent';
 
-                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findOneBy(array('link' => $data['link']));
-                $userLinkClassroom = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array('classroom' => $classroom->getId()));
-                foreach ($userLinkClassroom as $u) {
-                    if ($u->getUser()->getPseudo() == $demoStudent) {
-                        $_SESSION['idProf'] = $_SESSION['id'];
-                        $_SESSION['id'] = $u->getUser()->getId();
-                        return $_SESSION['id'];
-                    }
-                }
+                // accept only POST request
+               if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
 
-                $user = new User();
-                $user->setFirstName("élève");
-                $user->setSurname("modèl");
-                $user->setPseudo($demoStudent);
-                $password = passwordGenerator();
-                $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
-                $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                $user->setId($lastQuestion->getId() + 1);
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
+                // accept only connected user
+               if(empty($_SESSION['id'])) return ["errorType"=> "getDemoStudentAccountNotAuthenticated"];
 
-                $classroomUser = new ClassroomUser($user);
-                $classroomUser->setGarId(null);
-                $classroomUser->setSchoolId(null);
-                $classroomUser->setIsTeacher(false);
-                $classroomUser->setMailTeacher(NULL);
-                $this->entityManager->persist($classroomUser);
-                $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
-                $linkteacherToGroup->setRights(0);
-                $this->entityManager->persist($linkteacherToGroup);
-                $_SESSION['idProf'] = $_SESSION['id'];
-                $_SESSION['id'] = $lastQuestion->getId() + 1;
-                return $_SESSION['id'];
-            },
+               // bind and sanitize incoming data
+               $link = !empty($_POST['link'])
+                       ? htmlspecialchars(strip_tags(trim($_POST['link'])))
+                       : '';
+               $demoStudent = !empty($this->envVariables['demoStudent'])
+                               ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                               : 'demostudent';
+               
+               // no link provided, return an error
+               if(empty($link)) return array('errorClassroomLinkInvalid'=> true );
+
+               // retrieve the classroom by its link
+               $classroom = $this->entityManager
+                                   ->getRepository('Classroom\Entity\Classroom')
+                                   ->findOneBy(array('link' => $link));
+
+               // get all users registered this classroom
+               $userLinkClassroom = $this->entityManager
+                                           ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                           ->findBy(array('classroom' => $classroom->getId()));
+
+               /** 
+                * @UNCLEAR 
+                * we are looping through all users including the teacher but we are looking for a specific account => demoStudent account
+                */
+               foreach ($userLinkClassroom as $u) {
+                   if ($u->getUser()->getPseudo() == $demoStudent) {
+                       $_SESSION['idProf'] = $_SESSION['id'];
+                       $_SESSION['id'] = $u->getUser()->getId();
+                       return $_SESSION['id'];
+                   }
+               }
+
+               /**
+                * @UNCLEAR
+                * Create a demoStudent account and link it to the classroom but demoStudent account is always created along a classroom
+                */
+               $user = new User();
+               $user->setFirstName("élève");
+               $user->setSurname("modèl");
+               $user->setPseudo($demoStudent);
+               $password = passwordGenerator();
+               $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
+               $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
+               $user->setId($lastQuestion->getId() + 1);
+               $this->entityManager->persist($user);
+               $this->entityManager->flush();
+
+               $classroomUser = new ClassroomUser($user);
+               $classroomUser->setGarId(null);
+               $classroomUser->setSchoolId(null);
+               $classroomUser->setIsTeacher(false);
+               $classroomUser->setMailTeacher(NULL);
+               $this->entityManager->persist($classroomUser);
+               $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
+               $linkteacherToGroup->setRights(0);
+               $this->entityManager->persist($linkteacherToGroup);
+               $_SESSION['idProf'] = $_SESSION['id'];
+               $_SESSION['id'] = $lastQuestion->getId() + 1;
+               return $_SESSION['id'];
+           },
         );
     }
 }
