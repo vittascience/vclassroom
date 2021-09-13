@@ -213,19 +213,41 @@ class ControllerClassroom extends Controller
                 return $studyGroup; //synchronized
 
             }, 
-            'update' => function ($data) {
-                $studyGroup =  $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['link']))[0];
-                $studyGroup->setName($data['name']);
-                $studyGroup->setSchool($data['school']);
-                $studyGroup->setIsBlocked($data['isBlocked']);
+            'update' => function () {
 
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomUpdateNotAuthenticated"];
+
+                // bind and sanitize incoming data, hint => isBlocked is received as a string type 
+                $name = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) : '';
+                $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
+                $link = !empty($_POST['link']) ? htmlspecialchars(strip_tags(trim($_POST['link']))) : '';
+                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : '';
+
+                /** @ErrorsToHandle */
+
+                // some errors were found, return them
+                if(!empty($errors)) return array('errors' => $errors);
+
+                // no errors found, we can proceed the data
+                //retrieve the classroom by its link
+                $classroom =  $this->entityManager
+                                    ->getRepository('Classroom\Entity\Classroom')
+                                    ->findOneBy(array("link" => $link));
+                
+                $classroom->setName($name);
+                $classroom->setSchool($school);
+                $classroom->setIsBlocked($isBlocked);
                 // commented setLink to avoid link classroom link to change
-                //$studyGroup->setLink();
+                //$classroom->setLink();
 
-                $this->entityManager->persist($studyGroup);
+                // save data in classrooms table
+                $this->entityManager->persist($classroom);
                 $this->entityManager->flush();
-                return $studyGroup; //synchronized
+                return $classroom; //synchronized
 
             },
             'delete' => function () {
@@ -329,7 +351,7 @@ class ControllerClassroom extends Controller
                 unset($_SESSION['idProf']);
                 return true;
             },
-            'get_demo_student_account' => function ($data) {
+            'get_demo_student_account' => function () {
 
                 // accept only POST request
                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
