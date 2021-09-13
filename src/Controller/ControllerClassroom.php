@@ -227,20 +227,19 @@ class ControllerClassroom extends Controller
                 $link = !empty($_POST['link']) ? htmlspecialchars(strip_tags(trim($_POST['link']))) : '';
                 $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : '';
 
-                /** @ErrorsToHandle */
-
-                // some errors were found, return them
-                if(!empty($errors)) return array('errors' => $errors);
+                // some errors found, return error
+                if(empty($name)) return array('errorType'=> 'ClassroomNameInvalid' );
 
                 // no errors found, we can proceed the data
                 //retrieve the classroom by its link
                 $classroom =  $this->entityManager
-                                    ->getRepository('Classroom\Entity\Classroom')
-                                    ->findOneBy(array("link" => $link));
+                                            ->getRepository('Classroom\Entity\Classroom')
+                                            ->findOneBy(array("link" => $link));
                 
                 $classroom->setName($name);
                 $classroom->setSchool($school);
                 $classroom->setIsBlocked($isBlocked);
+
                 // commented setLink to avoid link classroom link to change
                 //$classroom->setLink();
 
@@ -351,7 +350,7 @@ class ControllerClassroom extends Controller
                 unset($_SESSION['idProf']);
                 return true;
             },
-            'get_demo_student_account' => function () {
+            'get_demo_student_account' => function ($data) {
 
                 // accept only POST request
                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
@@ -383,6 +382,7 @@ class ControllerClassroom extends Controller
                /** 
                 * @UNCLEAR 
                 * we are looping through all users including the teacher but we are looking for a specific account => demoStudent account
+                * last check september 2021
                 */
                foreach ($userLinkClassroom as $u) {
                    if ($u->getUser()->getPseudo() == $demoStudent) {
@@ -393,10 +393,11 @@ class ControllerClassroom extends Controller
                }
 
                /**
-                * @UNCLEAR
+                * @ToBeRemoved
                 * Create a demoStudent account and link it to the classroom but demoStudent account is always created along a classroom
+                * last check september 2021
                 */
-               $user = new User();
+               /* $user = new User();
                $user->setFirstName("élève");
                $user->setSurname("modèl");
                $user->setPseudo($demoStudent);
@@ -418,7 +419,7 @@ class ControllerClassroom extends Controller
                $this->entityManager->persist($linkteacherToGroup);
                $_SESSION['idProf'] = $_SESSION['id'];
                $_SESSION['id'] = $lastQuestion->getId() + 1;
-               return $_SESSION['id'];
+               return $_SESSION['id']; */
            },
         );
     }
