@@ -46,11 +46,8 @@ class ControllerGroupAdmin extends Controller
                 if (
                     isset($data['firstname']) && $data['firstname'] != null &&
                     isset($data['surname']) && $data['surname'] != null &&
-                    isset($data['pseudo']) && $data['pseudo'] != null &&
                     isset($data['groups']) && $data['groups'] != null &&
-                    isset($data['phone']) && $data['phone'] != null &&
                     isset($data['mail']) && $data['mail'] != null &&
-                    isset($data['bio']) &&
                     isset($data['grade']) &&
                     isset($data['subject']) &&
                     isset($data['school'])
@@ -60,21 +57,26 @@ class ControllerGroupAdmin extends Controller
                     $groups =  json_decode($data['groups']);
                     $surname = htmlspecialchars($data['surname']);
                     $firstname = htmlspecialchars($data['firstname']);
-                    $pseudo = htmlspecialchars($data['pseudo']);
-
-                    $phone = htmlspecialchars($data['phone']);
-                    $bio = htmlspecialchars($data['bio']);
                     $mail = htmlspecialchars($data['mail']);
                     $school = htmlspecialchars($data['school']);
                     $grade = (int)htmlspecialchars($data['grade']);
                     $subject = (int)htmlspecialchars($data['subject']);
 
-                    //isset($_POST['user_id']) ? htmlspecialchars(strip_tags(trim($_POST['user_id']))) : null;
+                    // informations 
+                    $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
+                    $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
+                    $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
                     $user = new User;
                     $user->setFirstname($firstname);
                     $user->setSurname($surname);
-                    $user->setPseudo($pseudo);
+                    //$user->setPseudo($pseudo);
+                    // the pseudo field is not
+                    if ($pseudo != null) {
+                        $user->setPseudo($pseudo);
+                    } else {
+                        $user->setPseudo("anonyme");
+                    }
                     $objDateTime = new \DateTime('NOW');
                     $user->setInsertDate($objDateTime);
 
@@ -173,18 +175,18 @@ class ControllerGroupAdmin extends Controller
                 // bind incoming data to the value provided or null
                 $firstname = isset($data['firstname']) ? htmlspecialchars($data['firstname']) : null;
                 $surname = isset($data['surname']) ? htmlspecialchars($data['surname']) : null;
-                $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
                 $email = isset($data['email'])  ? htmlspecialchars($data['email']) : null;
                 $password = isset($data['password'])  ? htmlspecialchars($data['password']) : null;
                 $password_confirm = isset($data['password_confirm'])  ? htmlspecialchars(strip_tags(trim($data['password_confirm']))) : null;
-
-                $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
                 $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
-                $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                 $grade = isset($data['grade']) ? htmlspecialchars($data['grade']) : null;
                 $subject = isset($data['subject']) ? htmlspecialchars($data['subject']) : null;
-
                 $groupCode = isset($data['gcode']) ? htmlspecialchars($data['gcode']) : null;
+
+                // informations 
+                $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
+                $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
+                $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
                 $grade = (int)$grade;
                 $subject = (int)$subject;
@@ -198,19 +200,19 @@ class ControllerGroupAdmin extends Controller
                 $errors = [];
                 if (empty($firstname)) $errors['firstnameMissing'] = true;
                 if (empty($surname)) $errors['surnameMissing'] = true;
-                if (empty($pseudo)) $errors['pseudoMissing'] = true;
                 if (empty($email)) $errors['emailMissing'] = true;
                 elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['emailInvalid'] = true;
                 if (empty($password)) $errors['passwordMissing'] = true;
                 elseif (strlen($password) < 7) $errors['invalidPassword'] = true;
                 if (empty($password_confirm)) $errors['passwordConfirmMissing'] = true;
                 elseif ($password !== $password_confirm) $errors['passwordsMismatch'] = true;
-
-                if (empty($bio)) $errors['bioMissing'] = true;
+                
                 if (empty($school)) $errors['schoolMissing'] = true;
-                if (empty($phone)) $errors['phoneMissing'] = true;
                 if (empty($grade)) $errors['gradeMissing'] = true;
                 if (empty($subject)) $errors['subjectMissing'] = true;
+                //if (empty($pseudo)) $errors['pseudoMissing'] = true;
+                //if (empty($phone)) $errors['phoneMissing'] = true;
+                //if (empty($bio)) $errors['bioMissing'] = true;
 
                 // check if the email is already listed in db
                 $emailAlreadyExists = $this->entityManager
@@ -236,7 +238,12 @@ class ControllerGroupAdmin extends Controller
                 $user = new User;
                 $user->setFirstname($firstname);
                 $user->setSurname($surname);
-                $user->setPseudo($pseudo);
+                // the pseudo field is not
+                if ($pseudo != null) {
+                    $user->setPseudo($pseudo);
+                } else {
+                    $user->setPseudo("anonyme");
+                }
                 $user->setPassword($passwordHash);
                 $user->setInsertDate(new \DateTime());
                 $user->setUpdateDate(new \DateTime());
@@ -435,12 +442,9 @@ class ControllerGroupAdmin extends Controller
                     isset($data['user_id']) && $data['user_id'] != null &&
                     isset($data['firstname']) && $data['firstname'] != null &&
                     isset($data['surname']) && $data['surname'] != null &&
-                    isset($data['pseudo']) && $data['pseudo'] != null &&
                     isset($data['groups']) && $data['groups'] != null &&
-                    isset($data['phone']) &&
                     isset($data['mail']) && $data['mail'] != null &&
                     isset($data['application']) && $data['application'] != null &&
-                    isset($data['bio']) &&
                     isset($data['grade']) &&
                     isset($data['subject'])
                 ) {
@@ -448,15 +452,14 @@ class ControllerGroupAdmin extends Controller
                     $groups =  json_decode($data['groups']);
                     $surname = htmlspecialchars($data['surname']);
                     $firstname = htmlspecialchars($data['firstname']);
-                    $pseudo = htmlspecialchars($data['pseudo']);
-
-                    $phone = htmlspecialchars($data['phone']);
-                    $bio = strval(htmlspecialchars($data['bio']));
                     $mail = htmlspecialchars($data['mail']);
-
                     $school = htmlspecialchars($data['school']);
                     $grade = (int)htmlspecialchars($data['grade']);
                     $subject = (int)htmlspecialchars($data['subject']);
+                    // further information 
+                    $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
+                    $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
+                    $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
                     $application = (int)htmlspecialchars($data['application']);
                     // Check if the requester is related to the user and if the user is not an admin
@@ -467,7 +470,11 @@ class ControllerGroupAdmin extends Controller
                     $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                     $user->setFirstname($firstname);
                     $user->setSurname($surname);
-                    $user->setPseudo($pseudo);
+                    if ($pseudo != null) {
+                        $user->setPseudo($pseudo);
+                    } else {
+                        $user->setPseudo("anonyme");
+                    }
                     $this->entityManager->persist($user);
 
                     $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);

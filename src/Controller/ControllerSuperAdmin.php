@@ -312,11 +312,8 @@ class ControllerSuperAdmin extends Controller
                     if (
                         isset($data['firstname']) && $data['firstname'] != null &&
                         isset($data['surname']) && $data['surname'] != null &&
-                        isset($data['pseudo']) && $data['pseudo'] != null &&
                         isset($data['groups']) && $data['groups'] != null &&
-                        isset($data['phone']) &&
                         isset($data['mail']) && $data['mail'] != null &&
-                        isset($data['bio']) &&
                         isset($data['admin']) && $data['admin'] != null &&
                         isset($data['teacher']) && $data['teacher'] != null &&
                         isset($data['grade']) &&
@@ -328,16 +325,16 @@ class ControllerSuperAdmin extends Controller
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
-                        $pseudo = htmlspecialchars($data['pseudo']);
-
-                        $phone = htmlspecialchars($data['phone']);
-                        $bio = htmlspecialchars($data['bio']);
                         $mail = htmlspecialchars($data['mail']);
                         $admin = htmlspecialchars($data['admin'])  == "true" ? true : false;
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
                         $school = htmlspecialchars($data['school']);
                         $grade = (int)htmlspecialchars($data['grade']);
                         $subject = (int)htmlspecialchars($data['subject']);
+                        // further information 
+                        $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
+                        $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
+                        $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
                         $isactive = htmlspecialchars($data['isactive']) == "true" ? true : false;
 
@@ -345,7 +342,11 @@ class ControllerSuperAdmin extends Controller
                         $user = new User;
                         $user->setFirstname($firstname);
                         $user->setSurname($surname);
-                        $user->setPseudo($pseudo);
+                        if ($pseudo != null) {
+                            $user->setPseudo($pseudo);
+                        } else {
+                            $user->setPseudo("anonyme");
+                        }
                         $objDateTime = new \DateTime('NOW');
                         $user->setInsertDate($objDateTime);
 
@@ -423,28 +424,19 @@ class ControllerSuperAdmin extends Controller
                     if (
                         isset($data['user_id']) && $data['user_id'] != null && isset($data['firstname']) && $data['firstname'] != null &&
                         isset($data['surname']) && $data['surname'] != null &&
-                        isset($data['pseudo']) && $data['pseudo'] != null &&
                         isset($data['groups']) && $data['groups'] != null &&
-
-                        isset($data['phone']) &&
                         isset($data['mail']) && $data['mail'] != null &&
-                        isset($data['bio']) &&
                         isset($data['application']) && $data['application'] != null &&
                         isset($data['admin']) && $data['admin'] != null &&
                         isset($data['teacher']) && $data['teacher'] != null &&
                         isset($data['grade']) &&
                         isset($data['subject']) &&
-
                         isset($data['isactive']) && $data['isactive'] != null
                     ) {
                         $user_id = htmlspecialchars($data['user_id']);
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
-                        $pseudo = htmlspecialchars($data['pseudo']);
-
-                        $phone = htmlspecialchars($data['phone']);
-                        $bio = htmlspecialchars($data['bio']);
                         $mail = htmlspecialchars($data['mail']);
                         $admin = htmlspecialchars($data['admin']) == "true" ? true : false;
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
@@ -455,12 +447,21 @@ class ControllerSuperAdmin extends Controller
 
                         $application = (int)htmlspecialchars($data['application']);
 
+                        // further information 
+                        $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
+                        $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
+                        $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
+
                         $isactive = $data['isactive'] == "true" ? true : false;
 
                         $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                         $user->setFirstname($firstname);
                         $user->setSurname($surname);
-                        $user->setPseudo($pseudo);
+                        if ($pseudo != null) {
+                            $user->setPseudo($pseudo);
+                        } else {
+                            $user->setPseudo("anonyme");
+                        }
                         $this->entityManager->persist($user);
 
                         $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
