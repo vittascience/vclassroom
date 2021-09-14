@@ -338,7 +338,6 @@ class ControllerSuperAdmin extends Controller
 
                         $isactive = htmlspecialchars($data['isactive']) == "true" ? true : false;
 
-
                         $user = new User;
                         $user->setFirstname($firstname);
                         $user->setSurname($surname);
@@ -462,6 +461,7 @@ class ControllerSuperAdmin extends Controller
                         } else {
                             $user->setPseudo("anonyme");
                         }
+                        $user->setUpdateDate(new \DateTime());
                         $this->entityManager->persist($user);
 
                         $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);

@@ -206,7 +206,7 @@ class ControllerGroupAdmin extends Controller
                 elseif (strlen($password) < 7) $errors['invalidPassword'] = true;
                 if (empty($password_confirm)) $errors['passwordConfirmMissing'] = true;
                 elseif ($password !== $password_confirm) $errors['passwordsMismatch'] = true;
-                
+
                 if (empty($school)) $errors['schoolMissing'] = true;
                 if (empty($grade)) $errors['gradeMissing'] = true;
                 if (empty($subject)) $errors['subjectMissing'] = true;
@@ -475,6 +475,7 @@ class ControllerGroupAdmin extends Controller
                     } else {
                         $user->setPseudo("anonyme");
                     }
+                    $user->setUpdateDate(new \DateTime());
                     $this->entityManager->persist($user);
 
                     $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
@@ -488,12 +489,16 @@ class ControllerGroupAdmin extends Controller
                         $this->entityManager->persist($regular);
                     }
 
-                    // Si l'utilisateur est déjà référencé en tant que Teacher
+                    // If the user is already in the db as teacher 
                     $teacher = $this->entityManager->getRepository(Teacher::class)->findOneBy(['user' => $user_id]);
                     // Si l'utilisateur existe dans la bade de données en tant que teacher et que l'update le determine aussi en teacher alors on modifie les champs selon la requête
-                    $teacher->setSubject($subject);
-                    $teacher->setSchool($school);
-                    $teacher->setGrade($grade);
+                    if ($teacher) {
+                        $teacher->setSubject($subject);
+                        $teacher->setSchool($school);
+                        $teacher->setGrade($grade);
+                    } else {
+                        $teacher = new Teacher($user, $subject, $school, $grade);
+                    }
                     $this->entityManager->persist($teacher);
 
                     // get all groups from user
@@ -801,7 +806,6 @@ class ControllerGroupAdmin extends Controller
 
     private function sendActivationAndLinkToGroupLink(String $email, String $confirmationToken, String $groupCode): ?array
     {
-
         $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
         $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/group_invitation.php?gc=$groupCode&token=$confirmationToken";
         $emailTtemplateBody = $userLang . "_confirm_account";
