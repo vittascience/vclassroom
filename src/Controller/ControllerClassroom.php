@@ -110,22 +110,41 @@ class ControllerClassroom extends Controller
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findBy(array("link" => $link));
             },
-            'add' => function ($data) {
-                /**
-                 * Limiting learner number @THOMAS MODIF
-                 * Added the possibility for Admins to add more than 1 classroom @MODIF NASER
-                 */
-                $currentUserId = $this->user["id"];
-                $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
-                $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
+            'add' => function () {
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsAddNotAuthenticated"];
+                
+                // bind and sanitize incoming data, boolean "isBlocked" is received has a string "true"
+                $currentUserId = $_SESSION["id"];
+                $classroomName = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) :'';
+                $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) :''; 
+                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;
+                
                 $demoStudent = !empty($this->envVariables['demoStudent'])
                                 ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
                                 : 'demostudent';
                 
-                $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("user" => $currentUserId));
+                // get user "roles"
+                $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
+                $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
+                
+                // an error found, classroomName id required return the error
+                if(empty($classroomName)) return array('errorType'=> 'ClassroomNameInvalid' );
+
+                // get all classrooms where the user is teacher
+                $classrooms = $this->entityManager
+                                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                    ->findBy(array(
+                                        "user" => $currentUserId,
+                                        "rights" => 2
+                
+                                    ));
+                
                 $nbClassroom = 0;
-                foreach ($classrooms as $c) {
+                foreach ($classrooms as $classroom) {
                     $nbClassroom++;
                 }
 
@@ -170,9 +189,9 @@ class ControllerClassroom extends Controller
 
 
                 $studyGroup = new Classroom();
-                $studyGroup->setName($data['name']);
-                $studyGroup->setSchool($data['school']);
-                $studyGroup->setIsBlocked($data['isBlocked'] ?? 0);
+                $studyGroup->setName($classroomName);
+                $studyGroup->setSchool($school);
+                $studyGroup->setIsBlocked($isBlocked);
                 $studyGroup->setLink();
                 $this->entityManager->persist($studyGroup);
                 //add the teacher to the classroom
