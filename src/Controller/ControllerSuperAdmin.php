@@ -212,7 +212,8 @@ class ControllerSuperAdmin extends Controller
                             $this->entityManager->remove($groupslinkapplications[$key_ula]);
                         }
 
-                        $ApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['group' => $group_id]);
+
+                        $ApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['group' => $group_id]);
                         foreach ($ApplicationFromGroup as $application) {
                             $this->entityManager->remove($application);
                         }
