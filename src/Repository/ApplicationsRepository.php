@@ -12,9 +12,11 @@ class ApplicationsRepository extends EntityRepository
 {
     /**
      *  Check the teacher limitation 
+     *  @var Integer $teacher_id
+     *  @var Interger $students_number => the number of students that the teacher want to add 
      *  @return 'canAdd' => false if the limit is reached
      */
-    public function isStudentsLimitReachedForTeacher(Int $teacher_id): ?array
+    public function isStudentsLimitReachedForTeacher(Int $teacher_id, Int $students_number): ?array
     {
         include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
 
@@ -145,7 +147,7 @@ class ApplicationsRepository extends EntityRepository
 
         // if the teacher application limit is not reached we can add the student
         // $maxStudentsPerTeachers = 0 = unlimited
-        if ($maxStudentsPerTeachers > $totalStudentsFromTeacher || $maxStudentsPerTeachers == 0) {
+        if ($maxStudentsPerTeachers >= $totalStudentsFromTeacher + $students_number || $maxStudentsPerTeachers == 0) {
             return ['canAdd' => true];
         } else if ($maxStudentsPerTeachers <= $totalStudentsFromTeacher && !$ApplicationFromGroup) {
             return ['canAdd' => false, 'message' => 'personalLimit', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
@@ -154,7 +156,7 @@ class ApplicationsRepository extends EntityRepository
                 return ['canAdd' => false, 'message' => 'personalLimitAndGroupOutDated', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
             } else {
                 // if the group's application limit is not reached with the total group's students + the actual students count from the teacher
-                if ($totalStudentsInTheGroup < $maxStudentsPerGroup && $maxStudentsPerTeachersGroup > $totalStudentsFromTeacher) {
+                if ($totalStudentsInTheGroup < $maxStudentsPerGroup && $maxStudentsPerTeachersGroup >= $totalStudentsFromTeacher + $students_number) {
                     return ['canAdd' => true];
                 } else {
                     // Otherwise we denied the addition

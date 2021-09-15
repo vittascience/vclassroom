@@ -66,35 +66,26 @@ class ControllerClassroomLinkUser extends Controller
                 // set the $isAllowed flag to true if the current user is admin or premium
                 $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
 
-                // if not admin or premium
-                ///////////////////////////////////
-                // remove the limitations for CABRI
-                /*                 if (!$isAllowed) {
-                    // get the number of students to add and compute the sum with the number of student already registered
-                    $addedLearnerNumber = count($data['users']);
-                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
-
-                    // if the total exceed the limit max, return an error
-                    if ($totalLearnerCount > 50) {
-                        return ["isUsersAdded" => false, "currentLearnerCount" => $learnerNumberCheck["learnerNumber"], "addedLearnerNumber" => $addedLearnerNumber];
+                /**
+                 * Update Rémi COINTE
+                 * if the user is not admin =>
+                 * we check how many students he can have
+                 * if it has no apps = default number => in the folder "default-restrictions"
+                 * otherwise the restrictions is set by the user apps or the group's apps he has
+                 */
+                if (!$isAllowed) {
+                    // Groups and teacher limitation per application
+                    $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, count($data['users']));
+                    if (!$limitationsReached['canAdd']) {
+                        return [
+                            "isUsersAdded" => false,
+                            "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
+                            "addedLearnerNumber" => count($data['users']),
+                            "message" => $limitationsReached['message']
+                        ];
                     }
                 }
 
-                if ($learnerNumberCheck['isPremium']) {
-                    // get the number of students to add and compute the sum with the number of student already registered
-                    $addedLearnerNumber = count($data['users']);
-                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
-
-                    // if the total exceed the limit max, return an error
-                    if ($totalLearnerCount > 400) {
-                        return ["isUsersAdded" => false, "currentLearnerCount" => $learnerNumberCheck["learnerNumber"], "addedLearnerNumber" => $addedLearnerNumber];
-                    }
-                } */
-                // end remove the limitations for CABRI
-                /////////////////////////////////////////
-                /**
-                 * End of learner number limiting
-                 */
                 /**
                  * check that teacher does not add a vittademo user @MODIF naser
                  */
@@ -109,16 +100,7 @@ class ControllerClassroomLinkUser extends Controller
                  * 
                  */
 
-                // Groups and teacher limitation per application
-                $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId);
-                if (!$limitationsReached['canAdd'] || !$limitationsReached['canAdd']) {
-                    return [
-                        "isUsersAdded" => false,
-                        "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
-                        "addedLearnerNumber" => $limitationsReached['teacherInfo']["actualStudents"] + 1
-                    ];
-                }
-                // Groups and teacher limitation per application
+
 
 
                 $passwords = [];
@@ -201,57 +183,25 @@ class ControllerClassroomLinkUser extends Controller
                 // set the $isAllowed flag to true if the current user is admin or premium
                 $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
 
-
-                // if not admin or premium
-                ///////////////////////////////////
-                // remove the limitations for CABRI
-                /*                 if (!$isAllowed) {
-                    // get the number of students to add and compute the sum with the number of student already registered
-                    $addedLearnerNumber = count($data['users']);
-                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
-
-                    // if the total exceed the limit max, return an error
-                    if ($totalLearnerCount > 50) {
-                        return [
-                            "isUsersAdded" => false,
-                            "currentLearnerCount" => $learnerNumberCheck["learnerNumber"],
-                            "addedLearnerNumber" => $addedLearnerNumber
-                        ];
-                    }
-                }
-
-                if ($learnerNumberCheck['isPremium']) {
-                    // get the number of students to add and compute the sum with the number of student already registered
-                    $addedLearnerNumber = count($data['users']);
-                    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
-
-                    // if the total exceed the limit max, return an error
-                    if ($totalLearnerCount > 400) {
-                        return [
-                            "isUsersAdded" => false,
-                            "currentLearnerCount" => $learnerNumberCheck["learnerNumber"],
-                            "addedLearnerNumber" => $addedLearnerNumber
-                        ];
-                    }
-                } */
-
-                // end remove the limitations for CABRI
-                /////////////////////////////////////////
-
                 /**
                  * Update Rémi COINTE
+                 * if the user is not admin =>
+                 * we check how many students he can have
+                 * if it has no apps = default number => in the folder "default-restrictions"
+                 * otherwise the restrictions is set by the user apps or the group's apps he has
                  */
-                // Groups and teacher limitations per application
-                $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId);
-                if (!$limitationsReached['canAdd'] || !$limitationsReached['canAdd']) {
-                    return [
-                        "isUsersAdded" => false,
-                        "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
-                        "addedLearnerNumber" => $limitationsReached['teacherInfo']["actualStudents"] + 1
-                    ];
+                if (!$isAllowed) {
+                    // Groups and teacher limitation per application
+                    $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, count($data['users']));
+                    if (!$limitationsReached['canAdd']) {
+                        return [
+                            "isUsersAdded" => false,
+                            "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
+                            "addedLearnerNumber" => count($data['users']),
+                            "message" => $limitationsReached['message']
+                        ];
+                    }
                 }
-                // Groups and teacher limitations per application
-
 
                 foreach ($data['users'] as $userToAdd) {
                     // bind and sanitize incoming data
@@ -374,3 +324,74 @@ function passwordGenerator()
     }
     return $password;
 }
+
+
+// maybe usefull ? 
+// if not admin or premium
+///////////////////////////////////
+// remove the limitations for CABRI
+/*                 if (!$isAllowed) {
+    // get the number of students to add and compute the sum with the number of student already registered
+    $addedLearnerNumber = count($data['users']);
+    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+
+    // if the total exceed the limit max, return an error
+    if ($totalLearnerCount > 50) {
+        return [
+            "isUsersAdded" => false,
+            "currentLearnerCount" => $learnerNumberCheck["learnerNumber"],
+            "addedLearnerNumber" => $addedLearnerNumber
+        ];
+    }
+}
+
+if ($learnerNumberCheck['isPremium']) {
+    // get the number of students to add and compute the sum with the number of student already registered
+    $addedLearnerNumber = count($data['users']);
+    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+
+    // if the total exceed the limit max, return an error
+    if ($totalLearnerCount > 400) {
+        return [
+            "isUsersAdded" => false,
+            "currentLearnerCount" => $learnerNumberCheck["learnerNumber"],
+            "addedLearnerNumber" => $addedLearnerNumber
+        ];
+    }
+} */
+
+// end remove the limitations for CABRI
+/////////////////////////////////////////
+
+
+
+// Groups and teacher limitation per application
+// if not admin or premium
+///////////////////////////////////
+// remove the limitations for CABRI
+/*                 if (!$isAllowed) {
+    // get the number of students to add and compute the sum with the number of student already registered
+    $addedLearnerNumber = count($data['users']);
+    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+
+    // if the total exceed the limit max, return an error
+    if ($totalLearnerCount > 50) {
+        return ["isUsersAdded" => false, "currentLearnerCount" => $learnerNumberCheck["learnerNumber"], "addedLearnerNumber" => $addedLearnerNumber];
+    }
+}
+
+if ($learnerNumberCheck['isPremium']) {
+    // get the number of students to add and compute the sum with the number of student already registered
+    $addedLearnerNumber = count($data['users']);
+    $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+
+    // if the total exceed the limit max, return an error
+    if ($totalLearnerCount > 400) {
+        return ["isUsersAdded" => false, "currentLearnerCount" => $learnerNumberCheck["learnerNumber"], "addedLearnerNumber" => $addedLearnerNumber];
+    }
+} */
+// end remove the limitations for CABRI
+/////////////////////////////////////////
+/**
+ * End of learner number limiting
+ */
