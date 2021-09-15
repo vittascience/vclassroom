@@ -319,8 +319,7 @@ class ControllerSuperAdmin extends Controller
                         isset($data['teacher']) && $data['teacher'] != null &&
                         isset($data['grade']) &&
                         isset($data['subject']) &&
-                        isset($data['school']) &&
-                        isset($data['isactive']) && $data['isactive'] != null
+                        isset($data['school'])
                     ) {
 
                         $groups =  json_decode($data['groups']);
@@ -337,9 +336,7 @@ class ControllerSuperAdmin extends Controller
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
-                        $isactive = htmlspecialchars($data['isactive']) == "true" ? true : false;
-
-                        $user = new User;
+                        $user = new User();
                         $user->setFirstname($firstname);
                         $user->setSurname($surname);
                         if ($pseudo != null) {
@@ -376,7 +373,7 @@ class ControllerSuperAdmin extends Controller
                         }
 
                         $confirmationToken = bin2hex(random_bytes(16));
-                        $regular = new Regular($user, $mail, $bio, $phone, false, $admin, null, null, $isactive);
+                        $regular = new Regular($user, $mail, $bio, $phone, false, $admin, null, null, false);
                         $regular->setConfirmToken($confirmationToken);
                         $this->entityManager->persist($regular);
 
@@ -387,7 +384,6 @@ class ControllerSuperAdmin extends Controller
                         }
 
                         $this->entityManager->flush();
-
 
                         $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
                         $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken";
@@ -402,7 +398,6 @@ class ControllerSuperAdmin extends Controller
                         $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
                         $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
                         $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
-
                         $body = "
                             <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
                                 $bodyTitle
@@ -411,9 +406,7 @@ class ControllerSuperAdmin extends Controller
                             <br>
                             <p>$textBeforeLink $accountConfirmationLink
                         ";
-
                         $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
-                        /////////////////////////////////////
 
                         return ['message' => 'success', 'mail' => $emailSent];
                     } else {
