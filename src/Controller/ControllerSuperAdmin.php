@@ -276,6 +276,11 @@ class ControllerSuperAdmin extends Controller
                             } else {
                                 if ($AppExist) {
                                     $this->entityManager->remove($AppExist);
+                                    $appsGivenToTeachers = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
+                                        ->findBy(['group' => $group_id, 'application' => $value[0]]);
+                                    foreach ($appsGivenToTeachers as $app) {
+                                        $this->entityManager->remove($app);
+                                    }
                                 }
                             }
                         }
