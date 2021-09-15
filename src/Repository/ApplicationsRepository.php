@@ -156,7 +156,7 @@ class ApplicationsRepository extends EntityRepository
                 return ['canAdd' => false, 'message' => 'personalLimitAndGroupOutDated', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
             } else {
                 // if the group's application limit is not reached with the total group's students + the actual students count from the teacher
-                if ($totalStudentsInTheGroup < $maxStudentsPerGroup && $maxStudentsPerTeachersGroup >= $totalStudentsFromTeacher + $students_number) {
+                if ($totalStudentsInTheGroup + $students_number < $maxStudentsPerGroup && $maxStudentsPerTeachersGroup >= $totalStudentsFromTeacher + $students_number) {
                     return ['canAdd' => true];
                 } else {
                     // Otherwise we denied the addition
