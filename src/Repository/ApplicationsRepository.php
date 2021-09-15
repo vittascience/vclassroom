@@ -218,7 +218,7 @@ class ApplicationsRepository extends EntityRepository
         }
 
         if ($totalStudentsFromTeacher >= $maxStudentsPerTeachers) {
-            return ['canAdd' => false, 'message' => 'maxStudentsFromTeahcer'];
+            return ['canAdd' => false, 'message' => 'maxStudentsFromTeacher'];
         }
 
         return ['canAdd' => true];
