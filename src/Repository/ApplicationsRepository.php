@@ -148,10 +148,10 @@ class ApplicationsRepository extends EntityRepository
         if ($maxStudentsPerTeachers > $totalStudentsFromTeacher || $maxStudentsPerTeachers == 0) {
             return ['canAdd' => true];
         } else if ($maxStudentsPerTeachers <= $totalStudentsFromTeacher && !$ApplicationFromGroup) {
-            return ['canAdd' => false, 'message' => 'personalLimit'];
+            return ['canAdd' => false, 'message' => 'personalLimit', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
         } else {
             if ($groupInfo['outDated']) {
-                return ['canAdd' => false, 'message' => 'personalLimitAndGroupOutDated'];
+                return ['canAdd' => false, 'message' => 'personalLimitAndGroupOutDated', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
             } else {
                 // if the group's application limit is not reached with the total group's students + the actual students count from the teacher
                 if ($totalStudentsInTheGroup < $maxStudentsPerGroup && $maxStudentsPerTeachersGroup > $totalStudentsFromTeacher) {
@@ -208,7 +208,8 @@ class ApplicationsRepository extends EntityRepository
         if (($totalStudentsInTheGroup + $totalStudentsFromTeacher) >= $maxStudentsPerGroup) {
             return [
                 'canAdd' => false,
-                'message' => 'maxStudentsInGroup', 'actualStudents' => $totalStudentsInTheGroup,
+                'message' => 'maxStudentsInGroup',
+                'actualStudents' => $totalStudentsInTheGroup,
                 'studentsFromTeacher' => $totalStudentsFromTeacher,
                 'maxStudents' => $maxStudentsPerGroup
             ];
