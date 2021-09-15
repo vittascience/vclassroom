@@ -149,7 +149,7 @@ class ApplicationsRepository extends EntityRepository
         // $maxStudentsPerTeachers = 0 = unlimited
         if ($maxStudentsPerTeachers >= $totalStudentsFromTeacher + $students_number || $maxStudentsPerTeachers == 0) {
             return ['canAdd' => true];
-        } else if ($maxStudentsPerTeachers <= $totalStudentsFromTeacher && !$ApplicationFromGroup) {
+        } else if ($maxStudentsPerTeachers < $totalStudentsFromTeacher + $students_number && !$ApplicationFromGroup) {
             return ['canAdd' => false, 'message' => 'personalLimit', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
         } else {
             if ($groupInfo['outDated']) {
