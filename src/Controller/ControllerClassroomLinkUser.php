@@ -64,7 +64,7 @@ class ControllerClassroomLinkUser extends Controller
                 ];
 
                 // set the $isAllowed flag to true if the current user is admin or premium
-                $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
+                //$isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
 
                 /**
                  * Update Rémi COINTE
@@ -73,16 +73,32 @@ class ControllerClassroomLinkUser extends Controller
                  * if it has no apps = default number => in the folder "default-restrictions"
                  * otherwise the restrictions is set by the user apps or the group's apps he has
                  */
-                if (!$isAllowed) {
-                    // Groups and teacher limitation per application
-                    $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, count($data['users']));
-                    if (!$limitationsReached['canAdd']) {
-                        return [
-                            "isUsersAdded" => false,
-                            "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
-                            "addedLearnerNumber" => count($data['users']),
-                            "message" => $limitationsReached['message']
-                        ];
+                if (!$learnerNumberCheck["isAdmin"]) {
+                    //@Note : the isPremium check is not deleted to restrein the actual user with the isPremium method
+                    // the restrictions by application is not implemented to every user
+                    $addedLearnerNumber = count($data['users']);
+                    if ($learnerNumberCheck["isPremium"]) {
+                        // computer the total number of students registered +1 and return an error if > 50
+                        $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+                        // check if the 400 students limit is reached and return an error when it is reached
+                        if ($totalLearnerCount > 400) {
+                            return [
+                                "isUsersAdded" => false,
+                                "currentLearnerCount" => $learnerNumberCheck["learnerNumber"],
+                                "addedLearnerNumber" => $addedLearnerNumber
+                            ];
+                        }
+                    } else {
+                        // Groups and teacher limitation per application
+                        $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, $addedLearnerNumber);
+                        if (!$limitationsReached['canAdd']) {
+                            return [
+                                "isUsersAdded" => false,
+                                "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
+                                "addedLearnerNumber" => $addedLearnerNumber,
+                                "message" => $limitationsReached['message']
+                            ];
+                        }
                     }
                 }
 
@@ -180,9 +196,6 @@ class ControllerClassroomLinkUser extends Controller
                     "learnerNumber" => $learnerNumber
                 ];
 
-                // set the $isAllowed flag to true if the current user is admin or premium
-                $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
-
                 /**
                  * Update Rémi COINTE
                  * if the user is not admin =>
@@ -190,16 +203,32 @@ class ControllerClassroomLinkUser extends Controller
                  * if it has no apps = default number => in the folder "default-restrictions"
                  * otherwise the restrictions is set by the user apps or the group's apps he has
                  */
-                if (!$isAllowed) {
-                    // Groups and teacher limitation per application
-                    $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, count($data['users']));
-                    if (!$limitationsReached['canAdd']) {
-                        return [
-                            "isUsersAdded" => false,
-                            "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
-                            "addedLearnerNumber" => count($data['users']),
-                            "message" => $limitationsReached['message']
-                        ];
+                if (!$learnerNumberCheck["isAdmin"]) {
+                    //@Note : the isPremium check is not deleted to restrein the actual user with the isPremium method
+                    // the restrictions by application is not implemented to every user
+                    $addedLearnerNumber = count($data['users']);
+                    if ($learnerNumberCheck["isPremium"]) {
+                        // computer the total number of students registered +1 and return an error if > 50
+                        $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
+                        // check if the 400 students limit is reached and return an error when it is reached
+                        if ($totalLearnerCount > 400) {
+                            return [
+                                "isUsersAdded" => false,
+                                "currentLearnerCount" => $learnerNumberCheck["learnerNumber"],
+                                "addedLearnerNumber" => $addedLearnerNumber
+                            ];
+                        }
+                    } else {
+                        // Groups and teacher limitation per application
+                        $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, $addedLearnerNumber);
+                        if (!$limitationsReached['canAdd']) {
+                            return [
+                                "isUsersAdded" => false,
+                                "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
+                                "addedLearnerNumber" => $addedLearnerNumber,
+                                "message" => $limitationsReached['message']
+                            ];
+                        }
                     }
                 }
 

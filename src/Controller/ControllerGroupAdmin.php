@@ -762,7 +762,6 @@ class ControllerGroupAdmin extends Controller
                 $today = new \DateTime('NOW');
                 $outDatedApps = [];
                 $applications = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['user' => $user_id]);
-                //var_dump($applications);
                 foreach ($applications as $application) {
                     if ($application->getDateEnd() < $today) {
                         $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
