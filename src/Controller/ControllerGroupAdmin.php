@@ -785,29 +785,24 @@ class ControllerGroupAdmin extends Controller
 
                 foreach ($applications as $application) {
                     $appDetails = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
-                    $groupApplicationInfo = [
-                        'outDated' => false,
-                        'name' => $appDetails->getName(),
-                        'dateBegin' => $application->getDateBegin(),
-                        'dateEnd' => $application->getDateEnd(),
-                        'actualStudents' => 0,
-                        'maxStudents' => $application->getmaxStudentsPerGroups(),
-                        'maxStudentsPerTeacher' => $application->getmaxStudentsPerTeachers(),
-                        'actualTeachers' => 0,
-                        'maxTeachers' => $application->getmaxTeachersPerGroups(),
-                    ];
-
-                    if ($application->getDateEnd() < $today) {
-                        $groupApplicationInfo['outDated'] = true;
-                    }
-
                     $teachersFromGroupWithThisApp = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
                         ->findBy([
                             'group' => $application->getGroup(),
                             'application' => $application->getApplication()
                         ]);
 
-                    $groupApplicationInfo['actualTeachers'] = count($teachersFromGroupWithThisApp);
+                    $groupApplicationInfo = [
+                        'outDated' => $application->getDateEnd() < $today,
+                        'name' => $appDetails->getName(),
+                        'dateBegin' => $application->getDateBegin(),
+                        'dateEnd' => $application->getDateEnd(),
+                        'actualStudents' => 0,
+                        'maxStudents' => $application->getmaxStudentsPerGroups(),
+                        'maxStudentsPerTeacher' => $application->getmaxStudentsPerTeachers(),
+                        'actualTeachers' => count($teachersFromGroupWithThisApp),
+                        'maxTeachers' => $application->getmaxTeachersPerGroups(),
+                    ];
+
                     // count the students in the group
                     foreach ($teachersFromGroupWithThisApp as $teacher) {
                         $teacherPersonalMax = 0;
