@@ -86,7 +86,7 @@ class ApplicationsRepository extends EntityRepository
             $studentsInClassroomFromActualTeacher = $this->getEntityManager()->getRepository(ClassroomLinkUser::class)
                 ->findBy(['classroom' => $classroom->getClassroom()->getId(), 'rights' => 0]);
 
-            $totalStudentsFromTeacher += count($studentsInClassroomFromActualTeacher);
+            $totalStudentsFromTeacher += count($studentsInClassroomFromActualTeacher) - 1;
         }
         $teacherInfo['actualStudents'] = $totalStudentsFromTeacher;
 
@@ -128,8 +128,8 @@ class ApplicationsRepository extends EntityRepository
                             // retrieve all student for the current classroom
                             $studentsInClassroom = $this->getEntityManager()->getRepository(ClassroomLinkUser::class)->findBy(['classroom' => $classroomObject->getClassroom()->getId(), 'rights' => 0]);
 
-                            if ($teacherPersonalMax < count($studentsInClassroom)) {
-                                $totalStudentsInTheGroup += count($studentsInClassroom);
+                            if ($teacherPersonalMax < count($studentsInClassroom) - 1) {
+                                $totalStudentsInTheGroup += count($studentsInClassroom) - 1;
                             }
                         }
                     }

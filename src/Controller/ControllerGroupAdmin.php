@@ -777,6 +777,53 @@ class ControllerGroupAdmin extends Controller
                     return ['message' => true, 'applications' => $outDatedApps];
                 }
             },
+            'group_monitoring'  => function ($data) {
+                $group_id = htmlspecialchars($data['group_id']);
+                $today = new \DateTime('NOW');
+                $groupInfo = ['totalStudents' => 0, 'applications' => []];
+                $applications = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
+
+                foreach ($applications as $application) {
+                    $groupApplicationInfo = [
+                        'outDated' => false,
+                        'actualStudents' => 0,
+                        'maxStudents' => 0,
+                        'maxStudentsPerTeacher' => $application->getmaxTeachersPerGroups()
+                    ];
+
+                    if ($application->getDateEnd() < $today) {
+                        $groupApplicationInfo['outDated'] = true;
+                    }
+
+                    $teachersFromGroupWithThisApp = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
+                        ->findBy([
+                            'group' => $application->getGroup(),
+                            'application' => $application->getApplication()
+                        ]);
+
+                    // count the students in the group
+                    foreach ($teachersFromGroupWithThisApp as $teacher) {
+                        $teacherPersonalMax = 0;
+                        $teacherPersonalApps = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher->getUser()]);
+                        foreach ($teacherPersonalApps as $personalApp) {
+                            if ($personalApp->getDateEnd() > $today) {
+                                $teacherPersonalMax = $personalApp->getmaxStudentsPerTeachers();
+                            }
+                        }
+                        $teacherClassrooms = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['user' => $teacher->getUser(), 'rights' => 2]);
+                        foreach ($teacherClassrooms as $classroomObject) {
+                            // retrieve all student for the current classroom
+                            $studentsInClassroom = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['classroom' => $classroomObject->getClassroom()->getId(), 'rights' => 0]);
+
+                            if ($teacherPersonalMax < count($studentsInClassroom) - 1) {
+                                $groupApplicationInfo['actualStudents'] += count($studentsInClassroom) - 1;
+                            }
+                        }
+                    }
+                    $groupInfo['applications'][] = $groupApplicationInfo;
+                }
+                return $groupInfo;
+            },
         );
     }
 
