@@ -787,7 +787,7 @@ class ControllerGroupAdmin extends Controller
                     $groupApplicationInfo = [
                         'outDated' => false,
                         'actualStudents' => 0,
-                        'maxStudents' => 0,
+                        'maxStudents' => $application->getmaxStudentsPerGroups(),
                         'maxStudentsPerTeacher' => $application->getmaxTeachersPerGroups()
                     ];
 
