@@ -784,7 +784,7 @@ class ControllerGroupAdmin extends Controller
                 $applications = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
                 foreach ($applications as $application) {
-                    $appDetails = $this->entityManager->getRepository(Applications::class)->findBy(['id' => $application->getApplication()]);
+                    $appDetails = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
                     $groupApplicationInfo = [
                         'name' => $appDetails->getName(),
                         'outDated' => false,
