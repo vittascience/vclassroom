@@ -793,6 +793,7 @@ class ControllerGroupAdmin extends Controller
                         'actualStudents' => 0,
                         'maxStudents' => $application->getmaxStudentsPerGroups(),
                         'maxStudentsPerTeacher' => $application->getmaxStudentsPerTeachers(),
+                        'actualTeachers' => 0,
                         'maxTeachers' => $application->getmaxTeachersPerGroups(),
                     ];
 
@@ -806,6 +807,7 @@ class ControllerGroupAdmin extends Controller
                             'application' => $application->getApplication()
                         ]);
 
+                    $groupApplicationInfo['actualTeachers'] = count($teachersFromGroupWithThisApp);
                     // count the students in the group
                     foreach ($teachersFromGroupWithThisApp as $teacher) {
                         $teacherPersonalMax = 0;
