@@ -786,13 +786,14 @@ class ControllerGroupAdmin extends Controller
                 foreach ($applications as $application) {
                     $appDetails = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
                     $groupApplicationInfo = [
-                        'name' => $appDetails->getName(),
                         'outDated' => false,
+                        'name' => $appDetails->getName(),
                         'dateBegin' => $application->getDateBegin(),
                         'dateEnd' => $application->getDateEnd(),
                         'actualStudents' => 0,
                         'maxStudents' => $application->getmaxStudentsPerGroups(),
-                        'maxStudentsPerTeacher' => $application->getmaxTeachersPerGroups()
+                        'maxStudentsPerTeacher' => $application->getmaxStudentsPerTeachers(),
+                        'maxTeachers' => $application->getmaxTeachersPerGroups(),
                     ];
 
                     if ($application->getDateEnd() < $today) {
