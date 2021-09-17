@@ -42,6 +42,11 @@ class ControllerClassroomLinkUser extends Controller
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
 
+                // bind and sanitize .env demoStudent
+                $demoStudent = !empty($this->envVariables['demoStudent'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                                : 'demostudent';
+                
                 // get all classrooms for the current user
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $currentUserId));
@@ -103,13 +108,14 @@ class ControllerClassroomLinkUser extends Controller
                 }
 
                 /**
-                 * check that teacher does not add a vittademo user @MODIF naser
+                 * check that teacher does not add a demoStudent user @MODIF naser
                  */
-                if (in_array('vittademo', array_map('strtolower', $data['users']))) {
+
+                if(in_array($demoStudent,array_map('strtolower',$data['users']))){
                     return [
-                        "isUsersAdded" => false,
-                        "errorType" => "reservedNickname",
-                        "currentNickname" => "vittademo"
+                        "isUsersAdded"=>false, 
+                        "errorType"=> "reservedNickname",
+                        "currentNickname"=> $demoStudent
                     ];
                 }
                 /**
@@ -167,7 +173,12 @@ class ControllerClassroomLinkUser extends Controller
                 // get the statuses for the current user
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
-
+            
+                // bind and sanitize .env demoStudent
+                $demoStudent = !empty($this->envVariables['demoStudent'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                                : 'demostudent';
+                
                 // retrieve all classrooms of the current user
                 $teacherClassrooms = $this->entityManager
                     ->getRepository('Classroom\Entity\ClassroomLinkUser')
@@ -232,6 +243,25 @@ class ControllerClassroomLinkUser extends Controller
                     }
                 }
 
+                // end remove the limitations for CABRI
+                /////////////////////////////////////////
+            
+                /**
+                 * check that teacher does not add a demoStudent user @MODIF naser
+                 */
+                
+                for($i = 0; $i< count($data['users']); $i++){
+                    $currentUserName = strtolower($data['users'][$i]['apprenant']);
+                    $demoStudentNameToTest = strtolower($demoStudent);
+                    if($currentUserName == $demoStudentNameToTest){
+                        return [
+                            "isUsersAdded"=>false, 
+                            "errorType"=> "reservedNickname",
+                            "currentNickname"=> $demoStudent
+                        ];
+                    }
+                }
+                
                 foreach ($data['users'] as $userToAdd) {
                     // bind and sanitize incoming data
                     $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
