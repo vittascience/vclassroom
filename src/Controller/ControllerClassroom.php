@@ -2,6 +2,7 @@
 
 namespace Classroom\Controller;
 
+use Dotenv\Dotenv;
 use User\Entity\User;
 use User\Entity\Regular;
 use User\Entity\ClassroomUser;
@@ -19,6 +20,11 @@ class ControllerClassroom extends Controller
         parent::__construct($entityManager, $user);
         $this->actions = array(
             'get_all' => function () {
+                /**
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
+                 * last check => September 2021
+                 */
                 return $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findAll();
             },
@@ -55,12 +61,23 @@ class ControllerClassroom extends Controller
                 return $classrooms;
             },
             'get_users_and_activities' => function ($data) {
+                /**
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
+                 * last check => September 2021
+                 */
                 $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->getAllStudentsInClassroom($data['classroom'], 0);
 
                 return $students;
             },
             'get_my_sandbox_projects' => function () {
+                /**
+                 * @Naser
+                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
+                 * @ToBeDeleted 
+                 * last check => September 2021
+                 */
                 $arrayResults = [];
                 $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
                     ->findBy(array("user" => $this->user));
@@ -73,24 +90,61 @@ class ControllerClassroom extends Controller
                     "shared" => $arrayResults
                 ];
             },
-            'get_by_link' => function ($data) {
-                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['link']));
-            },
-            'add' => function ($data) {
-                /**
-                 * Limiting learner number @THOMAS MODIF
-                 * Added the possibility for Admins to add more than 1 classroom @MODIF NASER
-                 */
-                $currentUserId = $this->user["id"];
+            'get_by_link' => function () {
+                
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
 
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize incoming data
+                $link = !empty($_POST['link']) 
+                        ? htmlspecialchars(strip_tags(trim($_POST['link']))) 
+                        : '';
+                
+                // no link received, return an error
+                if(empty($link)) return array('errorLinkNotExists'=> true );
+
+                //no error, we can process the data and return the result
+                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    ->findBy(array("link" => $link));
+            },
+            'add' => function () {
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomsAddNotAuthenticated"];
+                
+                // bind and sanitize incoming data, boolean "isBlocked" is received has a string "true"
+                $currentUserId = $_SESSION["id"];
+                $classroomName = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) :'';
+                $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) :''; 
+                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;
+                
+                $demoStudent = !empty($this->envVariables['demoStudent'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                                : 'demostudent';
+                
+                // get user "roles"
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
+                
+                // an error found, classroomName id required return the error
+                if(empty($classroomName)) return array('errorType'=> 'ClassroomNameInvalid' );
 
-                $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("user" => $currentUserId));
+                // get all classrooms where the user is teacher
+                $classrooms = $this->entityManager
+                                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                    ->findBy(array(
+                                        "user" => $currentUserId,
+                                        "rights" => 2
+                
+                                    ));
+                
                 $nbClassroom = 0;
-                foreach ($classrooms as $c) {
+                foreach ($classrooms as $classroom) {
                     $nbClassroom++;
                 }
 
@@ -135,9 +189,9 @@ class ControllerClassroom extends Controller
 
 
                 $studyGroup = new Classroom();
-                $studyGroup->setName($data['name']);
-                $studyGroup->setSchool($data['school']);
-                $studyGroup->setIsBlocked($data['isBlocked'] ?? 0);
+                $studyGroup->setName($classroomName);
+                $studyGroup->setSchool($school);
+                $studyGroup->setIsBlocked($isBlocked);
                 $studyGroup->setLink();
                 $this->entityManager->persist($studyGroup);
                 //add the teacher to the classroom
@@ -147,11 +201,11 @@ class ControllerClassroom extends Controller
                 $linkteacherToGroup->setRights(2);
                 $this->entityManager->persist($linkteacherToGroup);
 
-                //create vittademo account and add it to the classroom
+                //create demoStudent account and add it to the classroom
                 $user = new User();
                 $user->setFirstName("élève");
                 $user->setSurname("modèl");
-                $user->setPseudo('vittademo');
+                $user->setPseudo($demoStudent);
                 $password = passwordGenerator();
                 $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
                 $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
@@ -177,19 +231,41 @@ class ControllerClassroom extends Controller
                 $this->entityManager->flush();
                 return $studyGroup; //synchronized
 
-            }, 'update' => function ($data) {
-                $studyGroup =  $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['link']))[0];
-                $studyGroup->setName($data['name']);
-                $studyGroup->setSchool($data['school']);
-                $studyGroup->setIsBlocked($data['isBlocked']);
+            }, 
+            'update' => function () {
+
+                // accept only POST request
+                if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+                if(empty($_SESSION['id'])) return ["errorType"=> "classroomUpdateNotAuthenticated"];
+
+                // bind and sanitize incoming data, hint => isBlocked is received as a string type 
+                $name = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) : '';
+                $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
+                $link = !empty($_POST['link']) ? htmlspecialchars(strip_tags(trim($_POST['link']))) : '';
+                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : '';
+
+                // some errors found, return error
+                if(empty($name)) return array('errorType'=> 'ClassroomNameInvalid' );
+
+                // no errors found, we can proceed the data
+                //retrieve the classroom by its link
+                $classroom =  $this->entityManager
+                                            ->getRepository('Classroom\Entity\Classroom')
+                                            ->findOneBy(array("link" => $link));
+                
+                $classroom->setName($name);
+                $classroom->setSchool($school);
+                $classroom->setIsBlocked($isBlocked);
 
                 // commented setLink to avoid link classroom link to change
-                //$studyGroup->setLink();
+                //$classroom->setLink();
 
-                $this->entityManager->persist($studyGroup);
+                // save data in classrooms table
+                $this->entityManager->persist($classroom);
                 $this->entityManager->flush();
-                return $studyGroup; //synchronized
+                return $classroom; //synchronized
 
             },
             'delete' => function () {
@@ -288,48 +364,82 @@ class ControllerClassroom extends Controller
                     'link' => $link
                 ];    
             },
-            'get_vittademo_account' => function ($data) {
-                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findOneBy(array('link' => $data['link']));
-                $userLinkClassroom = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array('classroom' => $classroom->getId()));
-                foreach ($userLinkClassroom as $u) {
-                    if ($u->getUser()->getPseudo() == 'vittademo') {
-                        $_SESSION['idProf'] = $_SESSION['id'];
-                        $_SESSION['id'] = $u->getUser()->getId();
-                        return $_SESSION['id'];
-                    }
-                }
-
-                $user = new User();
-                $user->setFirstName("élève");
-                $user->setSurname("modèl");
-                $user->setPseudo('vittademo');
-                $password = passwordGenerator();
-                $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
-                $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                $user->setId($lastQuestion->getId() + 1);
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
-
-                $classroomUser = new ClassroomUser($user);
-                $classroomUser->setGarId(null);
-                $classroomUser->setSchoolId(null);
-                $classroomUser->setIsTeacher(false);
-                $classroomUser->setMailTeacher(NULL);
-                $this->entityManager->persist($classroomUser);
-                $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
-                $linkteacherToGroup->setRights(0);
-                $this->entityManager->persist($linkteacherToGroup);
-                $_SESSION['idProf'] = $_SESSION['id'];
-                $_SESSION['id'] = $lastQuestion->getId() + 1;
-                return $_SESSION['id'];
-            },
             'get_teacher_account' => function () {
                 $_SESSION['id'] = $_SESSION['idProf'];
                 unset($_SESSION['idProf']);
                 return true;
-            }
+            },
+            'get_demo_student_account' => function ($data) {
+
+                // accept only POST request
+               if($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error"=> "Method not Allowed"];
+
+                // accept only connected user
+               if(empty($_SESSION['id'])) return ["errorType"=> "getDemoStudentAccountNotAuthenticated"];
+
+               // bind and sanitize incoming data
+               $link = !empty($_POST['link'])
+                       ? htmlspecialchars(strip_tags(trim($_POST['link'])))
+                       : '';
+               $demoStudent = !empty($this->envVariables['demoStudent'])
+                               ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                               : 'demostudent';
+               
+               // no link provided, return an error
+               if(empty($link)) return array('errorClassroomLinkInvalid'=> true );
+
+               // retrieve the classroom by its link
+               $classroom = $this->entityManager
+                                   ->getRepository('Classroom\Entity\Classroom')
+                                   ->findOneBy(array('link' => $link));
+
+               // get all users registered this classroom
+               $userLinkClassroom = $this->entityManager
+                                           ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                                           ->findBy(array('classroom' => $classroom->getId()));
+
+               /** 
+                * @UNCLEAR 
+                * we are looping through all users including the teacher but we are looking for a specific account => demoStudent account
+                * last check september 2021
+                */
+               foreach ($userLinkClassroom as $u) {
+                   if ($u->getUser()->getPseudo() == $demoStudent) {
+                       $_SESSION['idProf'] = $_SESSION['id'];
+                       $_SESSION['id'] = $u->getUser()->getId();
+                       return $_SESSION['id'];
+                   }
+               }
+
+               /**
+                * @ToBeRemoved
+                * Create a demoStudent account and link it to the classroom but demoStudent account is always created along a classroom
+                * last check september 2021
+                */
+               /* $user = new User();
+               $user->setFirstName("élève");
+               $user->setSurname("modèl");
+               $user->setPseudo($demoStudent);
+               $password = passwordGenerator();
+               $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
+               $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
+               $user->setId($lastQuestion->getId() + 1);
+               $this->entityManager->persist($user);
+               $this->entityManager->flush();
+
+               $classroomUser = new ClassroomUser($user);
+               $classroomUser->setGarId(null);
+               $classroomUser->setSchoolId(null);
+               $classroomUser->setIsTeacher(false);
+               $classroomUser->setMailTeacher(NULL);
+               $this->entityManager->persist($classroomUser);
+               $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
+               $linkteacherToGroup->setRights(0);
+               $this->entityManager->persist($linkteacherToGroup);
+               $_SESSION['idProf'] = $_SESSION['id'];
+               $_SESSION['id'] = $lastQuestion->getId() + 1;
+               return $_SESSION['id']; */
+           },
         );
     }
 }
