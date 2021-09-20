@@ -25,19 +25,18 @@ class Applications
      */
     private $name;
 
-    // TBD : nullable ? 
     /**
      * @ORM\Column(name="description", type="string", length=255, nullable=true)
      * @var string
      */
     private $description;
 
-    // Link of the Application image
     /**
      * @ORM\Column(name="image", type="string", length=255, nullable=true)
      * @var string
      */
     private $image;
+
 
     /**
      * @return Integer

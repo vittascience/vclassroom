@@ -44,6 +44,13 @@ class UsersLinkApplications
      */
     private $dateEnd = null;
 
+
+    /**
+     * @ORM\Column(name="max_students_per_teachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxStudentsPerTeachers;
+
     /**
      * @return Int
      */
@@ -104,10 +111,6 @@ class UsersLinkApplications
     {
         $this->dateBegin = $dateBegin;
         return $this;
-        /* if ($dateBegin instanceof \DateTime || $dateBegin == "")
-            $this->dateBegin = $dateBegin;
-        else
-            throw new EntityDataIntegrityException("dateBegin needs to be DateTime or null"); */
     }
 
     /**
@@ -126,10 +129,24 @@ class UsersLinkApplications
     {
         $this->dateEnd = $dateEnd;
         return $this;
-        /* if ($dateEnd instanceof \DateTime || $dateEnd == "")
-            $this->dateEnd = $dateEnd;
-        else
-            throw new EntityDataIntegrityException("dateEnd needs to be DateTime or null"); */
+    }
+
+    /**
+     * @return Integer
+     */
+    public function getmaxStudentsPerTeachers()
+    {
+        return $this->maxStudentsPerTeachers;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return Applications
+     */
+    public function setmaxStudentsPerTeachers(Int $maximum): self
+    {
+        $this->maxStudentsPerTeachers = $maximum;
+        return $this;
     }
 
     public function jsonSerialize()
@@ -139,7 +156,8 @@ class UsersLinkApplications
             'application' => $this->getApplication(),
             'user_id' => $this->getUser(),
             'date_begin' => $this->getDateBegin(),
-            'date_end' => $this->getDateEnd()
+            'date_end' => $this->getDateEnd(),
+            'max_students_per_teachers' => $this->getmaxStudentsPerTeachers()
         ];
     }
 
