@@ -90,6 +90,87 @@ class ControllerSuperAdmin extends Controller
                     }
                     return $Result_array;
                 },
+                'get_application_by_id' => function ($data) {
+                    if (isset($data['application_id']) && $data['application_id'] != null) {
+                        $application_id = htmlspecialchars($data['application_id']);
+                        return $this->entityManager->getRepository(Applications::class)
+                            ->findOneBy(['id' => $application_id])
+                            ->jsonSerialize();
+                    } else {
+                        return ['message' => 'missing data'];
+                    }
+                },
+                'update_application' => function ($data) {
+                    if (
+                        isset($data['application_id']) && $data['application_id'] != null &&
+                        isset($data['application_name']) && $data['application_name'] != null &&
+                        isset($data['application_description']) && $data['application_description'] != null
+                    ) {
+                        $application_id = htmlspecialchars($data['application_id']);
+                        $application_name = htmlspecialchars($data['application_name']);
+                        $application_description = htmlspecialchars($data['application_description']);
+                        $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+
+                        $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
+                        $app->setName($application_name);
+                        $app->setDescription($application_description);
+                        $app->setImage($application_image);
+                        $this->entityManager->persist($app);
+                        $this->entityManager->flush();
+
+                        return ['message' => 'success'];
+                    } else {
+                        return ['message' => 'missing data'];
+                    }
+                },
+                'delete_application' => function ($data) {
+                    if (isset($data['application_id']) && $data['application_id'] != null) {
+                        $application_id = htmlspecialchars($data['application_id']);
+
+                        $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
+
+                        $groupLinkApp = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['application' => $application_id]);
+                        $userLinkApp = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['application' => $application_id]);
+                        $userLinkApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['application' => $application_id]);
+
+                        foreach ($groupLinkApp as $groupApp) {
+                            $this->entityManager->remove($groupApp);
+                        }
+                        foreach ($userLinkApp as $userApp) {
+                            $this->entityManager->remove($userApp);
+                        }
+                        foreach ($userLinkApplicationFromGroup as $userAppFromGroup) {
+                            $this->entityManager->remove($userAppFromGroup);
+                        }
+                        $this->entityManager->remove($app);
+                        $this->entityManager->flush();
+
+                        return ['message' => 'success'];
+                    } else {
+                        return ['message' => 'missing data'];
+                    }
+                },
+                'create_application' => function ($data) {
+                    if (
+                        isset($data['application_name']) && $data['application_name'] != null &&
+                        isset($data['application_description']) && $data['application_description'] != null
+                    ) {
+                        $application_name = htmlspecialchars($data['application_name']);
+                        $application_description = htmlspecialchars($data['application_description']);
+                        $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+
+                        $app = new Applications();
+                        $app->setName($application_name);
+                        $app->setDescription($application_description);
+                        $app->setImage($application_image);
+                        $this->entityManager->persist($app);
+                        $this->entityManager->flush();
+
+                        return ['message' => 'success'];
+                    } else {
+                        return ['message' => 'missing data'];
+                    }
+                },
                 'get_all_applications_from_group' => function ($data) {
                     if (isset($data['id']) && $data['id'] != null) {
                         $group_id = htmlspecialchars($data['id']);
