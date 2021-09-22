@@ -75,7 +75,7 @@ class Groups implements \JsonSerializable, \Utils\JsonDeserializer
     }
 
     /**
-     * @param String $name
+     * @param String $description
      * @return Groups
      */
     public function setDescription(string $description): self

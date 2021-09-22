@@ -95,7 +95,7 @@ class GroupsLinkApplications
     }
 
     /**
-     * @return Applications
+     * @return Applications application
      */
     public function getApplication()
     {
@@ -129,7 +129,6 @@ class GroupsLinkApplications
     {
         $this->dateBegin = $dateBegin;
         return $this;
-        //throw new EntityDataIntegrityException("dateBegin needs to be DateTime or null");
     }
 
     /**
@@ -148,10 +147,6 @@ class GroupsLinkApplications
     {
         $this->dateEnd = $dateEnd;
         return $this;
-        /* if ($dateEnd instanceof \DateTime || $dateEnd == "")
-            $this->dateEnd = $dateEnd;
-        else
-            throw new EntityDataIntegrityException("dateEnd needs to be DateTime or null"); */
     }
 
     /**
@@ -164,7 +159,7 @@ class GroupsLinkApplications
 
     /**
      * @param Integer $maximum
-     * @return Applications
+     * @return GroupsLinkApplications
      */
     public function setmaxStudentsPerGroups(Int $maximum): self
     {
@@ -182,7 +177,7 @@ class GroupsLinkApplications
 
     /**
      * @param Integer $maximum
-     * @return Applications
+     * @return GroupsLinkApplications
      */
     public function setmaxTeachersPerGroups(Int $maximum): self
     {
@@ -200,7 +195,7 @@ class GroupsLinkApplications
 
     /**
      * @param Integer $maximum
-     * @return Applications
+     * @return GroupsLinkApplications
      */
     public function setmaxStudentsPerTeachers(Int $maximum): self
     {
