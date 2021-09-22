@@ -351,6 +351,7 @@ class ControllerClassroom extends Controller
                 // set the data to return
                 $name = $classroomFound->getName();
                 $link = $classroomFound->getLink();
+                $group = $classroomFound->getGroupe();
                 
                 // remove the classroom 
                 $this->entityManager->remove($classroomFound);   
@@ -361,8 +362,9 @@ class ControllerClassroom extends Controller
                 
                 return [
                     'name' => $name,
-                    'link' => $link
-                ];    
+                    'link' => $link,
+                    'group' => $group 
+                ];  
             },
             'get_teacher_account' => function () {
                 $_SESSION['id'] = $_SESSION['idProf'];
