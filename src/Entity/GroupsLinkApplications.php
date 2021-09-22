@@ -85,7 +85,7 @@ class GroupsLinkApplications
     }
 
     /**
-     * @param User $user
+     * @param Groups $group
      * @return GroupsLinkApplications
      */
     public function setGroup(Groups $group): self
@@ -163,7 +163,7 @@ class GroupsLinkApplications
     }
 
     /**
-     * @param Integer $image
+     * @param Integer $maximum
      * @return Applications
      */
     public function setmaxStudentsPerGroups(Int $maximum): self
