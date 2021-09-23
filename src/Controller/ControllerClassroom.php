@@ -405,13 +405,17 @@ class ControllerClassroom extends Controller
                 * we are looping through all users including the teacher but we are looking for a specific account => demoStudent account
                 * last check september 2021
                 */
-               foreach ($userLinkClassroom as $u) {
-                   if ($u->getUser()->getPseudo() == $demoStudent) {
-                       $_SESSION['idProf'] = $_SESSION['id'];
-                       $_SESSION['id'] = $u->getUser()->getId();
-                       return $_SESSION['id'];
-                   }
-               }
+                foreach ($userLinkClassroom as $u) {
+                    if ($u->getUser()->getPseudo() == $demoStudent) {
+ 
+                         // set isFromGar to true based on $this->user received from Routing.php
+                         if($this->user['isFromGar'] == true) $_SESSION['isFromGar'] = true;
+ 
+                         $_SESSION['idProf'] = $_SESSION['id'];
+                         $_SESSION['id'] = $u->getUser()->getId(); 
+                         return $_SESSION['id'];
+                    }
+                }
 
                /**
                 * @ToBeRemoved
