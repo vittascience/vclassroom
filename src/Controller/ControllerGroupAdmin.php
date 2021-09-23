@@ -837,10 +837,11 @@ class ControllerGroupAdmin extends Controller
         $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
         $maxTeacher = groupDefaultRestrictions['maxTeachers'];
+
         foreach ($applicationsOfGroup as $application) {
             $app = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $application->getApplication()]);
             if (!empty($app->getmaxTeachersPerGroups())) {
-                $maxTeacher += $app->getmaxTeachersPerGroups();
+                $maxTeacher = $app->getmaxTeachersPerGroups();
             }
         }
         if ($maxTeacher != 0) {
