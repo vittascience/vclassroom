@@ -3,7 +3,7 @@
 namespace Classroom\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use User\Entity\User;
+use Classroom\Entity\Applications;
 
 
 /**
@@ -28,7 +28,7 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
     private $application;
 
     /**
-     * @ORM\Column(name="activity_type", type="string",length=255, nullable=false)
+     * @ORM\Column(name="activity_type", type="string", length=255, nullable=false)
      * @var string
      */
     private $activityType;
@@ -39,18 +39,6 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $maxPerTeachers;
 
-    /**
-     * @ORM\Column(name="max_per_groups", type="integer", nullable=true)
-     * @var integer
-     */
-    private $maxPerGroups;
-
-
-    /**
-     * @ORM\Column(name="max_per_teachers_per_groups", type="integer", nullable=true)
-     * @var integer
-     */
-    private $maxPerTeachersPerGroups;
 
     /**
      * @return Int
@@ -115,42 +103,6 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
         return $this;
     }
 
-    /**
-     * @param Integer $maximum
-     * @return ActivityLinkUser
-     */
-    public function setMaxPerGroups(Int $maximum): self
-    {
-        $this->maxPerGroups = $maximum;
-        return $this;
-    }
-
-    /**
-     * @return Integer
-     */
-    public function getMaxPerGroups()
-    {
-        return $this->maxPerGroups;
-    }
-
-    /**
-     * @param Integer $maximum
-     * @return ActivityLinkUser
-     */
-    public function setMaxPerTeachersPerGroups(Int $maximum): self
-    {
-        $this->maxPerTeachersPerGroups = $maximum;
-        return $this;
-    }
-
-    /**
-     * @return Integer
-     */
-    public function getMaxPerTeachersPerGroups()
-    {
-        return $this->maxPerTeachersPerGroups;
-    }
-
 
 
     public function jsonSerialize()
@@ -159,9 +111,7 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
             'id' => $this->getId(),
             'application' => $this->getActivityType(),
             'activity_type' => $this->getActivityType(),
-            'max_per_teachers' => $this->getMaxPerTeachers(),
-            'max_per_groups' => $this->getMaxPerGroups(),
-            'max_per_teachers_per_groups' => $this->getMaxPerTeachersPerGroups()
+            'max_per_teachers' => $this->getMaxPerTeachers()
         ];
     }
 
