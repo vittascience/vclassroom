@@ -86,7 +86,7 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 
 
     /**
-     * @return Integer
+     * @return Mixed
      */
     public function getMaxPerTeachers()
     {
@@ -94,22 +94,22 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
     }
 
     /**
-     * @param Integer $maximum
+     * @param mixed $maximum
      * @return ActivityRestrictions
      */
-    public function setMaxPerTeachers(Int $maximum): self
+    public function setMaxPerTeachers($maximum): self
     {
         $this->maxPerTeachers = $maximum;
         return $this;
     }
 
 
-
     public function jsonSerialize()
     {
         return [
             'id' => $this->getId(),
-            'application' => $this->getActivityType(),
+            'application' => $this->getApplication()->getId(),
+            'application_name' => $this->getApplication()->getName(),
             'activity_type' => $this->getActivityType(),
             'max_per_teachers' => $this->getMaxPerTeachers()
         ];

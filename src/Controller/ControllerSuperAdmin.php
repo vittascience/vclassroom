@@ -10,6 +10,7 @@ use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
 use Classroom\Entity\Applications;
 use Classroom\Entity\UsersLinkGroups;
+use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
@@ -132,6 +133,7 @@ class ControllerSuperAdmin extends Controller
                         $groupLinkApp = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['application' => $application_id]);
                         $userLinkApp = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['application' => $application_id]);
                         $userLinkApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['application' => $application_id]);
+                        $restrictionsApp = $this->entityManager->getRepository(ActivityRestrictions::class)->findBy(['application' => $application_id]);
 
                         foreach ($groupLinkApp as $groupApp) {
                             $this->entityManager->remove($groupApp);
@@ -142,6 +144,10 @@ class ControllerSuperAdmin extends Controller
                         foreach ($userLinkApplicationFromGroup as $userAppFromGroup) {
                             $this->entityManager->remove($userAppFromGroup);
                         }
+                        foreach ($restrictionsApp as $restriction) {
+                            $this->entityManager->remove($restriction);
+                        }
+
                         $this->entityManager->remove($app);
                         $this->entityManager->flush();
 
@@ -851,7 +857,80 @@ class ControllerSuperAdmin extends Controller
                         return ['Admin' => true];
                     }
                     return ['Admin' => false];
-                }
+                },
+                'get_all_activities_restrictions_applications' => function ($data) {
+                    if (!empty($data['application_id'])) {
+                        $application_id = htmlspecialchars($data['application_id']);
+
+                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findBy(['application' => $application_id]);
+                    }
+                },
+                'get_one_restriction_activity' => function ($data) {
+                    if (!empty($data['restriction_id'])) {
+                        $restriction_id = htmlspecialchars($data['restriction_id']);
+                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
+                    }
+                },
+                'update_one_restriction_activity' => function ($data) {
+                    if (
+                        !empty($data['restriction_id']) &&
+                        !empty($data['application_id']) &&
+                        !empty($data['restriction_type'])
+                    ) {
+                        $restriction_id = htmlspecialchars($data['restriction_id']);
+                        $application_id = htmlspecialchars($data['application_id']);
+                        $restriction_type = htmlspecialchars($data['restriction_type']);
+                        $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
+                        $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
+
+                        $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
+                        $restriction->setApplication($application);
+                        $restriction->setActivityType($restriction_type);
+                        $restriction->setMaxPerTeachers($restriction_max);
+                        $this->entityManager->persist($restriction);
+                        $this->entityManager->flush();
+
+                        return ['success' => true];
+                    } else {
+                        return ['success' => false, 'message' => 'missingData'];
+                    }
+                },
+                'create_one_restriction_activity' => function ($data) {
+                    if (
+                        !empty($data['application_id']) &&
+                        !empty($data['restriction_type'])
+                    ) {
+                        $application_id = htmlspecialchars($data['application_id']);
+                        $restriction_type = htmlspecialchars($data['restriction_type']);
+                        $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
+                        $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
+
+                        $restriction = new ActivityRestrictions();
+                        $restriction->setApplication($application);
+                        $restriction->setActivityType($restriction_type);
+                        $restriction->setMaxPerTeachers($restriction_max);
+                        $this->entityManager->persist($restriction);
+                        $this->entityManager->flush();
+
+                        return ['success' => true];
+                    } else {
+                        return ['success' => false, 'message' => 'missingData'];
+                    }
+                },
+                'delete_one_restriction_activity' => function ($data) {
+                    if (!empty($data['restriction_id'])) {
+                        $restriction_id = htmlspecialchars($data['restriction_id']);
+                        $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
+                        if ($restriction) {
+                            $this->entityManager->remove($restriction);
+                            $this->entityManager->flush();
+                            return ['success' => true];
+                        }
+                    } else {
+                        return ['success' => false, 'message' => 'missingData'];
+                    }
+                },
+
             );
         }
     }
