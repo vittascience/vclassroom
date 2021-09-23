@@ -21,9 +21,9 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User\Classroom\Applications")
+     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Applications")
      * @ORM\JoinColumn(name="application_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var User
+     * @var application
      */
     private $application;
 
@@ -58,7 +58,7 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 
     /**
      * @param Applications $app
-     * @return ActivityLinkUser
+     * @return ActivityRestrictions
      */
     public function setApplication(Applications $app): self
     {
@@ -76,7 +76,7 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 
     /**
      * @param String $ActivityType
-     * @return ActivityLinkUser
+     * @return ActivityRestrictions
      */
     public function setActivityType(String $ActivityType): self
     {
@@ -95,7 +95,7 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 
     /**
      * @param Integer $maximum
-     * @return ActivityLinkUser
+     * @return ActivityRestrictions
      */
     public function setMaxPerTeachers(Int $maximum): self
     {
