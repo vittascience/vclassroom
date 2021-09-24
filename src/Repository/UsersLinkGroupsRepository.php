@@ -10,6 +10,8 @@ use Classroom\Entity\GroupsLinkApplications;
 use Doctrine\ORM\EntityRepository;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\UsersLinkApplications;
+use Classroom\Entity\UsersLinkApplicationsFromGroups;
+use Classroom\Entity\UsersLinkGroupsLinkApplications;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use User\Entity\Regular;
 use User\Entity\Teacher;
@@ -57,16 +59,28 @@ class UsersLinkGroupsRepository extends EntityRepository
             foreach ($id_members_in_groups as $key => $value) {
                 $users_id[] = $value['user'];
             }
-            $result = $this->getEntityManager()
-                ->createQueryBuilder()
-                ->select("u.id, u.surname, u.firstname, u.pseudo")
-                ->from(User::class,'u')
-                ->innerJoin(Regular::class,'r', Join::WITH, 'r.user = u.id')
-                ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
-                ->andWhere('r.active = 1')
-                ->setParameter('ids', $users_id)
-                ->orderBy($orderby)
-                ->getQuery();
+            if (!empty($users_id)) {
+                $result = $this->getEntityManager()
+                    ->createQueryBuilder()
+                    ->select("u.id, u.surname, u.firstname, u.pseudo")
+                    ->from(User::class,'u')
+                    ->innerJoin(Regular::class,'r', Join::WITH, 'r.user = u.id')
+                    ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
+                    ->andWhere('r.active = 1')
+                    ->setParameter('ids', $users_id)
+                    ->orderBy($orderby)
+                    ->getQuery();
+            } else {
+                // in the case where $users_id is empty, we can't use the notIn statement
+                $result = $this->getEntityManager()
+                    ->createQueryBuilder()
+                    ->select("u.id, u.surname, u.firstname, u.pseudo")
+                    ->from(User::class,'u')
+                    ->innerJoin(Regular::class,'r', Join::WITH, 'r.user = u.id')
+                    ->where('r.active = 1')
+                    ->orderBy($orderby)
+                    ->getQuery();
+            }
         } else if ($group_id == -2) {
             $result = $this->getEntityManager()
                 ->createQueryBuilder()
@@ -80,7 +94,7 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         $paginator = new Paginator($result);
 
-        // Récupère les applications liées à des utilisateurs
+        // fetch applications of users
         $ApplicationsOfUsers = $this->getEntityManager()
                                 ->createQueryBuilder()
                                 ->select("a.id AS application_id, a.image AS application_image, u.id AS user_id, ula.dateBegin as date_begin, ula.dateEnd as date_end")
@@ -89,6 +103,27 @@ class UsersLinkGroupsRepository extends EntityRepository
                                 ->innerJoin(User::class,'u', Join::WITH, 'u.id = ula.user')
                                 ->getQuery()
                                 ->getScalarResult();
+
+        $ApplicationsOfUsersFromGroup = $this->getEntityManager()
+                                            ->createQueryBuilder()
+                                            ->select("a.id AS application_id, 
+                                            a.name AS application_name,
+                                            a.image AS application_image, 
+                                            u.id AS user_id, 
+                                            gla.dateBegin as date_begin, 
+                                            gla.dateEnd as date_end,
+                                            gla.maxStudentsPerTeachers as max_students_per_teachers,
+                                            gla.maxStudentsPerGroups as max_students_per_groups,
+                                            gla.maxTeachersPerGroups as max_teachers_per_groups")
+                                            ->from(Applications::class,'a')
+                                            ->innerJoin(UsersLinkApplicationsFromGroups::class,'ulafg', Join::WITH, 'a.id = ulafg.application')
+                                            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application AND gla.group = :id')
+                                            ->innerJoin(User::class,'u', Join::WITH, 'u.id = ulafg.user')
+                                            ->setParameter('id',$group_id)
+                                            ->getQuery()
+                                            ->getScalarResult();
+
+        //var_dump($ApplicationsOfUsersFromGroup);
 
         $paginator->setUseOutputWalkers(false);
         $totalItems = count($paginator);
@@ -111,6 +146,19 @@ class UsersLinkGroupsRepository extends EntityRepository
                                                         'image' => $value2['application_image'], 
                                                         'date_end' => $value2['date_end'], 
                                                         'date_begin' => $value2['date_begin']];
+                }
+            }
+
+             foreach ($ApplicationsOfUsersFromGroup as $AppOfUserFromGroup) {
+                if ((int)$value['id'] == (int)$AppOfUserFromGroup['user_id']) {
+                    $records[$key]['applicationsFromGroups'][] = ['id' => $AppOfUserFromGroup['application_id'], 
+                                                        'name' => $AppOfUserFromGroup['application_name'],
+                                                        'image' => $AppOfUserFromGroup['application_image'],
+                                                        'dateBegin' => $AppOfUserFromGroup['date_begin'],
+                                                        'dateEnd' => $AppOfUserFromGroup['date_end'],
+                                                        'maxStudentsPerTeachers' => $AppOfUserFromGroup['max_students_per_teachers'],
+                                                        'maxStudentsPerGroups' => $AppOfUserFromGroup['max_students_per_groups'],
+                                                        'maxTeachersPerGroups' => $AppOfUserFromGroup['max_teachers_per_groups']];
                 }
             }
         }
@@ -169,11 +217,24 @@ class UsersLinkGroupsRepository extends EntityRepository
         // Récupère les applications liées à l'utilisateur
         $ApplicationsOfUsers = $this->getEntityManager()
                 ->createQueryBuilder()
-                ->select("a.id AS application_id, a.image AS application_image, u.id AS user_id, ula.dateBegin as date_begin, ula.dateEnd as date_end")
+                ->select("a.id AS application_id, a.image AS application_image, u.id AS user_id, ula.dateBegin as date_begin, ula.dateEnd as date_end, ula.maxStudentsPerTeachers as max_students")
                 ->from(Applications::class,'a')
                 ->innerJoin(UsersLinkApplications::class,'ula', Join::WITH, 'a.id = ula.application')
                 ->innerJoin(User::class,'u', Join::WITH, 'u.id = ula.user')
                 ->where('ula.user = :id')
+                ->setParameter('id',$user_id)
+                ->getQuery()
+                ->getScalarResult();
+
+
+        $ApplicationsFromGroup = $this->getEntityManager()
+                ->createQueryBuilder()
+                ->select('ulafg.id as id, 
+                            IDENTITY(ulafg.user) as user, 
+                            IDENTITY(ulafg.group) as group, 
+                            IDENTITY(ulafg.application) as application')
+                ->from(UsersLinkApplicationsFromGroups::class,'ulafg')
+                ->where('ulafg.user = :id')
                 ->setParameter('id',$user_id)
                 ->getQuery()
                 ->getScalarResult();
@@ -190,7 +251,17 @@ class UsersLinkGroupsRepository extends EntityRepository
                 $User[0]['applications'][] = ['id' => $value2['application_id'], 
                                                 'image' => $value2['application_image'], 
                                                 'date_end' => $value2['date_end'], 
-                                                'date_begin' => $value2['date_begin']];
+                                                'date_begin' => $value2['date_begin'],
+                                                'max_students' => $value2['max_students']];
+            }
+        }
+
+        foreach ($ApplicationsFromGroup as $app) {
+            if ((int)$User[0]['id'] == (int)$app['user']) {
+                $User[0]['applications_from_groups'][] = ['id' => $app['id'], 
+                                                            'user' => $app['user'],
+                                                            'group' => $app['group'],
+                                                            'application' => $app['application']];
             }
         }
 
@@ -213,7 +284,6 @@ class UsersLinkGroupsRepository extends EntityRepository
                         ->getQuery()
                         ->getResult();
         
-
         $LinkUserAndGroups = $this->getEntityManager()
                 ->createQueryBuilder()
                 ->select('IDENTITY(ulg.user) as user, IDENTITY(ulg.group) as group, ulg.rights')
@@ -223,9 +293,30 @@ class UsersLinkGroupsRepository extends EntityRepository
                 ->getQuery()
                 ->getScalarResult();
 
-        foreach ($LinkUserAndGroups as $key_2 => $value_2) {
-            if ((int)$User[0]['id'] == (int)$value_2['user']) {
-                $User[0]['groups'][] = ['id' => $value_2['group'], 'rights' => $value_2['rights']];
+        $ApplicationsFromGroup = $this->getEntityManager()
+                                        ->createQueryBuilder()
+                                        ->select('ulafg.id as id, 
+                                                    IDENTITY(ulafg.user) as user, 
+                                                    IDENTITY(ulafg.group) as group, 
+                                                    IDENTITY(ulafg.application) as application')
+                                        ->from(UsersLinkApplicationsFromGroups::class,'ulafg')
+                                        ->where('ulafg.user = :id')
+                                        ->setParameter('id',$user_id)
+                                        ->getQuery()
+                                        ->getScalarResult();
+
+        foreach ($LinkUserAndGroups as $key_2 => $linkUser) {
+            if ((int)$User[0]['id'] == (int)$linkUser['user']) {
+                $User[0]['groups'][] = ['id' => $linkUser['group'], 'rights' => $linkUser['rights']];
+            }
+        }
+
+        foreach ($ApplicationsFromGroup as $app) {
+            if ((int)$User[0]['id'] == (int)$app['user']) {
+                $User[0]['applications_from_groups'][] = ['id' => $app['id'], 
+                                                            'user' => $app['user'],
+                                                            'group' => $app['group'],
+                                                            'application' => $app['application']];
             }
         }
 
@@ -389,7 +480,15 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         // Récupère les applications liées à des groupes
         $ApplicationsOfGroups = $this->getEntityManager()
-        ->createQueryBuilder()->select("a.id AS application_id, a.image AS application_image, g.id AS group_id")
+        ->createQueryBuilder()->select("a.id AS application_id, 
+                                        a.name as application_name,
+                                        a.image AS application_image, 
+                                        g.id AS group_id, 
+                                        gla.dateBegin as application_date_begin, 
+                                        gla.dateEnd as application_date_end, 
+                                        gla.maxStudentsPerTeachers as max_students_per_teachers,
+                                        gla.maxStudentsPerGroups as max_students_per_groups,
+                                        gla.maxTeachersPerGroups as max_teachers_per_groups")
             ->from(Applications::class,'a')
             ->innerJoin(GroupsLinkApplications::class,'gla', Join::WITH, 'a.id = gla.application')
             ->innerJoin(Groups::class,'g', Join::WITH, 'g.id = gla.group')
@@ -401,7 +500,14 @@ class UsersLinkGroupsRepository extends EntityRepository
         foreach ($Groups as $key => $value) {
             foreach ($ApplicationsOfGroups as $key2 => $value2) {
                 if ((int)$value['id'] == (int)$value2['group_id']) {
-                    $Groups[$key]['applications'][] = ['id' => $value2['application_id'], 'image' => $value2['application_image']];
+                    $Groups[$key]['applications'][] = ['id' => $value2['application_id'], 
+                    'name' => $value2['application_name'],
+                    'image' => $value2['application_image'],
+                    'dateBegin' => $value2['application_date_begin'],
+                    'dateEnd' => $value2['application_date_end'],
+                    'maxStudentsPerTeachers' => $value2['max_students_per_teachers'],
+                    'maxStudentsPerGroups' => $value2['max_students_per_groups'],
+                    'maxTeachersPerGroups' => $value2['max_teachers_per_groups']];
                 }
             }
         }

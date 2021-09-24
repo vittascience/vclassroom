@@ -356,6 +356,7 @@ class ControllerClassroom extends Controller
                 // set the data to return
                 $name = $classroomFound->getName();
                 $link = $classroomFound->getLink();
+                $group = $classroomFound->getGroupe();
 
                 // remove the classroom 
                 $this->entityManager->remove($classroomFound);
@@ -366,8 +367,9 @@ class ControllerClassroom extends Controller
 
                 return [
                     'name' => $name,
-                    'link' => $link
-                ];
+                    'link' => $link,
+                    'group' => $group 
+                ];  
             },
             'get_teacher_account' => function () {
                 $_SESSION['id'] = $_SESSION['idProf'];
@@ -380,6 +382,7 @@ class ControllerClassroom extends Controller
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
                 // accept only connected user
+
                 if (empty($_SESSION['id'])) return ["errorType" => "getDemoStudentAccountNotAuthenticated"];
 
                 // bind and sanitize incoming data
@@ -410,6 +413,10 @@ class ControllerClassroom extends Controller
                  */
                 foreach ($userLinkClassroom as $u) {
                     if ($u->getUser()->getPseudo() == $demoStudent) {
+                      
+                        // set isFromGar to true based on $this->user received from Routing.php
+                         if($this->user['isFromGar'] == true) $_SESSION['isFromGar'] = true;
+                      
                         $_SESSION['idProf'] = $_SESSION['id'];
                         $_SESSION['id'] = $u->getUser()->getId();
                         return $_SESSION['id'];
@@ -422,6 +429,7 @@ class ControllerClassroom extends Controller
                  * last check september 2021
                  */
                 /* $user = new User();
+
                $user->setFirstName("élève");
                $user->setSurname("modèl");
                $user->setPseudo($demoStudent);
