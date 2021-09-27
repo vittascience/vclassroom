@@ -230,7 +230,6 @@ class ControllerClassroom extends Controller
                 $linkteacherToGroup->setRights(0);
                 $this->entityManager->persist($linkteacherToGroup);
 
-
                 //save in database
                 $this->entityManager->flush();
                 return $studyGroup; //synchronized
