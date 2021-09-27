@@ -118,7 +118,7 @@ class ControllerClassroom extends Controller
             'add' => function () {
                 // accept only POST request
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
-
+               
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "classroomsAddNotAuthenticated"];
 
@@ -127,7 +127,7 @@ class ControllerClassroom extends Controller
                 $classroomName = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) : '';
                 $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
                 $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;
-
+               
                 $demoStudent = !empty($this->envVariables['demoStudent'])
                     ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
                     : 'demostudent';
@@ -199,9 +199,10 @@ class ControllerClassroom extends Controller
                 $studyGroup->setIsBlocked($isBlocked);
                 $studyGroup->setLink();
                 $this->entityManager->persist($studyGroup);
+
                 //add the teacher to the classroom
                 $user = $this->entityManager->getRepository('User\Entity\User')
-                    ->findOneBy(array("id" => $this->user['id']));
+                    ->findOneBy(array("id" => $currentUserId));
                 $linkteacherToGroup = new ClassroomLinkUser($user, $studyGroup);
                 $linkteacherToGroup->setRights(2);
                 $this->entityManager->persist($linkteacherToGroup);
@@ -213,8 +214,6 @@ class ControllerClassroom extends Controller
                 $user->setPseudo($demoStudent);
                 $password = passwordGenerator();
                 $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
-                $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                $user->setId($lastQuestion->getId() + 1);
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();
 
@@ -230,7 +229,6 @@ class ControllerClassroom extends Controller
                 $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
                 $linkteacherToGroup->setRights(0);
                 $this->entityManager->persist($linkteacherToGroup);
-
 
                 //save in database
                 $this->entityManager->flush();
