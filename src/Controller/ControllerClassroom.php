@@ -21,15 +21,6 @@ class ControllerClassroom extends Controller
     {
         parent::__construct($entityManager, $user);
         $this->actions = array(
-            'get_all' => function () {
-                /**
-                 * @Naser
-                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
-                 * last check => September 2021
-                 */
-                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findAll();
-            },
             'get_by_user' => function () {
 
                 // accept only POST request
@@ -61,36 +52,6 @@ class ControllerClassroom extends Controller
                     $i++;
                 }
                 return $classrooms;
-            },
-            'get_users_and_activities' => function ($data) {
-                /**
-                 * @Naser
-                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
-                 * last check => September 2021
-                 */
-                $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->getAllStudentsInClassroom($data['classroom'], 0);
-
-                return $students;
-            },
-            'get_my_sandbox_projects' => function () {
-                /**
-                 * @Naser
-                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
-                 * @ToBeDeleted 
-                 * last check => September 2021
-                 */
-                $arrayResults = [];
-                $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
-                    ->findBy(array("user" => $this->user));
-                foreach ($sharedProjects as $s) {
-                    $arrayResults[] = $s->getProject();
-                }
-                return [
-                    "mine" => $this->entityManager->getRepository('Interfaces\Entity\Project')
-                        ->findBy(array("user" => $this->user['id'], "deleted" => false, "activitySolve" => false)),
-                    "shared" => $arrayResults
-                ];
             },
             'get_by_link' => function () {
                 // accept only POST request
@@ -451,6 +412,45 @@ class ControllerClassroom extends Controller
                $_SESSION['id'] = $lastQuestion->getId() + 1;
                return $_SESSION['id']; */
             },
+            /* 'get_all' => function () {
+                *
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
+                 * last check => September 2021
+                 
+                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    ->findAll();
+            }, */
+            /*  'get_users_and_activities' => function ($data) {
+                *
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
+                 * last check => September 2021
+                 
+                $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->getAllStudentsInClassroom($data['classroom'], 0);
+
+                return $students;
+            }, */
+            /* 'get_my_sandbox_projects' => function () {
+                *
+                 * @Naser
+                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
+                 * @ToBeDeleted 
+                 * last check => September 2021
+                 
+                $arrayResults = [];
+                $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
+                    ->findBy(array("user" => $this->user));
+                foreach ($sharedProjects as $s) {
+                    $arrayResults[] = $s->getProject();
+                }
+                return [
+                    "mine" => $this->entityManager->getRepository('Interfaces\Entity\Project')
+                        ->findBy(array("user" => $this->user['id'], "deleted" => false, "activitySolve" => false)),
+                    "shared" => $arrayResults
+                ];
+            }, */
         );
     }
 }
