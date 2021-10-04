@@ -651,38 +651,6 @@ class ControllerSuperAdmin extends Controller
                             $isAppActive = false;
                         }
 
-
-
-
-                        /* if (!empty($groups)) {
-                            if ($appFromGroupExist && $application > 0) {
-                                $appFromGroupExist->setApplication($apps);
-                                $this->entityManager->persist($appFromGroupExist);
-                                $this->entityManager->flush();
-                            } else if ($appFromGroupExist && $application == 0) {
-                                $this->entityManager->remove($appFromGroupExist);
-                                $this->entityManager->flush();
-                            } else if (!$appFromGroupExist && $application > 0) {
-                                $check = $this->entityManager->getRepository(Applications::class)->isApplicationFromGroupFull($groups[1], $application, $user_id);
-                                if ($check['canAdd'] == true) {
-                                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
-                                    $newAppFromGroup->setApplication($apps);
-                                    $newAppFromGroup->setGroup($group);
-                                    $newAppFromGroup->setUser($user);
-                                    $this->entityManager->persist($newAppFromGroup);
-                                    $this->entityManager->flush();
-                                } else {
-                                    return $check;
-                                }
-                            }
-                        } else {
-                            $this->entityManager->remove($appFromGroupExist);
-                            $this->entityManager->flush();
-                        } */
-
-
-
-
                         $this->entityManager->flush();
                         return ['message' => 'success'];
                     } else {
