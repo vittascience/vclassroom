@@ -18,7 +18,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  */
 class GroupsRepository extends EntityRepository
 {
-    public function getPanelGroupInfos($sort, $page, $groupspp)
+    public function getPanelGroupInfos(Int $sort, Int $page, Int $groupspp)
     {
 
         $orderby = "";
