@@ -507,17 +507,18 @@ class ControllerSuperAdmin extends Controller
                 },
                 'update_user' => function ($data) {
                     if (
-                        isset($data['user_id']) && $data['user_id'] != null && isset($data['firstname']) && $data['firstname'] != null &&
-                        isset($data['surname']) && $data['surname'] != null &&
-                        isset($data['groups']) && $data['groups'] != null &&
-                        isset($data['mail']) && $data['mail'] != null &&
-                        isset($data['application']) && $data['application'] != null &&
-                        isset($data['admin']) && $data['admin'] != null &&
-                        isset($data['teacher']) && $data['teacher'] != null &&
+                        !empty($data['user_id']) &&
+                        !empty($data['firstname']) &&
+                        !empty($data['surname']) &&
+                        !empty($data['groups']) &&
+                        !empty($data['mail']) &&
+                        !empty($data['admin']) &&
+                        !empty($data['teacher']) &&
                         isset($data['grade']) &&
                         isset($data['subject']) &&
-                        isset($data['isactive']) && $data['isactive'] != null
+                        !empty($data['isactive'])
                     ) {
+
                         $user_id = htmlspecialchars($data['user_id']);
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
@@ -530,7 +531,7 @@ class ControllerSuperAdmin extends Controller
                         $grade = (int)htmlspecialchars($data['grade']);
                         $subject = (int)htmlspecialchars($data['subject']);
 
-                        $application = (int)htmlspecialchars($data['application']);
+                        $application = json_decode($data['application']);
 
                         // further information 
                         $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
@@ -620,9 +621,40 @@ class ControllerSuperAdmin extends Controller
                             }
                         }
 
-                        $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user_id]);
-                        $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application]);
-                        if (!empty($groups)) {
+
+                        $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);
+
+                        $isAppActive = false;
+                        foreach ($appFromGroupExist as $appFromGroup) {
+                            foreach ($application as $app) {
+                                if ($appFromGroup->getApplication() == key($app) && $app == false) {
+                                    $this->entityManager->remove($appFromGroupExist);
+                                    $this->entityManager->flush();
+                                } else if ($appFromGroup->getApplication() == key($app)) {
+                                    $isAppActive = true;
+                                }
+                            }
+                            if (!$isAppActive) {
+                                $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => key($app)]);
+                                $check = $this->entityManager->getRepository(Applications::class)->isApplicationFromGroupFull($groups[1], $apps, $user_id);
+                                if ($check['canAdd'] == true) {
+                                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                                    $newAppFromGroup->setApplication($apps);
+                                    $newAppFromGroup->setGroup($group);
+                                    $newAppFromGroup->setUser($user);
+                                    $this->entityManager->persist($newAppFromGroup);
+                                    $this->entityManager->flush();
+                                } else {
+                                    return $check;
+                                }
+                            }
+                            $isAppActive = false;
+                        }
+
+
+
+
+                        /* if (!empty($groups)) {
                             if ($appFromGroupExist && $application > 0) {
                                 $appFromGroupExist->setApplication($apps);
                                 $this->entityManager->persist($appFromGroupExist);
@@ -646,7 +678,9 @@ class ControllerSuperAdmin extends Controller
                         } else {
                             $this->entityManager->remove($appFromGroupExist);
                             $this->entityManager->flush();
-                        }
+                        } */
+
+
 
 
                         $this->entityManager->flush();
