@@ -18,8 +18,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->createQueryBuilder()
             ->select('COUNT(t)')
             ->from(Activity::class, 't')
-            ->where('(t.user = :id AND t.isFromClassroom = true)')
-            ->setParameters('id', $userId)
+            ->where('t.user = :id AND t.isFromClassroom = true')
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -85,7 +85,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('t')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NULL)')
-            ->setParameters('id', $userId)
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
         return $query;
@@ -98,7 +98,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('t')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND  t.correction = 1)')
-            ->setParameters('id', $userId)
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
         return $query;
@@ -111,7 +111,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('t')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND t.correction > 1)')
-            ->setParameters('id', $userId)
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
         return $query;
@@ -124,7 +124,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('t')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NOT NULL)')
-            ->setParameters('id', $userId)
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
         return $query;
