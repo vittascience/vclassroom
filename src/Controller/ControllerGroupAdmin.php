@@ -162,9 +162,9 @@ class ControllerGroupAdmin extends Controller
                     $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
                     /////////////////////////////////////
 
-                    return ['response' => 'success', 'mail' => $emailSent];
+                    return ['message' => 'success', 'mail' => $emailSent];
                 } else {
-                    return ['response' => 'missing data'];
+                    return ['message' => 'missing data'];
                 }
             },
             'registerTeacher' => function ($data) {
