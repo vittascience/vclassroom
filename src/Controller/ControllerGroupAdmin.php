@@ -549,34 +549,10 @@ class ControllerGroupAdmin extends Controller
                         }
                     }
 
-
-                    $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);
-
-                    $isAppActive = false;
-                    foreach ($appFromGroupExist as $appFromGroup) {
-                        foreach ($application as $app) {
-                            if ($appFromGroup->getApplication() == key($app) && $app == false) {
-                                $this->entityManager->remove($appFromGroupExist);
-                                $this->entityManager->flush();
-                            } else if ($appFromGroup->getApplication() == key($app)) {
-                                $isAppActive = true;
-                            }
-                        }
-                        if (!$isAppActive) {
-                            $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => key($app)]);
-                            $check = $this->entityManager->getRepository(Applications::class)->isApplicationFromGroupFull($groups[1], $apps, $user_id);
-                            if ($check['canAdd'] == true) {
-                                $newAppFromGroup = new UsersLinkApplicationsFromGroups();
-                                $newAppFromGroup->setApplication($apps);
-                                $newAppFromGroup->setGroup($group);
-                                $newAppFromGroup->setUser($user);
-                                $this->entityManager->persist($newAppFromGroup);
-                                $this->entityManager->flush();
-                            } else {
-                                return $check;
-                            }
-                        }
-                        $isAppActive = false;
+                    // Manage the group apps for user
+                    $appsManager = $this->manageAppsFromGroups($user_id, $application, $groups, $group, $user);
+                    if ($appsManager != true) {
+                        return $appsManager;
                     }
 
                     $this->entityManager->flush();
@@ -825,6 +801,38 @@ class ControllerGroupAdmin extends Controller
                 return $groupInfo;
             },
         );
+    }
+
+    private function manageAppsFromGroups(Int $user_id, array $application, array $groups, Groups $group, User $user)
+    {
+        $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);
+        $isAppActive = false;
+        foreach ($application as $app) {
+            foreach ($appFromGroupExist as $appFromGroup) {
+                if ($appFromGroup->getApplication()->getId() == $app[0] && $app[1] == false) {
+                    $this->entityManager->remove($appFromGroup);
+                    $this->entityManager->flush();
+                } else if ($appFromGroup->getApplication()->getId() == $app[0]) {
+                    $isAppActive = true;
+                }
+            }
+            if (!$isAppActive && $app[1] == true) {
+                $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app[0]]);
+                $check = $this->entityManager->getRepository(Applications::class)->isApplicationFromGroupFull($groups[1], $app[0], $user_id);
+                if ($check['canAdd'] == true) {
+                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                    $newAppFromGroup->setApplication($apps);
+                    $newAppFromGroup->setGroup($group);
+                    $newAppFromGroup->setUser($user);
+                    $this->entityManager->persist($newAppFromGroup);
+                    $this->entityManager->flush();
+                } else {
+                    return $check;
+                }
+            }
+            $isAppActive = false;
+        }
+        return true;
     }
 
     // Check restrictions via applications
