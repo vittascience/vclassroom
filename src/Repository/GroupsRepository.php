@@ -49,7 +49,7 @@ class GroupsRepository extends EntityRepository
 
         // Récupère les applications liées à des groupes
         $ApplicationsOfGroups = $this->getEntityManager()
-            ->createQueryBuilder()->select("a.id AS application_id, a.image AS application_image, g.id AS group_id")
+            ->createQueryBuilder()->select("a.id AS application_id, a.image AS application_image, a.name AS application_name, g.id AS group_id")
             ->from(Applications::class, 'a')
             ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
             ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')
@@ -61,7 +61,11 @@ class GroupsRepository extends EntityRepository
         foreach ($records as $key => $value) {
             foreach ($ApplicationsOfGroups as $key2 => $value2) {
                 if ((int)$value['id'] == (int)$value2['group_id']) {
-                    $records[$key]['applications'][] = ['id' => $value2['application_id'], 'image' => $value2['application_image']];
+                    $records[$key]['applications'][] = [
+                        'id' => $value2['application_id'],
+                        'image' => $value2['application_image'],
+                        'name' => $value2['application_name']
+                    ];
                 }
             }
         }
@@ -129,7 +133,7 @@ class GroupsRepository extends EntityRepository
         // Récupère les applications liées à des groupes
         $ApplicationsOfGroups = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("a.id AS application_id, a.image AS application_image, g.id AS group_id")
+            ->select("a.id AS application_id, a.image AS application_image, a.name AS application_name, g.id AS group_id")
             ->from(Applications::class, 'a')
             ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
             ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')
@@ -141,7 +145,11 @@ class GroupsRepository extends EntityRepository
         foreach ($records as $key => $value) {
             foreach ($ApplicationsOfGroups as $key2 => $value2) {
                 if ((int)$value['id'] == (int)$value2['group_id']) {
-                    $records[$key]['applications'][] = ['id' => $value2['application_id'], 'image' => $value2['application_image']];
+                    $records[$key]['applications'][] = [
+                        'id' => $value2['application_id'],
+                        'image' => $value2['application_image'],
+                        'name' => $value2['application_name']
+                    ];
                 }
             }
         }
