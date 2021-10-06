@@ -681,22 +681,6 @@ class ControllerSuperAdmin extends Controller
                         return ['message' => 'missing data'];
                     }
                 },
-                'search_user_by_name' => function ($data) {
-                    if (
-                        isset($data['name']) && $data['name'] != null &&
-                        isset($data['userspp']) && $data['userspp'] != null &&
-                        isset($data['page']) && $data['page'] != null &&
-                        isset($data['group']) && $data['group'] != null
-                    ) {
-                        $page = htmlspecialchars($data['page']);
-                        $userspp = htmlspecialchars($data['userspp']);
-                        $name = htmlspecialchars($data['name']);
-                        $group = htmlspecialchars($data['group']);
-                        return $this->entityManager->getRepository(UsersLinkGroups::class)->searchUser($name, $page, $userspp, $group);
-                    } else {
-                        return ['response' => 'missing data'];
-                    }
-                },
                 'global_search_user_by_name' => function ($data) {
                     if (
                         isset($data['name']) && $data['name'] != null &&

@@ -340,80 +340,14 @@ class UsersLinkGroupsRepository extends EntityRepository
     /**
      * @Return array of User
      */
-    public function searchUser(String $string, Int $page, Int $userspp, Int $group)
-    {
-
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-
-        // Récupère l'id des membres liés à un groupe si le groupe choisi est égal à -1 (ce qui est l'identificateur des utilisateurs sans groupe)
-        $users_id_in_group = [];
-        if ($group == -1) {
-            $id_members_in_groups = $this->getEntityManager()
-                ->createQueryBuilder()->select("IDENTITY(g.user) as user, g.id")
-                ->from(UsersLinkGroups::class, 'g')
-                ->getQuery()
-                ->getScalarResult();
-
-            foreach ($id_members_in_groups as $key => $value) {
-                $users_id_in_group[] = $value['user'];
-            }
-        }
-
-        // Si l'identificateur de groupe correspond à celui des utilisateurs sans groupe et si il y au moins une personne lié a un groupe
-        // On va exclure les id des utilisateurs liés à un groupe dans la query resultant à avoir tous les utilisateurs sans groupe
-        if ($group == -1 && count($users_id_in_group) > 1) {
-            $Users = $this->getEntityManager()
-                ->createQueryBuilder()
-                ->select("u.id, u.surname, u.firstname, u.pseudo")
-                ->from(User::class, 'u')
-                ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
-                ->andWhere('u.firstname LIKE :name OR u.surname LIKE :name OR u.pseudo LIKE :name')
-                ->setParameter('ids', $users_id_in_group)
-                ->setParameter('name', '%' . $string . '%')
-                ->getQuery();
-        } else {
-            $Users = $this->getEntityManager()
-                ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, g.rights AS rights")
-                ->from(User::class, 'u')
-                ->innerJoin(UsersLinkGroups::class, 'g')
-                ->where('u.firstname LIKE :name OR u.surname LIKE :name OR u.pseudo LIKE :name')
-                ->andWhere('g.group = :gid AND g.user = u.id')
-                ->setParameter('name', '%' . $string . '%')
-                ->setParameter('gid', $group)
-                ->groupBy('u.id')
-                ->getQuery();
-        }
-
-        // Initialise l'outil de pagination et les variables qui seront envoyées au javascript
-        $paginator = new Paginator($Users);
-        $paginator->setUseOutputWalkers(false);
-        $totalItems = count($paginator);
-        $currentPage = $page;
-        $totalPagesCount = ceil($totalItems / $userspp);
-        $nextPage = (($currentPage < $totalPagesCount) ? $currentPage + 1 : $totalPagesCount);
-        $previousPage = (($currentPage > 1) ? $currentPage - 1 : 1);
-
-        $records = $paginator->getQuery()
-            ->setFirstResult($userspp * ($currentPage - 1))
-            ->setMaxResults($userspp)
-            ->getScalarResult();
-
-        $records[] = ['totalItems' => $totalItems, 'currentPage' => (int)$currentPage, 'totalPagesCount' => $totalPagesCount, 'nextPage' => $nextPage, 'previousPage' => $previousPage];
-
-        return $records;
-    }
-
-    /**
-     * @Return array of User
-     */
     public function globalSearchUser(String $string, Int $page, Int $userspp)
     {
 
         $Users = $this->getEntityManager()
-            ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email")
+            ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email, IDENTITY(ulg.group) as group_id")
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
+            ->leftJoin(UsersLinkGroups::class, 'ulg', 'WITH', 'u.id = ulg.user')
             ->where('u.firstname LIKE :name OR u.surname LIKE :name OR u.pseudo LIKE :name OR r.email LIKE :name')
             ->setParameter('name', '%' . $string . '%')
             ->groupBy('u.id')
