@@ -26,6 +26,9 @@ class ControllerGroupAdmin extends Controller
             'get_all_groups_where_user_is_admin' => function () {
                 return $this->entityManager->getRepository(UsersLinkGroups::class)->groupWhereUserIsAdmin($_SESSION['id']);
             },
+            'get_group_id' => function () {
+                return $this->entityManager->getRepository(UsersLinkGroups::class)->getIdFromGroupWhereUserAdmin($_SESSION['id']);
+            },
             'get_all_users_in_group' => function ($data) {
                 if (
                     isset($data['group_id']) &&

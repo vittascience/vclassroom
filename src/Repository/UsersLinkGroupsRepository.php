@@ -534,6 +534,21 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         return $Groups;
     }
+
+    public function getIdFromGroupWhereUserAdmin($admin_id)
+    {
+        $Groups = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select("g.id")
+            ->from(Groups::class, 'g')
+            ->innerJoin(UsersLinkGroups::class, 'ulg')
+            ->where('ulg.user = :id AND ulg.rights = 1 AND g.id = ulg.group')
+            ->setParameter('id', $admin_id)
+            ->getQuery()
+            ->getScalarResult();
+
+        return $Groups;
+    }
 }
 
 
