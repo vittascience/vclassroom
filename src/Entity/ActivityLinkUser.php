@@ -123,7 +123,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $url;
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0,$url=null)
     {
         $this->setUser($user);
         $this->setActivity($activity);
@@ -139,6 +139,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->setEvaluation($evaluation);
         $this->setAutocorrection($autocorrection);
         $this->setReference($reference);
+        $this->setUrl($url);
     }
     /**
      * @return User
@@ -530,6 +531,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'evaluation' => $this->getEvaluation(),
             'project' => $project,
             'reference' => $this->getReference(),
+            'url'=> $this->getUrl()
         ];
     }
 
