@@ -500,7 +500,7 @@ class ControllerSuperAdmin extends Controller
                         ";
                         $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
 
-                        return ['message' => 'success', 'mail' => $emailSent];
+                        return ['message' => 'success', 'mail' => $emailSent, 'id' => $user->getId()];
                     } else {
                         return ['message' => 'missing data'];
                     }
