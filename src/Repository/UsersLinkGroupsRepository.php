@@ -344,10 +344,9 @@ class UsersLinkGroupsRepository extends EntityRepository
     {
 
         $Users = $this->getEntityManager()
-            ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email, IDENTITY(ulg.group) as group_id")
+            ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email, r.active")
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
-            ->leftJoin(UsersLinkGroups::class, 'ulg', 'WITH', 'u.id = ulg.user')
             ->where('u.firstname LIKE :name OR u.surname LIKE :name OR u.pseudo LIKE :name OR r.email LIKE :name')
             ->setParameter('name', '%' . $string . '%')
             ->groupBy('u.id')
