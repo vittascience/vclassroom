@@ -123,7 +123,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $url;
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0,$url=null)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url=null,  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
     {
         $this->setUser($user);
         $this->setActivity($activity);
@@ -537,7 +537,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 
     public static function jsonDeserialize($jsonDecoded)
     {
-        $classInstance = new self(new Activity("title", "content", new User(), false), new User(), null, null, false, false);
+        $classInstance = new self(new Activity("title", "content", new User(), false), new User(), null, null, false, false,null);
         foreach ($jsonDecoded as $attributeName => $attributeValue) {
             $classInstance->{$attributeName} = $attributeValue;
         }
