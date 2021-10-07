@@ -121,9 +121,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @ORM\Column(name="url", type="string",length=255, nullable=true)
      * @var string
      */
-    private $url;
+    private $url="";
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url=null,  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
     {
         $this->setUser($user);
         $this->setActivity($activity);
@@ -493,7 +493,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      *
      * @return  self
      */ 
-    public function setUrl(string $url)
+    public function setUrl( $url)
     {
         $this->url = $url;
 
