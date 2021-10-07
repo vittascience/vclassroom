@@ -892,6 +892,22 @@ class ControllerSuperAdmin extends Controller
                         return ['success' => false, 'message' => 'missingData'];
                     }
                 },
+                'get_default_restrictions' => function () {
+                    $allRestrictions = $this->entityManager->getRepository(Restrictions::class)->findAll();
+                    return $allRestrictions;
+                },
+                'get_default_users_restrictions' => function () {
+                    $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'userDefaultRestrictions']);
+                    return $restrictions;
+                },
+                'get_default_groups_restrictions' => function () {
+                    $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'groupDefaultRestrictions']);
+                    return $restrictions;
+                },
+                'get_default_activities_restrictions' => function () {
+                    $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
+                    return $restrictions;
+                },
 
             );
         }

@@ -58,7 +58,7 @@ class Restrictions implements \JsonSerializable, \Utils\JsonDeserializer
     }
 
     /**
-     * @return Json
+     * @return string
      */
     public function getRestrictions()
     {
@@ -80,7 +80,7 @@ class Restrictions implements \JsonSerializable, \Utils\JsonDeserializer
         return [
             'id' => $this->getId(),
             'name' => $this->getName(),
-            'restrictions' => $this->getRestrictions()
+            'restrictions' => (array)json_decode($this->getRestrictions())
         ];
     }
 
