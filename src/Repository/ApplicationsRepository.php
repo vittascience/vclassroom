@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
+use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
 
 class ApplicationsRepository extends EntityRepository
@@ -18,7 +19,12 @@ class ApplicationsRepository extends EntityRepository
      */
     public function isStudentsLimitReachedForTeacher(Int $teacher_id, Int $students_number): ?array
     {
-        include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
+        //include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
+
+        $userDefaultRestrictions = $this->getEntityManager()->getRepository(Restrictions::class)->findBy(['name' => "userDefaultRestrictions"]);
+
+        var_dump($userDefaultRestrictions);
+        die();
 
         $Applications = $this->getEntityManager()->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher_id]);
         $ApplicationFromGroup = $this->getEntityManager()->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $teacher_id]);
@@ -137,6 +143,7 @@ class ApplicationsRepository extends EntityRepository
                 }
             } else {
                 $groupInfo['outDated'] = true;
+                // Free groups restrictions to add
             }
 
             // Register log
