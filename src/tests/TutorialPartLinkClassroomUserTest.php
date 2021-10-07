@@ -180,7 +180,8 @@ class ActivityLinkUserTest extends TestCase
             'correction' => null,
             'autocorrection' => false,
             'evaluation' => false,
-            'project' => null
+            'project' => null,
+            'url'=> ''
         ];
         $serialized = $tutorialPartLinkUser->jsonSerialize();
         $this->assertEquals($serialized, $test);
