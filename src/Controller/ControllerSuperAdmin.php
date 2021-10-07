@@ -9,6 +9,7 @@ use User\Entity\Teacher;
 use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
 use Classroom\Entity\Applications;
+use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\UsersLinkApplications;
