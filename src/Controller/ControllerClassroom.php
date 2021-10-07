@@ -89,8 +89,8 @@ class ControllerClassroom extends Controller
                 $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
                 $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;
                
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
+                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
 
                 // get user "roles"
@@ -348,8 +348,8 @@ class ControllerClassroom extends Controller
                 $link = !empty($_POST['link'])
                     ? htmlspecialchars(strip_tags(trim($_POST['link'])))
                     : '';
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
+                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
 
                 // no link provided, return an error
