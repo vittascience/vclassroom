@@ -850,10 +850,10 @@ class ControllerGroupAdmin extends Controller
         $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
         $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
-        //$maxTeacher = groupDefaultRestrictions['maxTeachers'];
-        $maxTeacher = $this->getEntityManager()->getRepository(Restrictions::class)->findBy(['name' => "groupDefaultRestrictions"]);
-        var_dump($maxTeacher);
-        die();
+        // Get the default user restrictions in the database
+        $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findBy(['name' => "groupDefaultRestrictions"]);
+        $groupRestriction = (array)json_decode($groupDefaultRestrictions->getRestrictions());
+        $maxTeacher = $groupRestriction['maxTeachers'];
 
         foreach ($applicationsOfGroup as $application) {
             $app = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $application->getApplication()]);

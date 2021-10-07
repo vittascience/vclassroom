@@ -21,10 +21,9 @@ class ApplicationsRepository extends EntityRepository
     {
         //include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
 
-        $userDefaultRestrictions = $this->getEntityManager()->getRepository(Restrictions::class)->findBy(['name' => "userDefaultRestrictions"]);
-
-        var_dump($userDefaultRestrictions);
-        die();
+        // Get the default user restrictions in the database
+        $userDefaultRestrictions = $this->getEntityManager()->getRepository(Restrictions::class)->findOneBy(['name' => "userDefaultRestrictions"]);
+        $userRestriction = (array)json_decode($userDefaultRestrictions->getRestrictions());
 
         $Applications = $this->getEntityManager()->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher_id]);
         $ApplicationFromGroup = $this->getEntityManager()->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $teacher_id]);
@@ -74,11 +73,11 @@ class ApplicationsRepository extends EntityRepository
                 $teacherInfo['applications'][] = $userApplication;
             }
         } else {
-            $maxStudentsPerTeachers = userDefaultRestrictions['maxStudents'];
+            $maxStudentsPerTeachers = $userRestriction['maxStudents'];
         }
 
         if (!$teacherInfo['active']) {
-            $maxStudentsPerTeachers = userDefaultRestrictions['maxStudents'];
+            $maxStudentsPerTeachers = $userRestriction['maxStudents'];
         }
         $teacherInfo['maxStudents'] = $maxStudentsPerTeachers;
 
