@@ -43,8 +43,8 @@ class ControllerClassroomLinkUser extends Controller
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
 
                 // bind and sanitize .env demoStudent
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                                 : 'demostudent';
                 
                 // get all classrooms for the current user
@@ -175,8 +175,8 @@ class ControllerClassroomLinkUser extends Controller
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
             
                 // bind and sanitize .env demoStudent
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
+                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                                 : 'demostudent';
                 
                 // retrieve all classrooms of the current user
