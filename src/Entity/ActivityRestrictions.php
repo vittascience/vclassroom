@@ -8,7 +8,7 @@ use Classroom\Entity\Applications;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\ActivityRestrictionsRepository")
- * @ORM\Table(name="activities_restrictions")
+ * @ORM\Table(name="classroom_activities_restrictions")
  */
 class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 {

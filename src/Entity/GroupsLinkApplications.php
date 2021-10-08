@@ -10,7 +10,7 @@ use Classroom\Entity\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\GroupsLinkApplicationsRepository")
- * @ORM\Table(name="groups_link_applications")
+ * @ORM\Table(name="classroom_groups_link_applications")
  */
 class GroupsLinkApplications
 {

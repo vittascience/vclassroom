@@ -8,7 +8,7 @@ use User\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\UsersLinkGroupsRepository")
- * @ORM\Table(name="users_link_groups")
+ * @ORM\Table(name="classroom_users_link_groups")
  */
 class UsersLinkGroups implements \JsonSerializable, \Utils\JsonDeserializer
 {

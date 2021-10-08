@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\RestrictionsRepository")
- * @ORM\Table(name="restrictions")
+ * @ORM\Table(name="classroom_restrictions")
  */
 class Restrictions implements \JsonSerializable, \Utils\JsonDeserializer
 {
