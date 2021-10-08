@@ -909,7 +909,109 @@ class ControllerSuperAdmin extends Controller
                     $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
                     return $restrictions;
                 },
+                'update_default_users_restrictions' => function ($data) {
+                    if (isset($data['maxStudents'])) {
 
+                        $maxStudentsClear = htmlspecialchars($data['maxStudents']);
+
+                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'userDefaultRestrictions']);
+                        $arrayRestriction = json_encode([
+                            "maxStudents" => $maxStudentsClear,
+                        ]);
+                        $restrictions->setRestrictions($arrayRestriction);
+                        $this->entityManager->persist($restrictions);
+                        $this->entityManager->flush();
+
+                        return ['message' => "success"];
+                    } else {
+                        return ['message' => "missing data"];
+                    }
+                },
+                'update_default_groups_restrictions' => function ($data) {
+                    if (isset($data['maxStudents']) && isset($data['maxTeachers']) && isset($data['maxPerTeachers'])) {
+
+                        $maxStudentsClear = htmlspecialchars($data['maxStudents']);
+                        $maxTeachersClear = htmlspecialchars($data['maxTeachers']);
+                        $maxPerTeachersClear = htmlspecialchars($data['maxPerTeachers']);
+
+                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'groupDefaultRestrictions']);
+                        $arrayRestriction = json_encode([
+                            "maxStudents" => $maxStudentsClear,
+                            "maxTeachers" => $maxTeachersClear,
+                            "maxStudentsPerTeacher" => $maxPerTeachersClear,
+                        ]);
+                        $restrictions->setRestrictions($arrayRestriction);
+                        $this->entityManager->persist($restrictions);
+                        $this->entityManager->flush();
+
+                        return ['message' => "success"];
+                    } else {
+                        return ['message' => "missing data"];
+                    }
+                },
+                'update_default_activities_restrictions' => function ($data) {
+                    if (isset($data['restrictions'])) {
+
+                        $restrictionsData = json_decode($data['restrictions']);
+                        $restrictionsFormatted = [];
+
+                        foreach ($restrictionsData as $restriction) {
+                            $restrictionsFormatted[$restriction[0]] = (int)$restrictionsData[1];
+                        }
+
+                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
+                        $arrayRestriction = json_encode($restrictionsFormatted);
+                        $restrictions->setRestrictions($arrayRestriction);
+                        $this->entityManager->persist($restrictions);
+                        $this->entityManager->flush();
+
+                        return ['message' => "success"];
+                    } else {
+                        return ['message' => "missing data"];
+                    }
+                },
+                'add_default_activities_restrictions' => function ($data) {
+                    if (isset($data['restrictions'])) {
+
+                        $restrictionsData = json_decode($data['restrictions']);
+                        $restrictionsFormatted = [];
+
+                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
+
+                        $restrictionsFormatted = (array)json_decode($restrictions->getRestrictions());
+                        if (!array_key_exists($restrictionsData[0], $restrictionsFormatted)) {
+                            $restrictionsFormatted[$restrictionsData[0]] = (int)$restrictionsData[1];
+
+                            $arrayRestriction = json_encode($restrictionsFormatted);
+                            $restrictions->setRestrictions($arrayRestriction);
+                            $this->entityManager->persist($restrictions);
+                            $this->entityManager->flush();
+
+                            return ['message' => "success"];
+                        } else {
+                            return ['message' => "alreadyexist"];
+                        }
+                    } else {
+                        return ['message' => "missing data"];
+                    }
+                },
+                'delete_default_activities_restrictions' => function ($data) {
+                    if (isset($data['restrictions'])) {
+
+                        $restrictionsData = htmlspecialchars($data['restrictions']);
+                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
+                        $restrictionsFormatted = (array)json_decode($restrictions->getRestrictions());
+                        unset($restrictionsFormatted[$restrictionsData]);
+                        $arrayRestriction = json_encode($restrictionsFormatted);
+                        $restrictions->setRestrictions($arrayRestriction);
+                        $this->entityManager->persist($restrictions);
+                        $this->entityManager->flush();
+
+                        return ['message' => "success"];
+                    } else {
+                        return ['message' => "missing data"];
+                    }
+                }
             );
         }
     }
