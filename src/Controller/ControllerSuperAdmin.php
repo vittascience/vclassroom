@@ -424,84 +424,90 @@ class ControllerSuperAdmin extends Controller
                         $school = htmlspecialchars($data['school']);
                         $grade = (int)htmlspecialchars($data['grade']);
                         $subject = (int)htmlspecialchars($data['subject']);
-                        // further information 
-                        $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
-                        $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
-                        $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
-                        $user = new User();
-                        $user->setFirstname($firstname);
-                        $user->setSurname($surname);
-                        if ($pseudo != null) {
-                            $user->setPseudo($pseudo);
-                        } else {
-                            $user->setPseudo("anonyme");
-                        }
-                        $objDateTime = new \DateTime('NOW');
-                        $user->setInsertDate($objDateTime);
+                        $checkExist = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $mail]);
 
-                        $password = "";
-                        for ($i = 0; $i < 8; $i++) {
-                            $password .= rand(0, 9);
-                        }
-                        $hash = password_hash($password, PASSWORD_DEFAULT);
-                        $user->setPassword($hash);
-                        $this->entityManager->persist($user);
-                        $this->entityManager->flush();
+                        if (!$checkExist) {
+                            // further information 
+                            $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
+                            $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
+                            $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
-                        foreach ($groups as $key => $value) {
-                            if ($value[1] != -1) {
-                                $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);
-
-                                $rights = 0;
-                                $UsersLinkGroups = new UsersLinkGroups();
-                                $UsersLinkGroups->setGroup($group);
-                                $UsersLinkGroups->setUser($user);
-                                if ($value[0] == true) {
-                                    $rights = 1;
-                                }
-                                $UsersLinkGroups->setRights($rights);
-                                $this->entityManager->persist($UsersLinkGroups);
+                            $user = new User();
+                            $user->setFirstname($firstname);
+                            $user->setSurname($surname);
+                            if ($pseudo != null) {
+                                $user->setPseudo($pseudo);
+                            } else {
+                                $user->setPseudo("anonyme");
                             }
-                        }
+                            $objDateTime = new \DateTime('NOW');
+                            $user->setInsertDate($objDateTime);
 
-                        $confirmationToken = bin2hex(random_bytes(16));
-                        $regular = new Regular($user, $mail, $bio, $phone, false, $admin, null, null, false);
-                        $regular->setConfirmToken($confirmationToken);
-                        $this->entityManager->persist($regular);
+                            $password = "";
+                            for ($i = 0; $i < 8; $i++) {
+                                $password .= rand(0, 9);
+                            }
+                            $hash = password_hash($password, PASSWORD_DEFAULT);
+                            $user->setPassword($hash);
+                            $this->entityManager->persist($user);
+                            $this->entityManager->flush();
+
+                            foreach ($groups as $key => $value) {
+                                if ($value[1] != -1) {
+                                    $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);
+
+                                    $rights = 0;
+                                    $UsersLinkGroups = new UsersLinkGroups();
+                                    $UsersLinkGroups->setGroup($group);
+                                    $UsersLinkGroups->setUser($user);
+                                    if ($value[0] == true) {
+                                        $rights = 1;
+                                    }
+                                    $UsersLinkGroups->setRights($rights);
+                                    $this->entityManager->persist($UsersLinkGroups);
+                                }
+                            }
+
+                            $confirmationToken = bin2hex(random_bytes(16));
+                            $regular = new Regular($user, $mail, $bio, $phone, false, $admin, null, null, false);
+                            $regular->setConfirmToken($confirmationToken);
+                            $this->entityManager->persist($regular);
 
 
-                        if ($isTeacher) {
-                            $teacher = new Teacher($user, $subject, $school, $grade);
-                            $this->entityManager->persist($teacher);
-                        }
+                            if ($isTeacher) {
+                                $teacher = new Teacher($user, $subject, $school, $grade);
+                                $this->entityManager->persist($teacher);
+                            }
 
-                        $this->entityManager->flush();
+                            $this->entityManager->flush();
 
-                        $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
-                        $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken";
-                        $emailTtemplateBody = $userLang . "_confirm_account";
+                            $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
+                            $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken";
+                            $emailTtemplateBody = $userLang . "_confirm_account";
 
-                        if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
-                            i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
-                        } else {
-                            i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
-                        }
+                            if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
+                                i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
+                            } else {
+                                i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
+                            }
 
-                        $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
-                        $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
-                        $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
-                        $body = "
+                            $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
+                            $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
+                            $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
+                            $body = "
                             <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
                                 $bodyTitle
                             </a>
                             <br>
                             <br>
-                            <p>$textBeforeLink $accountConfirmationLink
-                        ";
-                        $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
+                            <p>$textBeforeLink $accountConfirmationLink";
+                            $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
 
-                        return ['message' => 'success', 'mail' => $emailSent, 'id' => $user->getId()];
+                            return ['message' => 'success', 'mail' => $emailSent, 'id' => $user->getId()];
+                        } else {
+                            return ['message' => 'mailAlreadyExist'];
+                        }
                     } else {
                         return ['message' => 'missing data'];
                     }

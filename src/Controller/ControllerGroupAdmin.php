@@ -73,102 +73,107 @@ class ControllerGroupAdmin extends Controller
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
-                        $user = new User;
-                        $user->setFirstname($firstname);
-                        $user->setSurname($surname);
-                        //$user->setPseudo($pseudo);
-                        // the pseudo field is not
-                        if ($pseudo != null) {
-                            $user->setPseudo($pseudo);
-                        } else {
-                            $user->setPseudo("anonyme");
-                        }
-                        $objDateTime = new \DateTime('NOW');
-                        $user->setInsertDate($objDateTime);
-
-                        $password = "";
-                        for ($i = 0; $i < 8; $i++) {
-                            $password .= rand(0, 9);
-                        }
-
-                        $hash = password_hash($password, PASSWORD_DEFAULT);
-                        $user->setPassword($hash);
-                        $this->entityManager->persist($user);
-
-                        // link the user to the group with his right
-                        if ($groups[1] != -1) {
-                            $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
-
-                            // Check restrictions via applications
-                            $canAddUser = $this->isGroupFull($groups[1]);
-                            if (!$canAddUser['response']) {
-                                return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
-                            }
-                            // Check restrictions via applications
-
-                            // Vérifie si l'utilisateur qui demande la liaison a un group est bien admin de celui-ci
-                            $adminOfTheGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $admin, 'group' => $group]);
-                            $rightsOfRequester = $adminOfTheGroups ? $adminOfTheGroups->getRights() : 0;
-
-                            if ($rightsOfRequester == 1) {
-                                $rights = 0;
-                                $UsersLinkGroups = new UsersLinkGroups();
-                                $UsersLinkGroups->setGroup($group);
-                                $UsersLinkGroups->setUser($user);
-                                if ($groups[0] == true) {
-                                    $rights = 1;
-                                }
-                                $UsersLinkGroups->setRights($rights);
-                                $this->entityManager->persist($UsersLinkGroups);
+                        $checkExist = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $mail]);
+                        if (!$checkExist) {
+                            $user = new User;
+                            $user->setFirstname($firstname);
+                            $user->setSurname($surname);
+                            //$user->setPseudo($pseudo);
+                            // the pseudo field is not
+                            if ($pseudo != null) {
+                                $user->setPseudo($pseudo);
                             } else {
-                                return ['message' => 'noadmin'];
+                                $user->setPseudo("anonyme");
                             }
-                        }
-                        // wait the return of restrictions to flush the user
-                        $this->entityManager->flush();
+                            $objDateTime = new \DateTime('NOW');
+                            $user->setInsertDate($objDateTime);
 
-                        // Create Regular and Teacher entity on need
-                        $confirmationToken = bin2hex(random_bytes(16));
-                        $regular = new Regular($user, $mail, $bio, $phone);
-                        $regular->setConfirmToken($confirmationToken);
-                        $this->entityManager->persist($regular);
+                            $password = "";
+                            for ($i = 0; $i < 8; $i++) {
+                                $password .= rand(0, 9);
+                            }
 
-                        $teacher = new Teacher($user, $subject, $school, $grade);
-                        $this->entityManager->persist($teacher);
-                        $this->entityManager->flush();
+                            $hash = password_hash($password, PASSWORD_DEFAULT);
+                            $user->setPassword($hash);
+                            $this->entityManager->persist($user);
+
+                            // link the user to the group with his right
+                            if ($groups[1] != -1) {
+                                $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
+
+                                // Check restrictions via applications
+                                $canAddUser = $this->isGroupFull($groups[1]);
+                                if (!$canAddUser['response']) {
+                                    return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
+                                }
+                                // Check restrictions via applications
+
+                                // Vérifie si l'utilisateur qui demande la liaison a un group est bien admin de celui-ci
+                                $adminOfTheGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $admin, 'group' => $group]);
+                                $rightsOfRequester = $adminOfTheGroups ? $adminOfTheGroups->getRights() : 0;
+
+                                if ($rightsOfRequester == 1) {
+                                    $rights = 0;
+                                    $UsersLinkGroups = new UsersLinkGroups();
+                                    $UsersLinkGroups->setGroup($group);
+                                    $UsersLinkGroups->setUser($user);
+                                    if ($groups[0] == true) {
+                                        $rights = 1;
+                                    }
+                                    $UsersLinkGroups->setRights($rights);
+                                    $this->entityManager->persist($UsersLinkGroups);
+                                } else {
+                                    return ['message' => 'noadmin'];
+                                }
+                            }
+                            // wait the return of restrictions to flush the user
+                            $this->entityManager->flush();
+
+                            // Create Regular and Teacher entity on need
+                            $confirmationToken = bin2hex(random_bytes(16));
+                            $regular = new Regular($user, $mail, $bio, $phone);
+                            $regular->setConfirmToken($confirmationToken);
+                            $this->entityManager->persist($regular);
+
+                            $teacher = new Teacher($user, $subject, $school, $grade);
+                            $this->entityManager->persist($teacher);
+                            $this->entityManager->flush();
 
 
 
-                        $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
+                            $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
 
-                        // create the confirmation account link and set the email template to be used      
-                        $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken";
-                        $emailTtemplateBody = $userLang . "_confirm_account";
+                            // create the confirmation account link and set the email template to be used      
+                            $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken";
+                            $emailTtemplateBody = $userLang . "_confirm_account";
 
-                        // init i18next instance
-                        if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
-                            i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
+                            // init i18next instance
+                            if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
+                                i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
+                            } else {
+                                i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
+                            }
+
+                            $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
+                            $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
+                            $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
+
+                            $body = "
+                            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
+                                $bodyTitle
+                            </a>
+                            <br>
+                            <br>
+                            <p>$textBeforeLink $accountConfirmationLink
+                        ";
+
+                            $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
+                            /////////////////////////////////////
+
+                            return ['message' => 'success', 'mail' => $emailSent];
                         } else {
-                            i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
+                            return ['message' => 'mailAlreadyExist'];
                         }
-
-                        $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
-                        $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
-                        $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
-
-                        $body = "
-                        <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                            $bodyTitle
-                        </a>
-                        <br>
-                        <br>
-                        <p>$textBeforeLink $accountConfirmationLink
-                    ";
-
-                        $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
-                        /////////////////////////////////////
-
-                        return ['message' => 'success', 'mail' => $emailSent];
                     } else {
                         return ['message' => 'missing data'];
                     }
