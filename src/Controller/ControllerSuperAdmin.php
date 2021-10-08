@@ -916,7 +916,7 @@ class ControllerSuperAdmin extends Controller
 
                         $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'userDefaultRestrictions']);
                         $arrayRestriction = json_encode([
-                            "maxStudents" => $maxStudentsClear,
+                            "maxStudents" => (int)$maxStudentsClear,
                         ]);
                         $restrictions->setRestrictions($arrayRestriction);
                         $this->entityManager->persist($restrictions);
@@ -936,9 +936,9 @@ class ControllerSuperAdmin extends Controller
 
                         $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'groupDefaultRestrictions']);
                         $arrayRestriction = json_encode([
-                            "maxStudents" => $maxStudentsClear,
-                            "maxTeachers" => $maxTeachersClear,
-                            "maxStudentsPerTeacher" => $maxPerTeachersClear,
+                            "maxStudents" => (int)$maxStudentsClear,
+                            "maxTeachers" => (int)$maxTeachersClear,
+                            "maxStudentsPerTeacher" => (int)$maxPerTeachersClear,
                         ]);
                         $restrictions->setRestrictions($arrayRestriction);
                         $this->entityManager->persist($restrictions);
