@@ -21,15 +21,6 @@ class ControllerClassroom extends Controller
     {
         parent::__construct($entityManager, $user);
         $this->actions = array(
-            'get_all' => function () {
-                /**
-                 * @Naser
-                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
-                 * last check => September 2021
-                 */
-                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findAll();
-            },
             'get_by_user' => function () {
 
                 // accept only POST request
@@ -62,38 +53,7 @@ class ControllerClassroom extends Controller
                 }
                 return $classrooms;
             },
-            'get_users_and_activities' => function ($data) {
-                /**
-                 * @Naser
-                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
-                 * last check => September 2021
-                 */
-                $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->getAllStudentsInClassroom($data['classroom'], 0);
-
-                return $students;
-            },
-            'get_my_sandbox_projects' => function () {
-                /**
-                 * @Naser
-                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
-                 * @ToBeDeleted 
-                 * last check => September 2021
-                 */
-                $arrayResults = [];
-                $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
-                    ->findBy(array("user" => $this->user));
-                foreach ($sharedProjects as $s) {
-                    $arrayResults[] = $s->getProject();
-                }
-                return [
-                    "mine" => $this->entityManager->getRepository('Interfaces\Entity\Project')
-                        ->findBy(array("user" => $this->user['id'], "deleted" => false, "activitySolve" => false)),
-                    "shared" => $arrayResults
-                ];
-            },
             'get_by_link' => function () {
-
                 // accept only POST request
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
@@ -119,7 +79,6 @@ class ControllerClassroom extends Controller
             'add' => function () {
                 // accept only POST request
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
-
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "classroomsAddNotAuthenticated"];
 
@@ -127,10 +86,9 @@ class ControllerClassroom extends Controller
                 $currentUserId = $_SESSION["id"];
                 $classroomName = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) : '';
                 $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
-                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;
-
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;          
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
+                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
 
                 // get user "roles"
@@ -200,9 +158,10 @@ class ControllerClassroom extends Controller
                 $studyGroup->setIsBlocked($isBlocked);
                 $studyGroup->setLink();
                 $this->entityManager->persist($studyGroup);
+
                 //add the teacher to the classroom
                 $user = $this->entityManager->getRepository('User\Entity\User')
-                    ->findOneBy(array("id" => $this->user['id']));
+                    ->findOneBy(array("id" => $currentUserId));
                 $linkteacherToGroup = new ClassroomLinkUser($user, $studyGroup);
                 $linkteacherToGroup->setRights(2);
                 $this->entityManager->persist($linkteacherToGroup);
@@ -214,8 +173,6 @@ class ControllerClassroom extends Controller
                 $user->setPseudo($demoStudent);
                 $password = passwordGenerator();
                 $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
-                $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                $user->setId($lastQuestion->getId() + 1);
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();
 
@@ -231,7 +188,6 @@ class ControllerClassroom extends Controller
                 $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
                 $linkteacherToGroup->setRights(0);
                 $this->entityManager->persist($linkteacherToGroup);
-
 
                 //save in database
                 $this->entityManager->flush();
@@ -357,6 +313,7 @@ class ControllerClassroom extends Controller
                 // set the data to return
                 $name = $classroomFound->getName();
                 $link = $classroomFound->getLink();
+                $group = $classroomFound->getGroupe();
 
                 // remove the classroom 
                 $this->entityManager->remove($classroomFound);
@@ -367,8 +324,9 @@ class ControllerClassroom extends Controller
 
                 return [
                     'name' => $name,
-                    'link' => $link
-                ];
+                    'link' => $link,
+                    'group' => $group 
+                ];  
             },
             'get_teacher_account' => function () {
                 $_SESSION['id'] = $_SESSION['idProf'];
@@ -387,8 +345,9 @@ class ControllerClassroom extends Controller
                 $link = !empty($_POST['link'])
                     ? htmlspecialchars(strip_tags(trim($_POST['link'])))
                     : '';
-                $demoStudent = !empty($this->envVariables['demoStudent'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['demoStudent']))))
+
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
+                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
 
                 // no link provided, return an error
@@ -411,6 +370,9 @@ class ControllerClassroom extends Controller
                  */
                 foreach ($userLinkClassroom as $u) {
                     if ($u->getUser()->getPseudo() == $demoStudent) {
+                      
+                        // set isFromGar to true based on $this->user received from Routing.php
+                         if($this->user['isFromGar'] == true) $_SESSION['isFromGar'] = true;
                         $_SESSION['idProf'] = $_SESSION['id'];
                         $_SESSION['id'] = $u->getUser()->getId();
                         return $_SESSION['id'];
@@ -446,6 +408,46 @@ class ControllerClassroom extends Controller
                $_SESSION['id'] = $lastQuestion->getId() + 1;
                return $_SESSION['id']; */
             },
+
+            /* 'get_all' => function () {
+                *
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
+                 * last check => September 2021
+                 
+                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    ->findAll();
+            }, */
+            /*  'get_users_and_activities' => function ($data) {
+                *
+                 * @Naser
+                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
+                 * last check => September 2021
+                 
+                $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->getAllStudentsInClassroom($data['classroom'], 0);
+
+                return $students;
+            }, */
+            /* 'get_my_sandbox_projects' => function () {
+                *
+                 * @Naser
+                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
+                 * @ToBeDeleted 
+                 * last check => September 2021
+                 
+                $arrayResults = [];
+                $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
+                    ->findBy(array("user" => $this->user));
+                foreach ($sharedProjects as $s) {
+                    $arrayResults[] = $s->getProject();
+                }
+                return [
+                    "mine" => $this->entityManager->getRepository('Interfaces\Entity\Project')
+                        ->findBy(array("user" => $this->user['id'], "deleted" => false, "activitySolve" => false)),
+                    "shared" => $arrayResults
+                ];
+            }, */
         );
     }
 }

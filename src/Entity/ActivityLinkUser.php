@@ -117,9 +117,13 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var bool
      */
     private $evaluation = false;
+    /**
+     * @ORM\Column(name="url", type="string",length=255, nullable=true)
+     * @var string
+     */
+    private $url="";
 
-
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
     {
         $this->setUser($user);
         $this->setActivity($activity);
@@ -135,6 +139,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->setEvaluation($evaluation);
         $this->setAutocorrection($autocorrection);
         $this->setReference($reference);
+        $this->setUrl($url);
     }
     /**
      * @return User
@@ -470,6 +475,31 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             $this->evaluation = true;
         }
     }
+
+    /**
+     * Get the value of url
+     *
+     * @return  string
+     */ 
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * Set the value of url
+     *
+     * @param  string  $url
+     *
+     * @return  self
+     */ 
+    public function setUrl( $url)
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+    
     public function jsonSerialize()
     {
         if ($this->getCourse() != null) {
@@ -501,12 +531,13 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'evaluation' => $this->getEvaluation(),
             'project' => $project,
             'reference' => $this->getReference(),
+            'url'=> $this->getUrl()
         ];
     }
 
     public static function jsonDeserialize($jsonDecoded)
     {
-        $classInstance = new self(new Activity("title", "content", new User(), false), new User(), null, null, false, false);
+        $classInstance = new self(new Activity("title", "content", new User(), false), new User(), null, null, false, false,null);
         foreach ($jsonDecoded as $attributeName => $attributeValue) {
             $classInstance->{$attributeName} = $attributeValue;
         }
