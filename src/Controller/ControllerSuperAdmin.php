@@ -956,7 +956,7 @@ class ControllerSuperAdmin extends Controller
                         $restrictionsFormatted = [];
 
                         foreach ($restrictionsData as $restriction) {
-                            $restrictionsFormatted[$restriction[0]] = (int)$restrictionsData[1];
+                            $restrictionsFormatted[$restriction[0]] = (int)$restriction[1];
                         }
 
                         $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
