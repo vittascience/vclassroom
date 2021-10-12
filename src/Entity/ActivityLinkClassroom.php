@@ -88,7 +88,7 @@ class ActivityLinkClassroom implements \JsonSerializable, \Utils\JsonDeserialize
      */
     private $reference;
 
-    public function __construct(Activity $activity, Classroom $classroom, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = 'aaaaa', $commentary = "", $coefficient = 1)
+    public function __construct(Activity $activity, Classroom $classroom, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = '', $commentary = "", $coefficient = 1)
     {
         $this->setClassroom($classroom);
         $this->setActivity($activity);
