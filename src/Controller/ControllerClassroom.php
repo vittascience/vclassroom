@@ -79,7 +79,6 @@ class ControllerClassroom extends Controller
             'add' => function () {
                 // accept only POST request
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
-               
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "classroomsAddNotAuthenticated"];
 
@@ -87,8 +86,7 @@ class ControllerClassroom extends Controller
                 $currentUserId = $_SESSION["id"];
                 $classroomName = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) : '';
                 $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
-                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;
-               
+                $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;          
                 $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
                     ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
@@ -341,13 +339,13 @@ class ControllerClassroom extends Controller
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
                 // accept only connected user
-
                 if (empty($_SESSION['id'])) return ["errorType" => "getDemoStudentAccountNotAuthenticated"];
 
                 // bind and sanitize incoming data
                 $link = !empty($_POST['link'])
                     ? htmlspecialchars(strip_tags(trim($_POST['link'])))
                     : '';
+
                 $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
                     ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
@@ -375,7 +373,6 @@ class ControllerClassroom extends Controller
                       
                         // set isFromGar to true based on $this->user received from Routing.php
                          if($this->user['isFromGar'] == true) $_SESSION['isFromGar'] = true;
-                      
                         $_SESSION['idProf'] = $_SESSION['id'];
                         $_SESSION['id'] = $u->getUser()->getId();
                         return $_SESSION['id'];
@@ -388,7 +385,6 @@ class ControllerClassroom extends Controller
                  * last check september 2021
                  */
                 /* $user = new User();
-
                $user->setFirstName("élève");
                $user->setSurname("modèl");
                $user->setPseudo($demoStudent);
@@ -412,6 +408,7 @@ class ControllerClassroom extends Controller
                $_SESSION['id'] = $lastQuestion->getId() + 1;
                return $_SESSION['id']; */
             },
+
             /* 'get_all' => function () {
                 *
                  * @Naser

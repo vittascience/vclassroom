@@ -7,7 +7,7 @@ use User\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\UsersLinkApplicationsRepository")
- * @ORM\Table(name="users_link_applications")
+ * @ORM\Table(name="classroom_users_link_applications")
  */
 class UsersLinkApplications
 {

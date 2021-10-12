@@ -10,7 +10,7 @@ use Classroom\Entity\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\GroupsLinkApplicationsRepository")
- * @ORM\Table(name="groups_link_applications")
+ * @ORM\Table(name="classroom_groups_link_applications")
  */
 class GroupsLinkApplications
 {
@@ -85,7 +85,7 @@ class GroupsLinkApplications
     }
 
     /**
-     * @param User $user
+     * @param Groups $group
      * @return GroupsLinkApplications
      */
     public function setGroup(Groups $group): self
@@ -95,7 +95,7 @@ class GroupsLinkApplications
     }
 
     /**
-     * @return Applications
+     * @return Applications application
      */
     public function getApplication()
     {
@@ -129,7 +129,6 @@ class GroupsLinkApplications
     {
         $this->dateBegin = $dateBegin;
         return $this;
-        //throw new EntityDataIntegrityException("dateBegin needs to be DateTime or null");
     }
 
     /**
@@ -148,10 +147,6 @@ class GroupsLinkApplications
     {
         $this->dateEnd = $dateEnd;
         return $this;
-        /* if ($dateEnd instanceof \DateTime || $dateEnd == "")
-            $this->dateEnd = $dateEnd;
-        else
-            throw new EntityDataIntegrityException("dateEnd needs to be DateTime or null"); */
     }
 
     /**
@@ -163,8 +158,8 @@ class GroupsLinkApplications
     }
 
     /**
-     * @param Integer $image
-     * @return Applications
+     * @param Integer $maximum
+     * @return GroupsLinkApplications
      */
     public function setmaxStudentsPerGroups(Int $maximum): self
     {
@@ -182,7 +177,7 @@ class GroupsLinkApplications
 
     /**
      * @param Integer $maximum
-     * @return Applications
+     * @return GroupsLinkApplications
      */
     public function setmaxTeachersPerGroups(Int $maximum): self
     {
@@ -200,7 +195,7 @@ class GroupsLinkApplications
 
     /**
      * @param Integer $maximum
-     * @return Applications
+     * @return GroupsLinkApplications
      */
     public function setmaxStudentsPerTeachers(Int $maximum): self
     {

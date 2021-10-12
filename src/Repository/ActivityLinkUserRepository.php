@@ -10,96 +10,123 @@ use Learn\Entity\Activity;
 class ActivityLinkUserRepository extends EntityRepository
 {
 
+    private $maxTries = ActivityLinkUser::MAX_TRIES;
+
     function getOwnedActivitiesCount($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('COUNT(t)')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(t)')
             ->from(Activity::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND t.isFromClassroom = true)');
-        $query = $queryBuilder->getQuery();
-        return intVal($query->getSingleScalarResult());
+            ->where('t.user = :id AND t.isFromClassroom = true')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getSingleScalarResult();
+        return intVal($query);
     }
 
 
     function getTodoActivitiesCount($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('COUNT(t)')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND t.note =0 AND t.tries<' . ActivityLinkUser::MAX_TRIES . ' AND t.course IS NULL)');
-        $query = $queryBuilder->getQuery();
-        return intVal($query->getSingleScalarResult());
+            ->where('(t.user = :id AND t.note =0 AND t.tries < :maxTries AND t.course IS NULL)')
+            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->getQuery()
+            ->getSingleScalarResult();
+        return intVal($query);
     }
+
     function getDoneActivitiesCount($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('COUNT(t)')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND (t.note >0 OR t.tries>' . ActivityLinkUser::MAX_TRIES . ') AND t.course IS NULL)');
-        $query = $queryBuilder->getQuery();
-        return intVal($query->getSingleScalarResult());
+            ->where('(t.user = :id AND (t.note >0 OR t.tries > :maxTries) AND t.course IS NULL)')
+            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->getQuery()
+            ->getSingleScalarResult();
+        return intVal($query);
     }
+
     function getTodoCoursesCount($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('COUNT(t)')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND t.note =0 AND t.tries<' . ActivityLinkUser::MAX_TRIES . ' AND t.course IS NOT NULL)');
-        $query = $queryBuilder->getQuery();
-        return intVal($query->getSingleScalarResult());
+            ->where('(t.user = :id AND t.note =0 AND t.tries < :maxTries AND t.course IS NOT NULL)')
+            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->getQuery()
+            ->getSingleScalarResult();
+        return intVal($query);
     }
+
     function getDoneCoursesCount($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('COUNT(t)')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND (t.note >0 OR t.tries>' . ActivityLinkUser::MAX_TRIES . ') AND t.course IS NOT NULL)');
-        $query = $queryBuilder->getQuery();
-        return intVal($query->getSingleScalarResult());
+            ->where('(t.user = :id AND (t.note >0 OR t.tries > :maxTries) AND t.course IS NOT NULL)')
+            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->getQuery()
+            ->getSingleScalarResult();
+        return intVal($query);
     }
+
     function getNewActivities($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('t')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NULL)');
-        $query = $queryBuilder->getQuery();
-        return $query->getResult();
+            ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NULL)')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getResult();
+        return $query;
     }
+
     function getCurrentActivities($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('t')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND  t.correction = 1)');
-        $query = $queryBuilder->getQuery();
-        return $query->getResult();
+            ->where('(t.user = :id AND  t.correction = 1)')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getResult();
+        return $query;
     }
+
     function getDoneActivities($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('t')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND t.correction > 1)');
-        $query = $queryBuilder->getQuery();
-        return $query->getResult();
+            ->where('(t.user = :id AND t.correction > 1)')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getResult();
+        return $query;
     }
+
     function getSavedActivities($userId)
     {
-        $queryBuilder = $this->getEntityManager()
-            ->createQueryBuilder();
-        $queryBuilder->select('t')
+        $query = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = ' .  $userId . ' AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NOT NULL)');
-        $query = $queryBuilder->getQuery();
-        return $query->getResult();
+            ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NOT NULL)')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getResult();
+        return $query;
     }
 }

@@ -6,12 +6,11 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 /**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ApplicationsRepository")
- * @ORM\Table(name="classroom_applications")
+ * @ORM\Entity(repositoryClass="Classroom\Repository\RestrictionsRepository")
+ * @ORM\Table(name="classroom_restrictions")
  */
-class Applications
+class Restrictions implements \JsonSerializable, \Utils\JsonDeserializer
 {
-
     /** 
      * @ORM\Id
      * @ORM\Column(type="integer")
@@ -26,20 +25,14 @@ class Applications
     private $name;
 
     /**
-     * @ORM\Column(name="description", type="string", length=255, nullable=true)
-     * @var string
+     * @ORM\Column(type="json", nullable=true)
+     * @var array
      */
-    private $description;
-
-    /**
-     * @ORM\Column(name="image", type="string", length=255, nullable=true)
-     * @var string
-     */
-    private $image;
+    private $restrictions;
 
 
     /**
-     * @return Integer
+     * @return Int
      */
     public function getId(): ?int
     {
@@ -56,7 +49,7 @@ class Applications
 
     /**
      * @param String $name
-     * @return Applications
+     * @return Restrictions
      */
     public function setName(string $name): self
     {
@@ -65,38 +58,20 @@ class Applications
     }
 
     /**
-     * @return String
+     * @return string
      */
-    public function getDescription(): ?string
+    public function getRestrictions()
     {
-        return $this->description;
+        return $this->restrictions;
     }
 
     /**
-     * @param String $description
-     * @return Applications
+     * @param Json $description
+     * @return Restrictions
      */
-    public function setDescription(string $description): self
+    public function setRestrictions($restrictions): self
     {
-        $this->description = $description;
-        return $this;
-    }
-
-    /**
-     * @return String
-     */
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    /**
-     * @param String $image
-     * @return Applications
-     */
-    public function setImage(string $image): self
-    {
-        $this->image = $image;
+        $this->restrictions = $restrictions;
         return $this;
     }
 
@@ -105,8 +80,7 @@ class Applications
         return [
             'id' => $this->getId(),
             'name' => $this->getName(),
-            'description' => $this->getDescription(),
-            'image' => $this->getImage()
+            'restrictions' => (array)json_decode($this->getRestrictions())
         ];
     }
 

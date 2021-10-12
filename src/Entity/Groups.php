@@ -8,7 +8,7 @@ use Utils\Exceptions\EntityDataIntegrityException;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\GroupsRepository")
- * @ORM\Table(name="groups")
+ * @ORM\Table(name="classroom_groups")
  */
 class Groups implements \JsonSerializable, \Utils\JsonDeserializer
 {
@@ -75,7 +75,7 @@ class Groups implements \JsonSerializable, \Utils\JsonDeserializer
     }
 
     /**
-     * @param String $name
+     * @param String $description
      * @return Groups
      */
     public function setDescription(string $description): self
