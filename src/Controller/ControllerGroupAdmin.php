@@ -154,9 +154,9 @@ class ControllerGroupAdmin extends Controller
                                 i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
                             }
 
-                            $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
-                            $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
-                            $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
+                            $emailSubject = i18next::getTranslation('manager.users.mail.finalizeAccount.subject');
+                            $bodyTitle = i18next::getTranslation('manager.users.mail.finalizeAccount.bodyTitle');
+                            $textBeforeLink = i18next::getTranslation('manager.users.mail.finalizeAccount.textBeforeLink');
 
                             $body = "
                             <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
@@ -360,9 +360,9 @@ class ControllerGroupAdmin extends Controller
                                     i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
                                 }
 
-                                $emailSubject = i18next::getTranslation('superadmin.group.join.mail.emailSubject');
-                                $textBeforeName = i18next::getTranslation('superadmin.group.join.mail.textBeforeName');
-                                $textAfterName = i18next::getTranslation('superadmin.group.join.mail.textAfterName');
+                                $emailSubject = i18next::getTranslation('manager.group.join.mail.emailSubject');
+                                $textBeforeName = i18next::getTranslation('manager.group.join.mail.textBeforeName');
+                                $textAfterName = i18next::getTranslation('manager.group.join.mail.textAfterName');
                                 $body = "
                                 <br>
                                 <br>
@@ -919,9 +919,9 @@ class ControllerGroupAdmin extends Controller
             i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
         }
 
-        $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
-        $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
-        $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
+        $emailSubject = i18next::getTranslation('manager.users.mail.finalizeAccount.subject');
+        $bodyTitle = i18next::getTranslation('manager.users.mail.finalizeAccount.bodyTitle');
+        $textBeforeLink = i18next::getTranslation('manager.users.mail.finalizeAccount.textBeforeLink');
 
         $body = "
             <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
@@ -955,9 +955,9 @@ class ControllerGroupAdmin extends Controller
             i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
         }
 
-        $emailSubject = i18next::getTranslation('superadmin.users.mail.resetPassword.subject');
-        $bodyTitle = i18next::getTranslation('superadmin.users.mail.resetPassword.bodyTitle');
-        $textBeforeLink = i18next::getTranslation('superadmin.users.mail.resetPassword.textBeforeLink');
+        $emailSubject = i18next::getTranslation('manager.users.mail.resetPassword.subject');
+        $bodyTitle = i18next::getTranslation('manager.users.mail.resetPassword.bodyTitle');
+        $textBeforeLink = i18next::getTranslation('manager.users.mail.resetPassword.textBeforeLink');
         $body = "
             <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
                 $bodyTitle
