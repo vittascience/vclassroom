@@ -335,6 +335,20 @@ class ControllerClassroomLinkUser extends Controller
                         "classroom" => $studyGroup->getId()
                     ));
             },
+            'get_by_classroom' => function ($data) {
+                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    ->findBy(array("link" => $data['classroom']));
+                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findBy(array("classroom" => $classroom->getId(), "rights" => 0));
+            }, 'get_by_user' => function ($data) {
+                $user = $this->entityManager->getRepository('User\Entity\User')
+                    ->findOneBy(array("id" => $data['user']));
+                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findOneBy(array("user" => $user->getId()));
+            },
+            /*
+            // @ToBeDeleted
+            // last check => october 2021
             'get_changes_for_teacher' => function () {
                 $changedStudyGroups = false;
                 $classrooms = [];
@@ -365,7 +379,10 @@ class ControllerClassroomLinkUser extends Controller
                     return $value;
                 }
                 return false;
-            },
+            }, */
+            /* 
+            // @ToBeDeleted
+            // last check => october 2021
             'remove_users' => function ($data) {
                 foreach ($data['users'] as $user) {
                     $linkClassroomUserToGroup = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
@@ -377,17 +394,11 @@ class ControllerClassroomLinkUser extends Controller
                 $this->entityManager->flush();
                 return true; //synchronized
 
-            }, 'get_by_classroom' => function ($data) {
-                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['classroom']));
-                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("classroom" => $classroom->getId(), "rights" => 0));
-            }, 'get_by_user' => function ($data) {
-                $user = $this->entityManager->getRepository('User\Entity\User')
-                    ->findOneBy(array("id" => $data['user']));
-                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findOneBy(array("user" => $user->getId()));
-            }, 'get_student_activities_by_classroom' => function ($data) {
+            },  */
+            /* 
+            // @ToBeDeleted
+            // last check => october 2021
+            'get_student_activities_by_classroom' => function ($data) {
                 $activities = [];
                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findBy(array("link" => $data['classroom']));
@@ -398,7 +409,7 @@ class ControllerClassroomLinkUser extends Controller
                         ->findBy(array("id_classroom_user" => $u->getId()))];
                 }
                 return $activities;
-            }
+            }, */
         );
     }
 }
