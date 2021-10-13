@@ -335,18 +335,7 @@ class ControllerClassroomLinkUser extends Controller
                         "classroom" => $studyGroup->getId()
                     ));
             },
-            'remove_users' => function ($data) {
-                foreach ($data['users'] as $user) {
-                    $linkClassroomUserToGroup = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->findOneBy(array("user" => $user['id'], "studyGroup" => $data['studyGroupId']));
-
-                    $linkClassroomUserToGroup = $this->entityManager->merge($linkClassroomUserToGroup);
-                    $this->entityManager->remove($linkClassroomUserToGroup);
-                }
-                $this->entityManager->flush();
-                return true; //synchronized
-
-            }, 'get_by_classroom' => function ($data) {
+            'get_by_classroom' => function ($data) {
                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
                     ->findBy(array("link" => $data['classroom']));
                 return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
@@ -402,6 +391,21 @@ class ControllerClassroomLinkUser extends Controller
                 }
                 return false;
             }, */
+            /* 
+            // @ToBeDeleted
+            // last check => october 2021
+            'remove_users' => function ($data) {
+                foreach ($data['users'] as $user) {
+                    $linkClassroomUserToGroup = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                        ->findOneBy(array("user" => $user['id'], "studyGroup" => $data['studyGroupId']));
+
+                    $linkClassroomUserToGroup = $this->entityManager->merge($linkClassroomUserToGroup);
+                    $this->entityManager->remove($linkClassroomUserToGroup);
+                }
+                $this->entityManager->flush();
+                return true; //synchronized
+
+            },  */
         );
     }
 }
