@@ -345,17 +345,6 @@ class ControllerClassroomLinkUser extends Controller
                     ->findOneBy(array("id" => $data['user']));
                 return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findOneBy(array("user" => $user->getId()));
-            }, 'get_student_activities_by_classroom' => function ($data) {
-                $activities = [];
-                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['classroom']));
-                $users = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("id_classroom" => $classroom->getId(), "rights" => 0));
-                foreach ($users as $u) {
-                    $activities[] = ["user" => $u, "activities" => $this->entityManager->getRepository('Classroom\Entity\TutorialPartLinkClassroomUser')
-                        ->findBy(array("id_classroom_user" => $u->getId()))];
-                }
-                return $activities;
             },
             /*
             // @ToBeDeleted
@@ -406,6 +395,21 @@ class ControllerClassroomLinkUser extends Controller
                 return true; //synchronized
 
             },  */
+            /* 
+            // @ToBeDeleted
+            // last check => october 2021
+            'get_student_activities_by_classroom' => function ($data) {
+                $activities = [];
+                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    ->findBy(array("link" => $data['classroom']));
+                $users = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findBy(array("id_classroom" => $classroom->getId(), "rights" => 0));
+                foreach ($users as $u) {
+                    $activities[] = ["user" => $u, "activities" => $this->entityManager->getRepository('Classroom\Entity\TutorialPartLinkClassroomUser')
+                        ->findBy(array("id_classroom_user" => $u->getId()))];
+                }
+                return $activities;
+            }, */
         );
     }
 }
