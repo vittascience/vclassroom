@@ -301,11 +301,39 @@ class ControllerClassroomLinkUser extends Controller
                 $this->entityManager->flush();
                 return true;
             },
-            'get_teachers_by_classroom' => function ($data) {
-                $studyGroup = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findOneBy(array('link' => $data['classroom']));
-                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("rights" => 2, "classroom" => $studyGroup->getId()));
+            'get_teachers_by_classroom' => function () {
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getTeachersByClassroomNotAuthenticated"];
+
+                // bind incoming data
+                $classroomLink = !empty($_POST['classroom']) ? htmlspecialchars(strip_tags(trim($_POST['classroom']))) : '';
+                $userId = intval($_SESSION['id']);
+                if(empty($classroomLink)) return array('errorType'=> 'classroomLinkMissing');
+                
+                // check if the current student belong to the classroom or return an error
+                $student = $this->entityManager
+                    ->getRepository(ClassroomLinkUser::class)
+                    ->findOneBy(array(
+                        'user'=> $userId,
+                        'rights' => 0
+                    ));
+                if(!$student) return array('errorType' => 'studentDoesNotBelongToClassroom');
+
+                // get the classroom
+                $studyGroup = $this->entityManager
+                    ->getRepository('Classroom\Entity\Classroom')
+                    ->findOneBy(array('link' => $classroomLink));
+            
+                
+                return $this->entityManager
+                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findBy(array(
+                        "rights" => 2, 
+                        "classroom" => $studyGroup->getId()
+                    ));
             },
             'get_changes_for_teacher' => function () {
                 $changedStudyGroups = false;
