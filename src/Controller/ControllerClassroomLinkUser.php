@@ -335,37 +335,6 @@ class ControllerClassroomLinkUser extends Controller
                         "classroom" => $studyGroup->getId()
                     ));
             },
-            'get_changes_for_teacher' => function () {
-                $changedStudyGroups = false;
-                $classrooms = [];
-                $listNames = '';
-                $studyGroups = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array('user' => $this->user));
-                foreach ($studyGroups as $s) {
-                    if ($s->getClassroom()->getIsChanged() == true) {
-                        $changedStudyGroups = true;
-                    }
-                }
-                if ($changedStudyGroups == true) {
-                    $studyGroups = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->findBy(array('user' => $this->user));
-                    foreach ($studyGroups as $s) {
-                        $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                            ->getAllStudentsInClassroom($s->getClassroom()->getId(), 0);
-                        $classrooms[] = array("classroom" => $s->getClassroom(), "students" => $students);
-                        if ($s->getClassroom()->getIsChanged() == true) {
-                            $classroom = $s->getClassroom();
-                            $classroom->setIsChanged(false);
-                            $listNames .= $classroom->getName() . "\n";
-                            $this->entityManager->persist($classroom);
-                        }
-                    }
-                    $value = ['classrooms' => $classrooms, 'listNames' => $listNames];
-                    $this->entityManager->flush();
-                    return $value;
-                }
-                return false;
-            },
             'remove_users' => function ($data) {
                 foreach ($data['users'] as $user) {
                     $linkClassroomUserToGroup = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
@@ -398,7 +367,41 @@ class ControllerClassroomLinkUser extends Controller
                         ->findBy(array("id_classroom_user" => $u->getId()))];
                 }
                 return $activities;
-            }
+            },
+            /*
+            // @ToBeDeleted
+            // last check => october 2021
+            'get_changes_for_teacher' => function () {
+                $changedStudyGroups = false;
+                $classrooms = [];
+                $listNames = '';
+                $studyGroups = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findBy(array('user' => $this->user));
+                foreach ($studyGroups as $s) {
+                    if ($s->getClassroom()->getIsChanged() == true) {
+                        $changedStudyGroups = true;
+                    }
+                }
+                if ($changedStudyGroups == true) {
+                    $studyGroups = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                        ->findBy(array('user' => $this->user));
+                    foreach ($studyGroups as $s) {
+                        $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                            ->getAllStudentsInClassroom($s->getClassroom()->getId(), 0);
+                        $classrooms[] = array("classroom" => $s->getClassroom(), "students" => $students);
+                        if ($s->getClassroom()->getIsChanged() == true) {
+                            $classroom = $s->getClassroom();
+                            $classroom->setIsChanged(false);
+                            $listNames .= $classroom->getName() . "\n";
+                            $this->entityManager->persist($classroom);
+                        }
+                    }
+                    $value = ['classrooms' => $classrooms, 'listNames' => $listNames];
+                    $this->entityManager->flush();
+                    return $value;
+                }
+                return false;
+            }, */
         );
     }
 }
