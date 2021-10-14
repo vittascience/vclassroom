@@ -335,14 +335,17 @@ class ControllerClassroomLinkUser extends Controller
                         "classroom" => $studyGroup->getId()
                     ));
             },
-            'get_by_classroom' => function ($data) {
-                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['classroom']));
-                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("classroom" => $classroom->getId(), "rights" => 0));
-            }, 'get_by_user' => function ($data) {
+            'get_by_user' => function () {
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getByUserNotAuthenticated"];
+
+                $userId = intval($_SESSION['id']);
+
                 $user = $this->entityManager->getRepository('User\Entity\User')
-                    ->findOneBy(array("id" => $data['user']));
+                    ->findOneBy(array("id" => $userId));
                 return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findOneBy(array("user" => $user->getId()));
             },
