@@ -164,11 +164,46 @@ class ControllerClassroomLinkUser extends Controller
 
                 return ["isUsersAdded" => true, "passwords" => $passwords];
             },
-            'add_users_by_csv' => function ($data) {
-                // get all students for this teacher
+            'add_users_by_csv' => function () {
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getByUserNotAuthenticated"];
+                
+                // bind incoming users, set empty student array to fill and set error flag to false
+                $incomingUsers = $_POST['users'];
+                $studentsToAdd = [];
+                $errorPseudoMissingFlag = false;
+
+                // bind and sanitize incoming users array
+                foreach($incomingUsers as $incomingUser){
+                    
+                    $studentPseudo = htmlspecialchars(strip_tags(trim($incomingUser['apprenant'])));
+                    $studentPassword = !empty($incomingUser['mot_de_passe'])
+                        ? htmlspecialchars(strip_tags(trim($incomingUser['mot_de_passe'])))
+                        :  passwordGenerator();
+                    
+                    // one of the pseudo is empty, set the error flag to true and stop the loop
+                    if(empty($studentPseudo)) {
+                        $errorPseudoMissingFlag = true;
+                        break;
+                    }
+
+                    // no error found, fille the student array
+                    array_push(
+                        $studentsToAdd,
+                        array('apprenant' => $studentPseudo,'mot_de_passe' => $studentPassword)
+                    );
+
+                }
+
+                // error flag = true, return an error
+                if($errorPseudoMissingFlag == true) return array('errorType' => "pseudoMissingInCsvFile");
+                
+                // sanitize the others data
                 $currentUserId = intval($_SESSION['id']);
-                $classroomLink = htmlspecialchars(strip_tags(trim($data['classroom'])));
+                $classroomLink = htmlspecialchars(strip_tags(trim($_POST['classroom'])));
 
                 // get the statuses for the current user
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
@@ -217,7 +252,7 @@ class ControllerClassroomLinkUser extends Controller
                 if (!$learnerNumberCheck["isAdmin"]) {
                     //@Note : the isPremium check is not deleted to restrein the actual user with the isPremium method
                     // the restrictions by application is not implemented to every user
-                    $addedLearnerNumber = count($data['users']);
+                    $addedLearnerNumber = count($studentsToAdd);
                     if ($learnerNumberCheck["isPremium"]) {
                         // computer the total number of students registered +1 and return an error if > 50
                         $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
@@ -242,16 +277,10 @@ class ControllerClassroomLinkUser extends Controller
                         }
                     }
                 }
-
-                // end remove the limitations for CABRI
-                /////////////////////////////////////////
             
-                /**
-                 * check that teacher does not add a demoStudent user @MODIF naser
-                 */
-                
-                for($i = 0; $i< count($data['users']); $i++){
-                    $currentUserName = strtolower($data['users'][$i]['apprenant']);
+                // check that teacher does not add a demoStudent (ie: .env var)             
+                for($i = 0; $i< count($studentsToAdd); $i++){
+                    $currentUserName = strtolower($studentsToAdd[$i]['apprenant']);
                     $demoStudentNameToTest = strtolower($demoStudent);
                     if($currentUserName == $demoStudentNameToTest){
                         return [
@@ -262,12 +291,10 @@ class ControllerClassroomLinkUser extends Controller
                     }
                 }
                 
-                foreach ($data['users'] as $userToAdd) {
-                    // bind and sanitize incoming data
-                    $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
-                    $studentPassword = !empty($userToAdd['mot_de_passe'])
-                        ? htmlspecialchars(strip_tags(trim($userToAdd['mot_de_passe'])))
-                        : passwordGenerator();
+                foreach ($studentsToAdd as $studentToAdd) {
+                    // extract and bind sanitized data
+                    $studentPseudo = $studentToAdd['apprenant'];
+                    $studentPassword = $studentToAdd['mot_de_passe'];
 
                     // create the user
                     $user = new User();
