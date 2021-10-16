@@ -50,7 +50,7 @@ class ControllerActivityLinkUser extends Controller
                     $user = $this->entityManager->getRepository('User\Entity\User')
                         ->findOneBy(array("id" => $u));
                     if ($user) {
-                        $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($data['dateBegin']),  new \DateTime($data['dateEnd']), $data['evaluation'], $data['autocorrection'], $data['introduction'], $reference);
+                        $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($data['dateBegin']),  new \DateTime($data['dateEnd']), $data['evaluation'], $data['autocorrection'], null, $data['introduction'], $reference);
                         $this->entityManager->persist($linkActivityToUser);
                     }
                 }
