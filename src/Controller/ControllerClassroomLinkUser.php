@@ -243,7 +243,7 @@ class ControllerClassroomLinkUser extends Controller
                 }
 
                 // error flag = true, return an error
-                if($errorPseudoMissingFlag == true) return array('errorType' => "pseudoMissingInCsvFile");
+                if($errorPseudoMissingFlag == true) return array('errorType' => "backendReplyPseudoMissingInCsv");
                 
                 // sanitize the others data
                 $currentUserId = intval($_SESSION['id']);
