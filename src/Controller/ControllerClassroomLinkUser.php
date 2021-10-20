@@ -84,7 +84,7 @@ class ControllerClassroomLinkUser extends Controller
                 $nbApprenants = 0;
                 foreach ($classrooms as $c) {
                     $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->getAllStudentsInClassroom($c->getClassroom()->getId(), 0);
+                        ->getAllStudentsInClassroom($c->getClassroom()->getId(), 0, $demoStudent);
 
                     // add the current classroom users number and increase the total
                     $nbApprenants += count($students);
