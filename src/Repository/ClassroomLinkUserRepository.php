@@ -3,23 +3,90 @@
 namespace Classroom\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\Classroom;
 use Classroom\Entity\ClassroomLinkUser;
 use User\Entity\User;
 
 class ClassroomLinkUserRepository extends EntityRepository
 {
-    public function getAllStudentsInClassroom($classroom, $rights)
+    public function getAllStudentsInClassroom($classroom, $rights, $demoStudent=null)
     {
-        $students = $this->_em->createQuery('SELECT u FROM Classroom\Entity\ClassroomLinkUser u WHERE u.classroom = ' . $classroom . 'AND u.rights=' . $rights)
-            ->getResult();
+
+        $students = $this->getStudentsOrdered($classroom, $rights, $demoStudent);
+
         $arrayStudents = [];
-        foreach ($students as $s) {
-            $activities = $this->_em->createQuery('SELECT t FROM Classroom\Entity\ActivityLinkUser t WHERE t.user = ' . $s->getUser()->getId())
+        foreach ($students as $student) {
+            // get the activities for each student
+            $activities = $this->getEntityManager()
+                ->createQueryBuilder()
+                ->select('alu')
+                ->from(ActivityLinkUser::class,'alu')
+                ->join(User::class, 'u','WITH','alu.user = u.id')
+                ->where('alu.user = :userId')
+                ->setParameters(array(
+                    'userId' => $student->getUser()->getId()
+                ))
+                ->getQuery()
                 ->getResult();
-            $arrayStudents[] = array('user' => $s->getUser()->jsonSerialize(), 'activities' => $activities, 'pwd' => $s->getUser()->getPassword());
+            
+            // fill the students array
+            $arrayStudents[] = array(
+                'user' => $student->getUser()->jsonSerialize(), 
+                'activities' => $activities, 
+                'pwd' => $student->getUser()->getPassword()
+            );
         }
         return $arrayStudents;
+    }
+
+
+    public function getStudentsOrdered($classroomId, $rights, $demoStudent)
+    {
+        // get all students but not demoStudent
+        $tmpStudentsWithoutDemostudent = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('clu')
+            ->from(ClassroomLinkUser::class, 'clu')
+            ->leftJoin(User::class, 'u', 'WITH', 'clu.user = u.id')
+            ->where('clu.rights = :rights')
+            ->andWhere('clu.classroom = :classroom')
+            ->andWhere('u.pseudo != :demoStudent')
+            ->setParameters(array(
+                'rights' => $rights,
+                'classroom' => $classroomId,
+                'demoStudent' => $demoStudent
+            ))
+            ->orderby('u.pseudo', 'ASC')
+            ->getQuery()
+            ->getResult();
+        $studentsArr = [];
+
+        // push them into the $studentsArr
+        foreach ($tmpStudentsWithoutDemostudent as $tmpStudent) {
+            array_push( $studentsArr, $tmpStudent );    
+        }
+
+        // get demoStudent and add it to the end of the $studentArr
+        $tmpDemostudent = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('clu')
+            ->from(ClassroomLinkUser::class, 'clu')
+            ->leftJoin(User::class, 'u', 'WITH', 'clu.user = u.id')
+            ->where('clu.rights = :rights')
+            ->andWhere('clu.classroom = :classroom')
+            ->andWhere('u.pseudo = :demoStudent')
+            ->setParameters(array(
+                'rights' => $rights,
+                'classroom' => $classroomId,
+                'demoStudent' => $demoStudent
+            ))
+            ->getQuery()
+            ->getOneOrNullResult();
+        
+            array_unshift($studentsArr,$tmpDemostudent);
+
+        return $studentsArr;
     }
 
     public function getTeacherClassrooms($teacherId,$uai){
