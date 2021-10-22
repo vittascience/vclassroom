@@ -13,15 +13,35 @@ class ControllerActivityLinkUser extends Controller
         parent::__construct($entityManager, $user);
         $this->actions = array(
             'get_student_data' => function () {
+                /**
+                 * This method is used on the student profil
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getStudentDataNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize data
+                $userId = intval($_SESSION['id']);
+
                 $arrayData = array();
-                $arrayData['todoActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getTodoActivitiesCount($this->user['id']);
-                $arrayData['doneActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getDoneActivitiesCount($this->user['id']);
-                $arrayData['todoCourses'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getTodoCoursesCount($this->user['id']);
-                $arrayData['doneCourses'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getDoneCoursesCount($this->user['id']);
+                $arrayData['todoActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getTodoActivitiesCount($userId);
+
+                $arrayData['doneActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getDoneActivitiesCount($userId);
+
+                $arrayData['todoCourses'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getTodoCoursesCount($userId);
+
+                $arrayData['doneCourses'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getDoneCoursesCount($userId);
+
                 return $arrayData;
             },
             'get_teacher_data' => function () {
