@@ -45,9 +45,23 @@ class ControllerActivityLinkUser extends Controller
                 return $arrayData;
             },
             'get_teacher_data' => function () {
+                /**
+                 * This method is used on the teacher profil
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getTeacherDataNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize data
+                $userId = intval($_SESSION['id']);
+
                 $arrayData = array();
-                $arrayData['ownedActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getOwnedActivitiesCount($this->user['id']);
+                $arrayData['ownedActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getOwnedActivitiesCount($userId);
+
                 return $arrayData;
             },
             'get_student_activities' => function () {
