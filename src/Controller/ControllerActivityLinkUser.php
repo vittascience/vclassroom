@@ -2,9 +2,11 @@
 
 namespace Classroom\Controller;
 
-use Classroom\Entity\ActivityLinkUser;
-use Classroom\Entity\ActivityLinkClassroom;
 use User\Entity\User;
+use Classroom\Entity\Classroom;
+use Classroom\Entity\ActivityLinkUser;
+use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\ActivityLinkClassroom;
 
 class ControllerActivityLinkUser extends Controller
 {
@@ -76,29 +78,181 @@ class ControllerActivityLinkUser extends Controller
                     ->getSavedActivities($this->user['id']);
                 return $arrayData;
             },
-            'add_users' => function ($data) {
-                $reference = strval(time());
-                $activity = $this->entityManager->getRepository('Learn\Entity\Activity')
-                    ->find($data['activity']['id']);
-                foreach ($data['students'] as $u) {
-                    $user = $this->entityManager->getRepository('User\Entity\User')
-                        ->findOneBy(array("id" => $u));
-                    if ($user) {
-                        $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($data['dateBegin']),  new \DateTime($data['dateEnd']), $data['evaluation'], $data['autocorrection'], null, $data['introduction'], $reference);
+            'add_users' => function () {
+                /**
+                 * This method is used on the teacher activity panel 
+                 * to attribute an activity for the first time by clicking on the activity cog => attribute
+                 * Or to update the activity attribution inside a classroom when clicking on the activity cog => modify attribution
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize incoming data to check if the logged user is the teacher
+                $userId = intval($_SESSION['id']);
+
+                $incomingClassroomsId = $_POST['classrooms'];
+                $classroomIds = [];
+                foreach ($incomingClassroomsId as $incomingClassroomId) {
+                    if (intval($incomingClassroomId) == 0) continue;
+                    array_push($classroomIds, $incomingClassroomId);
+                }
+
+                // get the current logged user and initiate an error flag to be false at the start
+                $loggedUser = $this->entityManager->getRepository(User::class)->find($userId);
+                $notTeacherErrorFlag = false;
+                foreach ($classroomIds as $classroomId) {
+                    // get the classroom or return an error if the classroom is not found
+                    $classroom = $this->entityManager->getRepository(Classroom::class)->find($classroomId);
+                    if (!$classroom) return array('errorType' => 'classroomNotExists');
+
+                    // get the classroom teacher using the $loggedUser id
+                    $teacher = $this->entityManager
+                        ->getRepository(ClassroomLinkUser::class)
+                        ->findOneBy(array(
+                            'user' => $loggedUser->getId(),
+                            'classroom' => $classroom->getId(),
+                            'rights' => 2
+                        ));
+
+                    // the logged user if not the teacher, set error flag to true and exit the loop
+                    if (!$teacher) {
+                        $notTeacherErrorFlag = true;
+                        break;
+                    }
+                }
+                if ($notTeacherErrorFlag == true) return array("errorType" => "notTeacherErrorFlagTrue");
+
+                // bind and sanitize the students id array
+                $incomingStudentsId = $_POST['students'];
+                $studentsId = [];
+                foreach ($incomingStudentsId as $incomingStudentId) {
+                    if (intval($incomingStudentId) == 0) continue;
+                    array_push($studentsId, intval($incomingStudentId));
+                }
+
+                // bind and sanitize the rest of incoming data
+                $activityId = !empty($_POST['activity']['id']) ? intval($_POST['activity']['id']) : 0;
+                $dateBegin = !empty($_POST['dateBegin']) ? htmlspecialchars(strip_tags(trim($_POST['dateBegin']))) : '';
+                $dateEnd = !empty($_POST['dateEnd']) ? htmlspecialchars(strip_tags(trim($_POST['dateEnd']))) : '';
+                $evaluation = !empty($_POST['evaluation']) ? htmlspecialchars(strip_tags(trim($_POST['evaluation']))) : '';
+                $autocorrection = !empty($_POST['autocorrection']) ? htmlspecialchars(strip_tags(trim($_POST['autocorrection']))) : '';
+                $introduction = !empty($_POST['introduction']) ? htmlspecialchars(strip_tags(trim($_POST['introduction']))) : '';
+                $retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
+                $reference = !empty($_POST['ref']) ? htmlspecialchars(strip_tags(trim($_POST['ref']))) : '';
+
+                // a reference has been received, we are in an update context
+                if (!empty($reference)) {
+                    // step 1 => get students activities and remove them
+                    $studentActivities = $this->entityManager
+                        ->getRepository(ActivityLinkUser::class)
+                        ->findBy(array('reference' => $reference));
+
+                    foreach ($studentActivities as $studentActivity) {
+                        $this->entityManager->remove($studentActivity);
+                    }
+                    $this->entityManager->flush();
+
+
+                    $activity = $this->entityManager
+                        ->getRepository('Learn\Entity\Activity')
+                        ->find($activityId);
+
+                    // step 2 => now insert students
+                    foreach ($studentsId as $studentId) {
+                        $user = $this->entityManager
+                            ->getRepository('User\Entity\User')
+                            ->findOneBy(array("id" => $studentId));
+
+                        $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
                         $this->entityManager->persist($linkActivityToUser);
                     }
-                }
-                foreach ($data['classrooms'] as $c) {
-                    $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                        ->findOneBy(array("id" => $c));
-                    if ($classroom) {
-                        $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($data['dateBegin']),  new \DateTime($data['dateEnd']), $data['evaluation'], $data['autocorrection'], $data['introduction'], $reference);
-                        $this->entityManager->persist($linkActivityToClassroom);
-                    }
-                }
-                $this->entityManager->flush();
-                return $linkActivityToClassroom; //synchronized
+                    $this->entityManager->flush();
 
+                    // step 3 loop through the classrooms ids and get the classrooms
+                    foreach ($classroomIds as $classroomId) {
+                        $classroom = $this->entityManager
+                            ->getRepository('Classroom\Entity\Classroom')
+                            ->findOneBy(array("id" => $classroomId));
+                        if ($classroom) {
+                            if ($retroAttribution == 'true') {
+                                // the classroom was found 
+                                // and the activity has to attributed to all future students joining the classroom
+                                // check if there is already a record in classroom_activities_link_classroom
+                                $linkActivityToClassroomExists = $this->entityManager
+                                    ->getRepository(ActivityLinkClassroom::class)
+                                    ->findOneBy(array(
+                                        'classroom' => $classroom,
+                                        'activity' => $activity
+                                    ));
+
+                                // a record was found, do nothing
+                                if ($linkActivityToClassroomExists) continue;
+
+                                // no record found, save a new entry in classroom_activities_link_classroom
+                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
+                                $this->entityManager->persist($linkActivityToClassroom);
+                            }
+                        }
+                    }
+                    $this->entityManager->flush();
+                    return true;
+                } else {
+                    // no reference provided, we are in a create context
+                    // create the reference and get the activity
+                    $reference = strval(time());
+                    $activity = $this->entityManager
+                        ->getRepository('Learn\Entity\Activity')
+                        ->find($activityId);
+
+                    // step 1 => insert students
+                    foreach ($studentsId as $studentId) {
+                        $user = $this->entityManager
+                            ->getRepository('User\Entity\User')
+                            ->findOneBy(array("id" => $studentId));
+
+                        if ($user) {
+                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
+                            $this->entityManager->persist($linkActivityToUser);
+                        }
+                    }
+                    $this->entityManager->flush();
+
+                    // step 2 loop through the classrooms ids and get the classrooms
+                    foreach ($classroomIds as $classroomId) {
+                        $classroom = $this->entityManager
+                            ->getRepository('Classroom\Entity\Classroom')
+                            ->findOneBy(array(
+                                "id" => $classroomId
+                            ));
+
+                        if ($classroom) {
+                            if ($retroAttribution == 'true') {
+                                // the classroom was found 
+                                // and the activity has to attributed to all future students joining the classroom
+                                // check if there is already a record in classroom_activities_link_classroom
+                                $linkActivityToClassroomExists = $this->entityManager
+                                    ->getRepository(ActivityLinkClassroom::class)
+                                    ->findOneBy(array(
+                                        'classroom' => $classroom,
+                                        'activity' => $activity
+                                    ));
+
+                                // a record was found, do nothing
+                                if ($linkActivityToClassroomExists) continue;
+
+                                // no record found, save a new entry in classroom_activities_link_classroom
+                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
+                                $this->entityManager->persist($linkActivityToClassroom);
+                            }
+                        }
+                    }
+                    $this->entityManager->flush();
+                    return true;
+                    /*  return $linkActivityToClassroom; //synchronized */
+                }
             },
             "update" => function ($data) {
                 $activity = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
