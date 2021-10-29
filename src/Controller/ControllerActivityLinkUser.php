@@ -300,9 +300,24 @@ class ControllerActivityLinkUser extends Controller
 
                 return  $activity;
             },
-            "get_one" => function ($data) {
+            "get_one" => function () {
+                /**
+                 * This method is used by the teacher inside a classroom
+                 * when cliking on a student activity to see the details
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize incoming data to check if the logged user is the teacher
+                $activityId = !empty($_POST['id']) ? intval($_POST['id']) : 0;
+
+                if(empty($activityId)) return array('errorType' => 'activityIdInvalid');
+
                 return $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->findOneBy(array("id" => $data['id']));
+                    ->findOneBy(array("id" => $activityId));
             },
             "remove_by_reference" => function () {
                 /**
