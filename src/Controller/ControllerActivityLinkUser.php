@@ -67,15 +67,35 @@ class ControllerActivityLinkUser extends Controller
                 return $arrayData;
             },
             'get_student_activities' => function () {
+                /**
+                 * This method is used on the student activity panel 
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getStudentActivitiesNotRetrievedNotAuthenticated"];
+
+                // bind and sanitize incoming data to check if the logged user is the teacher
+                $userId = intval($_SESSION['id']);
                 $arrayData = array();
-                $arrayData['newActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getNewActivities($this->user['id']);
-                $arrayData['currentActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getCurrentActivities($this->user['id']);
-                $arrayData['doneActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getDoneActivities($this->user['id']);
-                $arrayData['savedActivities'] = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->getSavedActivities($this->user['id']);
+
+                $arrayData['newActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getNewActivities($userId);
+
+                $arrayData['currentActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getCurrentActivities($userId);
+
+                $arrayData['doneActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getDoneActivities($userId);
+
+                $arrayData['savedActivities'] = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getSavedActivities($userId);
+
                 return $arrayData;
             },
             'add_users' => function () {
