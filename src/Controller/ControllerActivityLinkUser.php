@@ -3,6 +3,7 @@
 namespace Classroom\Controller;
 
 use User\Entity\User;
+use Learn\Entity\Activity;
 use Classroom\Entity\Classroom;
 use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\ClassroomLinkUser;
