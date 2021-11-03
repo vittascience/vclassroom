@@ -289,21 +289,53 @@ class ControllerActivityLinkUser extends Controller
                     /*  return $linkActivityToClassroom; //synchronized */
                 }
             },
-            "update" => function ($data) {
-                $activity = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->findOneBy(array("id" => $data['id']));
-                $activity->setCorrection(intval($data['correction']));
-                $activity->setNote(intval($data['note']));
-                if (isset($data['commentary'])) {
-                    $activity->setCommentary($data['commentary']);
-                }
-                if (isset($data['project']) && $data['project'] != null) {
-                    $project = $this->entityManager->getRepository('Interfaces\Entity\Project')
-                        ->findOneBy(array("id" => $data['project']));
+            "update" => function () {
+                /**
+                 * This method is used by the student to save its work
+                 * => my activities => click on an activity => submit the activity
+                 * and by teacher to give a note to the student's work
+                 * => inside a classroom => click on a student activity
+                 */
+
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "updateNotRetrievedNotAuthenticated"];
+
+                // bind incoming data
+                $activityId = !empty($_POST['id']) ? intval($_POST['id']) : 0;
+                $correction = !empty($_POST['correction']) ? intval($_POST['correction']) : null;
+                $commentary = !empty($_POST['commentary']) ? htmlspecialchars(strip_tags(trim($_POST['commentary']))) : '';
+                $note = !empty($_POST['note']) ? intval($_POST['note']) : 0;
+                $projectId = !empty($_POST['project']) ? intval($_POST['project']) : null;
+                $timePassed = !empty($_POST['timePassed']) ? intval($_POST['timePassed']) : 0;
+
+                // initiate an empty errors array 
+                $errors = [];
+                if (empty($activityId)) $errors['invalidActivityId'] = true;
+                if (empty($correction)) $errors['invalidCorrection'] = true;
+
+                // some errors found, return them
+                if (!empty($errors)) return array('errors' => $errors);
+
+                // no errors, get the activity
+                $activity = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->findOneBy(array("id" => $activityId));
+
+                $activity->setCorrection($correction);
+                $activity->setNote($note);
+                $activity->setCommentary($commentary);
+                if (isset($projectId) && $projectId != null) {
+                    $project = $this->entityManager
+                        ->getRepository('Interfaces\Entity\Project')
+                        ->findOneBy(array("id" => $projectId));
+
                     $activity->setProject($project);
                     $activity->setTries($activity->getTries() + 1);
                     $activity->setDateSend(new \DateTime());
-                    $activity->setTimePassed(intval($activity->getTimePassed()) + intval($data['timePassed']));
+                    $activity->setTimePassed(intval($activity->getTimePassed()) + $timePassed);
                 }
 
                 /*  $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
