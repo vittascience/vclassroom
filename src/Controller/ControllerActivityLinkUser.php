@@ -137,7 +137,7 @@ class ControllerActivityLinkUser extends Controller
                             'rights' => 2
                         ));
 
-                    // the logged user if not the teacher, set error flag to true and exit the loop
+                    // the logged user is not the teacher, set error flag to true and exit the loop
                     if (!$teacher) {
                         $notTeacherErrorFlag = true;
                         break;
@@ -149,6 +149,7 @@ class ControllerActivityLinkUser extends Controller
                 $incomingStudentsId = $_POST['students'];
                 $studentsId = [];
                 foreach ($incomingStudentsId as $incomingStudentId) {
+                    // ignore invalid id and add valid id onto the $studentsId
                     if (intval($incomingStudentId) == 0) continue;
                     array_push($studentsId, intval($incomingStudentId));
                 }
@@ -165,33 +166,45 @@ class ControllerActivityLinkUser extends Controller
 
                 // a reference has been received, we are in an update context
                 if (!empty($reference)) {
-                    // step 1 => get students activities and remove them
-                    $studentActivities = $this->entityManager
-                        ->getRepository(ActivityLinkUser::class)
-                        ->findBy(array('reference' => $reference));
-
-                    foreach ($studentActivities as $studentActivity) {
-                        $this->entityManager->remove($studentActivity);
-                    }
-                    $this->entityManager->flush();
-
-
                     $activity = $this->entityManager
-                        ->getRepository('Learn\Entity\Activity')
+                        ->getRepository(Activity::class)
                         ->find($activityId);
 
-                    // step 2 => now insert students
+                    // step 1 => insert all new students
                     foreach ($studentsId as $studentId) {
                         $user = $this->entityManager
-                            ->getRepository('User\Entity\User')
-                            ->findOneBy(array("id" => $studentId));
+                            ->getRepository(User::class)
+                            ->find($studentId);
 
-                        $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
-                        $this->entityManager->persist($linkActivityToUser);
+                        $linkActivityToClassroomExists = $this->entityManager
+                            ->getRepository(ActivityLinkUser::class)
+                            ->findOneBy(array(
+                                'user' => $user->getId(),
+                                'activity' => $activity->getId(),
+                                'reference' => $reference
+                            ));
+
+                        if (!$linkActivityToClassroomExists) {
+                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
+                            $this->entityManager->persist($linkActivityToUser);
+                            $this->entityManager->flush();
+                        }
                     }
-                    $this->entityManager->flush();
 
-                    // step 3 loop through the classrooms ids and get the classrooms
+                    // step 2 => remove students when they are not part of the updated list of $studentsId
+                    $studentActivities = $this->entityManager
+                        ->getRepository(ActivityLinkUser::class)
+                        ->findBy(array("reference" => $reference));
+
+                    foreach ($studentActivities as $studentActivity) {
+                        if (!in_array($studentActivity->getUser()->getId(), $studentsId)) {
+                            $this->entityManager->remove($studentActivity);
+                            $this->entityManager->flush();
+                        }
+                    }
+
+
+                    // step 3 => loop through the classrooms ids and get the classrooms
                     foreach ($classroomIds as $classroomId) {
                         $classroom = $this->entityManager
                             ->getRepository('Classroom\Entity\Classroom')
@@ -223,6 +236,7 @@ class ControllerActivityLinkUser extends Controller
                     // no reference provided, we are in a create context
                     // create the reference and get the activity
                     $reference = strval(time());
+
                     $activity = $this->entityManager
                         ->getRepository('Learn\Entity\Activity')
                         ->find($activityId);
