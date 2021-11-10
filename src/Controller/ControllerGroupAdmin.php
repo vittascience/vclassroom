@@ -63,9 +63,10 @@ class ControllerGroupAdmin extends Controller
                         $mail = htmlspecialchars($data['mail']);
 
                         // informations can be null
-                        $school = htmlspecialchars($data['school']);
-                        $grade = (int)htmlspecialchars($data['grade']);
-                        $subject = (int)htmlspecialchars($data['subject']);
+                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
+                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
+
                         $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
