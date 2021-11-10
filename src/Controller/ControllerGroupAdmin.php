@@ -838,14 +838,12 @@ class ControllerGroupAdmin extends Controller
     // Check restrictions via applications
     private function isGroupFull(Int $group_id): ?array
     {
-        //include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
-
         $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
         $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
         // Get the default user restrictions in the database
         $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findBy(['name' => "groupDefaultRestrictions"]);
-        $groupRestriction = (array)json_decode($groupDefaultRestrictions->getRestrictions());
+        $groupRestriction = (array)json_decode($groupDefaultRestrictions[0]->getRestrictions());
         $maxTeacher = $groupRestriction['maxTeachers'];
 
         foreach ($applicationsOfGroup as $application) {
