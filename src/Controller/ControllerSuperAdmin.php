@@ -436,11 +436,7 @@ class ControllerSuperAdmin extends Controller
                             $user = new User();
                             $user->setFirstname($firstname);
                             $user->setSurname($surname);
-                            if ($pseudo != null) {
-                                $user->setPseudo($pseudo);
-                            } else {
-                                $user->setPseudo("anonyme");
-                            }
+                            $user->setPseudo($pseudo);
                             $objDateTime = new \DateTime('NOW');
                             $user->setInsertDate($objDateTime);
 
@@ -550,11 +546,7 @@ class ControllerSuperAdmin extends Controller
                         $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                         $user->setFirstname($firstname);
                         $user->setSurname($surname);
-                        if ($pseudo != null) {
-                            $user->setPseudo($pseudo);
-                        } else {
-                            $user->setPseudo("anonyme");
-                        }
+                        $user->setPseudo($pseudo);
                         $user->setUpdateDate(new \DateTime());
                         $this->entityManager->persist($user);
 

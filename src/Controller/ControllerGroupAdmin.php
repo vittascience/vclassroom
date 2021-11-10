@@ -792,6 +792,14 @@ class ControllerGroupAdmin extends Controller
                     }
                     return $groupInfo;
                 },
+                'registration_template'  => function () {
+                    return [
+                        'pseudo' => $_ENV['USER_USERNAME'],
+                        'subject_and_grade' => $_ENV['USER_TEACHER_SECTION'],
+                        'telephone' => $_ENV['USER_PHONE'],
+                        'bio' => $_ENV['USER_BIO']
+                    ];
+                },
             );
         }
     }
