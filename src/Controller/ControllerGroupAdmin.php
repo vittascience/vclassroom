@@ -10,6 +10,7 @@ use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
 use Doctrine\ORM\EntityManager;
 use Classroom\Entity\Applications;
+use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\UsersLinkApplications;
