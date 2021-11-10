@@ -53,10 +53,7 @@ class ControllerGroupAdmin extends Controller
                         isset($data['firstname']) && $data['firstname'] != null &&
                         isset($data['surname']) && $data['surname'] != null &&
                         isset($data['groups']) && $data['groups'] != null &&
-                        isset($data['mail']) && $data['mail'] != null &&
-                        isset($data['grade']) &&
-                        isset($data['subject']) &&
-                        isset($data['school'])
+                        isset($data['mail']) && $data['mail'] != null
                     ) {
                         $admin = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $_SESSION['id']]);
 
