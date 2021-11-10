@@ -418,7 +418,7 @@ class ControllerSuperAdmin extends Controller
                         $mail = htmlspecialchars($data['mail']);
                         $admin = htmlspecialchars($data['admin'])  == "true" ? true : false;
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
-                        $school = htmlspecialchars($data['school']);
+                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
                         $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
                         $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
 
@@ -527,7 +527,7 @@ class ControllerSuperAdmin extends Controller
                         $admin = htmlspecialchars($data['admin']) == "true" ? true : false;
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
 
-                        $school = htmlspecialchars($data['school']);
+                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
                         $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
                         $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
 
