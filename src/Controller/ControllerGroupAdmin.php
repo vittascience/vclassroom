@@ -794,10 +794,10 @@ class ControllerGroupAdmin extends Controller
                 },
                 'registration_template'  => function () {
                     return [
-                        'pseudo' => $_ENV['USER_USERNAME'],
-                        'subject_and_grade' => $_ENV['USER_TEACHER_SECTION'],
-                        'telephone' => $_ENV['USER_PHONE'],
-                        'bio' => $_ENV['USER_BIO']
+                        'USER_USERNAME' => $_ENV['USER_USERNAME'],
+                        'USER_TEACHER_SECTION' => $_ENV['USER_TEACHER_SECTION'],
+                        'USER_PHONE' => $_ENV['USER_PHONE'],
+                        'USER_BIO' => $_ENV['USER_BIO']
                     ];
                 },
             );

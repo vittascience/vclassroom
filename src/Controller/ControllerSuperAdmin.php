@@ -409,10 +409,7 @@ class ControllerSuperAdmin extends Controller
                         isset($data['groups']) && $data['groups'] != null &&
                         isset($data['mail']) && $data['mail'] != null &&
                         isset($data['admin']) && $data['admin'] != null &&
-                        isset($data['teacher']) && $data['teacher'] != null &&
-                        isset($data['grade']) &&
-                        isset($data['subject']) &&
-                        isset($data['school'])
+                        isset($data['teacher']) && $data['teacher'] != null
                     ) {
 
                         $groups =  json_decode($data['groups']);
@@ -422,8 +419,8 @@ class ControllerSuperAdmin extends Controller
                         $admin = htmlspecialchars($data['admin'])  == "true" ? true : false;
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
                         $school = htmlspecialchars($data['school']);
-                        $grade = (int)htmlspecialchars($data['grade']);
-                        $subject = (int)htmlspecialchars($data['subject']);
+                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
 
                         $checkExist = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $mail]);
 
@@ -531,8 +528,8 @@ class ControllerSuperAdmin extends Controller
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
 
                         $school = htmlspecialchars($data['school']);
-                        $grade = (int)htmlspecialchars($data['grade']);
-                        $subject = (int)htmlspecialchars($data['subject']);
+                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
 
                         $application = json_decode($data['application']);
 
