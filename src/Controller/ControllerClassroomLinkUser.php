@@ -44,9 +44,9 @@ class ControllerClassroomLinkUser extends Controller
 
                 // bind and sanitize .env demoStudent
                 $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
-                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
-                                : 'demostudent';
-                
+                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
+                    : 'demostudent';
+
                 // get all classrooms for the current user
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $currentUserId));
@@ -111,11 +111,11 @@ class ControllerClassroomLinkUser extends Controller
                  * check that teacher does not add a demoStudent user @MODIF naser
                  */
 
-                if(in_array($demoStudent,array_map('strtolower',$data['users']))){
+                if (in_array($demoStudent, array_map('strtolower', $data['users']))) {
                     return [
-                        "isUsersAdded"=>false, 
-                        "errorType"=> "reservedNickname",
-                        "currentNickname"=> $demoStudent
+                        "isUsersAdded" => false,
+                        "errorType" => "reservedNickname",
+                        "currentNickname" => $demoStudent
                     ];
                 }
                 /**
@@ -134,8 +134,8 @@ class ControllerClassroomLinkUser extends Controller
                     $password = passwordGenerator();
                     $passwords[] = $password;
                     $user->setPassword($password);
-                    $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                    $user->setId($lastQuestion->getId() + 1);
+                    //$lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
+                    //$user->setId($lastQuestion->getId() + 1);
                     $this->entityManager->persist($user);
                     $this->entityManager->flush();
 
@@ -173,12 +173,12 @@ class ControllerClassroomLinkUser extends Controller
                 // get the statuses for the current user
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
-            
+
                 // bind and sanitize .env demoStudent
                 $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
-                                ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
-                                : 'demostudent';
-                
+                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
+                    : 'demostudent';
+
                 // retrieve all classrooms of the current user
                 $teacherClassrooms = $this->entityManager
                     ->getRepository('Classroom\Entity\ClassroomLinkUser')
@@ -245,23 +245,23 @@ class ControllerClassroomLinkUser extends Controller
 
                 // end remove the limitations for CABRI
                 /////////////////////////////////////////
-            
+
                 /**
                  * check that teacher does not add a demoStudent user @MODIF naser
                  */
-                
-                for($i = 0; $i< count($data['users']); $i++){
+
+                for ($i = 0; $i < count($data['users']); $i++) {
                     $currentUserName = strtolower($data['users'][$i]['apprenant']);
                     $demoStudentNameToTest = strtolower($demoStudent);
-                    if($currentUserName == $demoStudentNameToTest){
+                    if ($currentUserName == $demoStudentNameToTest) {
                         return [
-                            "isUsersAdded"=>false, 
-                            "errorType"=> "reservedNickname",
-                            "currentNickname"=> $demoStudent
+                            "isUsersAdded" => false,
+                            "errorType" => "reservedNickname",
+                            "currentNickname" => $demoStudent
                         ];
                     }
                 }
-                
+
                 foreach ($data['users'] as $userToAdd) {
                     // bind and sanitize incoming data
                     $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
@@ -278,7 +278,7 @@ class ControllerClassroomLinkUser extends Controller
                     $this->entityManager->persist($user);
                     $this->entityManager->flush();
                     // retrieve the las insert Id for next query
-                    $user->setId($user->getId());
+                    //$user->setId($user->getId());
 
                     // create the classroomUser to insert in user_classroom_users
                     $classroomUser = new ClassroomUser($user);
@@ -311,27 +311,27 @@ class ControllerClassroomLinkUser extends Controller
                 // bind incoming data
                 $classroomLink = !empty($_POST['classroom']) ? htmlspecialchars(strip_tags(trim($_POST['classroom']))) : '';
                 $userId = intval($_SESSION['id']);
-                if(empty($classroomLink)) return array('errorType'=> 'classroomLinkMissing');
-                
+                if (empty($classroomLink)) return array('errorType' => 'classroomLinkMissing');
+
                 // check if the current student belong to the classroom or return an error
                 $student = $this->entityManager
                     ->getRepository(ClassroomLinkUser::class)
                     ->findOneBy(array(
-                        'user'=> $userId,
+                        'user' => $userId,
                         'rights' => 0
                     ));
-                if(!$student) return array('errorType' => 'studentDoesNotBelongToClassroom');
+                if (!$student) return array('errorType' => 'studentDoesNotBelongToClassroom');
 
                 // get the classroom
                 $studyGroup = $this->entityManager
                     ->getRepository('Classroom\Entity\Classroom')
                     ->findOneBy(array('link' => $classroomLink));
-            
-                
+
+
                 return $this->entityManager
                     ->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array(
-                        "rights" => 2, 
+                        "rights" => 2,
                         "classroom" => $studyGroup->getId()
                     ));
             },
