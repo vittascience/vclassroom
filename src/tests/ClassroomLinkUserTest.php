@@ -57,7 +57,7 @@ class ClassroomLinkUserTest extends TestCase
         $user = new User();
         $classroom = new Classroom();
         $classroom->setId(TestConstants::TEST_INTEGER);
-        $user->setId(TestConstants::TEST_INTEGER);
+        //$user->setId(TestConstants::TEST_INTEGER);
         $classroomLinkUser = new ClassroomLinkUser($user, $classroom);
         //test array
         $test = [
