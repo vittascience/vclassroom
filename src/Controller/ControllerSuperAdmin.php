@@ -475,27 +475,14 @@ class ControllerSuperAdmin extends Controller
 
                             $this->entityManager->flush();
 
-                            $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
-                            $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken";
-                            $emailTtemplateBody = $userLang . "_confirm_account";
-
-                            if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
-                                i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
-                            } else {
-                                i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
-                            }
-
-                            $emailSubject = i18next::getTranslation('superadmin.users.mail.finalizeAccount.subject');
-                            $bodyTitle = i18next::getTranslation('superadmin.users.mail.finalizeAccount.bodyTitle');
-                            $textBeforeLink = i18next::getTranslation('superadmin.users.mail.finalizeAccount.textBeforeLink');
-                            $body = "
-                            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                                $bodyTitle
-                            </a>
-                            <br>
-                            <br>
-                            <p>$textBeforeLink $accountConfirmationLink";
-                            $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
+                            $emailSent = $this->sendGenericMailWithToken(
+                                $mail,
+                                "_confirm_account",
+                                $_ENV['VS_HOST'] . "/classroom/registration.php?token=$confirmationToken",
+                                'manager.users.mail.finalizeAccount.subject',
+                                'manager.users.mail.finalizeAccount.bodyTitle',
+                                'manager.users.mail.finalizeAccount.textBeforeLink'
+                            );
 
                             return ['message' => 'success', 'mail' => $emailSent, 'id' => $user->getId()];
                         } else {
@@ -514,8 +501,6 @@ class ControllerSuperAdmin extends Controller
                         !empty($data['mail']) &&
                         !empty($data['admin']) &&
                         !empty($data['teacher']) &&
-                        isset($data['grade']) &&
-                        isset($data['subject']) &&
                         !empty($data['isactive'])
                     ) {
 
@@ -527,16 +512,15 @@ class ControllerSuperAdmin extends Controller
                         $admin = htmlspecialchars($data['admin']) == "true" ? true : false;
                         $isTeacher = htmlspecialchars($data['teacher']) == "true" ? true : false;
 
-                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
-                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
-                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
-
                         $application = json_decode($data['application']);
 
                         // further information 
                         $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
+                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
+                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
 
                         $isactive = $data['isactive'] == "true" ? true : false;
 
@@ -560,21 +544,21 @@ class ControllerSuperAdmin extends Controller
                             $this->entityManager->persist($regular);
                         }
 
-                        // Si l'utilisateur est déjà référencé en tant que Teacher
+                        // If the user is already a teacher
                         $teacher = $this->entityManager->getRepository(Teacher::class)->findOneBy(['user' => $user_id]);
-                        // Si l'utilisateur existe dans la bade de données en tant que teacher et que l'update le determine aussi en teacher alors on modifie les champs selon la requête
+                        // Uodate the teacher informations
                         if ($isTeacher && $teacher) {
                             $teacher->setSubject($subject);
                             $teacher->setSchool($school);
                             $teacher->setGrade($grade);
                             $this->entityManager->persist($teacher);
                         }
-                        // Si l'utilisateur n'existe pas en tant que teacher dans la BDD et que la requete le determine en tant que teacher alors on l'entre dans la BDD
+                        // if he's not a teacher, we create the teacher entity 
                         else if ($isTeacher) {
                             $teacher = new Teacher($user, $subject, $school, $grade);
                             $this->entityManager->persist($teacher);
                         }
-                        // Si l'utilisateur existe en teacher dans la BDD et que la requete le determine en non teacher alors nous supprimons son status dans la BDD
+                        // delete teh teacher data
                         else if ($teacher && !$isTeacher) {
                             $this->entityManager->remove($teacher);
                         }
@@ -605,7 +589,7 @@ class ControllerSuperAdmin extends Controller
                                 }
                             }
                         }
-                        // Retire les groupes qui ne lui sont plus attribués
+                        // delete the groups that are not in the new list
                         foreach ($AllGroupsFromUser as $key2 => $value2) {
                             $AlreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $value2->getGroup()]);
                             $ApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user_id, 'group' => $value2->getGroup()]);
@@ -645,13 +629,13 @@ class ControllerSuperAdmin extends Controller
                             $this->entityManager->remove($userT);
                         }
 
-                        // Delete le lien entre l'utilisateur et le groupe
+                        // Delete the link between the user and the group
                         $userlinkgroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
                         foreach ($userlinkgroups as $key_ulg => $value_ulg) {
                             $this->entityManager->remove($userlinkgroups[$key_ulg]);
                         }
 
-                        // Delete le lien entre l'utilisateur et les applications
+                        // Delete the link between the user and the application
                         $userlinkapplications = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['user' => $user_id]);
                         foreach ($userlinkapplications as $key_ula => $value_ula) {
                             $this->entityManager->remove($userlinkapplications[$key_ula]);
@@ -716,34 +700,24 @@ class ControllerSuperAdmin extends Controller
                         $mail = $user->getEmail();
                         $this->entityManager->persist($user);
 
-
-                        $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
-
                         // create the confirmation account link and set the email template to be used      
-                        $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/password_manager.php?page=update&token=$token";
-                        $emailTtemplateBody = $userLang . "_confirm_account";
 
-                        // init i18next instance
-                        if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
-                            i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
-                        } else {
-                            i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
-                        }
-
-                        $emailSubject = i18next::getTranslation('superadmin.users.mail.resetPassword.subject');
-                        $bodyTitle = i18next::getTranslation('superadmin.users.mail.resetPassword.bodyTitle');
-                        $textBeforeLink = i18next::getTranslation('superadmin.users.mail.resetPassword.textBeforeLink');
-                        $body = "
-                            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                                $bodyTitle
-                            </a>
-                            <br>
-                            <br>
-                            <p>$textBeforeLink $accountConfirmationLink
-                        ";
-
+                        /* 
+                        string $mail,
+                        string $emailTemplateBodyString,
+                        string $confirmationLinkString,
+                        string $emailSubjectString,
+                        string $bodyTitleString,
+                        string $textBeforeLinkString */
                         // send email
-                        $emailSent = Mailer::sendMail($mail,  $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
+                        $emailSent = $this->sendGenericMailWithToken(
+                            $mail,
+                            "_confirm_account",
+                            $_ENV['VS_HOST'] . "/classroom/password_manager.php?page=update&token=$token",
+                            'manager.users.mail.resetPassword.subject',
+                            'manager.users.mail.resetPassword.bodyTitle',
+                            'manager.users.mail.resetPassword.textBeforeLink'
+                        );
 
                         if ($emailSent) {
                             $this->entityManager->flush();
@@ -1010,6 +984,48 @@ class ControllerSuperAdmin extends Controller
             );
         }
     }
+
+    /**
+     * @param $mail string : the mail of the user
+     * @param $emailTemplateBodysSring string : the i18n string of the email template
+     * @param $confirmationLinkString string : the link in the mail
+     * @param $emailSubjectString string : the i18n string of the email subject
+     * @param $bodyTitleString string : the i18n string of the body title
+     * @param $textBeforeLink string : the i18n string for the text before link
+     * @return response from mailer class
+     */
+    private function sendGenericMailWithToken(
+        string $mail,
+        string $emailTemplateBodyString,
+        string $confirmationLinkString,
+        string $emailSubjectString,
+        string $bodyTitleString,
+        string $textBeforeLinkString
+    ) {
+        $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
+        $accountConfirmationLink = $confirmationLinkString;
+        $emailTtemplateBody = $userLang . $emailTemplateBodyString;
+
+        if (is_dir(__DIR__ . "/../../../../../openClassroom")) {
+            i18next::init($userLang, __DIR__ . "/../../../../../openClassroom/classroom/assets/lang/__lng__/ns.json");
+        } else {
+            i18next::init($userLang, __DIR__ . "/../../../../../classroom/assets/lang/__lng__/ns.json");
+        }
+
+        $emailSubject = i18next::getTranslation($emailSubjectString);
+        $bodyTitle = i18next::getTranslation($bodyTitleString);
+        $textBeforeLink = i18next::getTranslation($textBeforeLinkString);
+        $body = "
+                            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
+                                $bodyTitle
+                            </a>
+                            <br>
+                            <br>
+                            <p>$textBeforeLink $accountConfirmationLink";
+        $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
+        return $emailSent;
+    }
+
     private function manageAppsFromGroups(Int $user_id, array $application, Groups $group, User $user)
     {
         $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);

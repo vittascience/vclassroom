@@ -57,7 +57,6 @@ class ControllerGroupAdmin extends Controller
                         isset($data['mail']) && $data['mail'] != null
                     ) {
                         $admin = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $_SESSION['id']]);
-
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
