@@ -27,7 +27,8 @@ class ControllerClassroomLinkUser extends Controller
     {
         parent::__construct($entityManager, $user);
         $this->actions = array(
-            'add_users' => function ($data) {
+            'add_users' => function () {
+
                 /**
                  * Limiting learner number @THOMAS MODIF
                  * Added premium and Admin check @NASER MODIF
@@ -35,17 +36,43 @@ class ControllerClassroomLinkUser extends Controller
                  * @var $data[classroom] is a string containing the classroom link 
                  */
 
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotAuthenticated"];
+
+                // use the same regex as in the User entity to avoid troubleshouting
+                $regexForPseudo = "/^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ]{1}[\w\sáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ'&@\-_.()]{0,98}[\wáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ)]{0,1}$/";
+
                 // get the currently logged user (professor, admin, premium,...) 
-                $currentUserId = $this->user["id"];
+                $currentUserId = intval($_SESSION["id"]);
 
                 // get the statuses for the current user
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
 
                 // bind and sanitize .env demoStudent
-                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
-                    : 'demostudent';
+                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT']) ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT'])))) : 'demostudent';
+
+                // bind incoming users
+                $incomingUsers = $_POST['users'];
+                $usersToAdd = [];
+                $usersToAddErrorFlag = false;
+                foreach ($incomingUsers as $incomingUser) {
+                    // bind and sanitize each incoming user
+                    $student = preg_match($regexForPseudo, $incomingUser)
+                        ? htmlspecialchars(strip_tags(trim($incomingUser)), ENT_QUOTES)
+                        : '';
+
+                    if (empty($student)) $usersToAddErrorFlag = true;
+                    else array_push($usersToAdd, $student);
+                }
+                if ($usersToAddErrorFlag == true) return array('errorType' => "backendReplyPseudoMissingInUsersArray");
+
+                // bind and sanitize incoming classroomLink
+                $classroomLink = !empty($_POST['classroom']) ? htmlspecialchars(strip_tags(trim($_POST['classroom']))) : '';
+                if (empty($classroomLink)) return array('errorType' => 'classroomLinkMissing');
 
                 // get all classrooms for the current user
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
@@ -55,7 +82,7 @@ class ControllerClassroomLinkUser extends Controller
                 $nbApprenants = 0;
                 foreach ($classrooms as $c) {
                     $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->getAllStudentsInClassroom($c->getClassroom()->getId(), 0);
+                        ->getAllStudentsInClassroom($c->getClassroom()->getId(), 0, $demoStudent);
 
                     // add the current classroom users number and increase the total
                     $nbApprenants += count($students);
@@ -81,7 +108,7 @@ class ControllerClassroomLinkUser extends Controller
                 if (!$learnerNumberCheck["isAdmin"]) {
                     //@Note : the isPremium check is not deleted to restrein the actual user with the isPremium method
                     // the restrictions by application is not implemented to every user
-                    $addedLearnerNumber = count($data['users']);
+                    $addedLearnerNumber = count($usersToAdd);
                     if ($learnerNumberCheck["isPremium"]) {
                         // computer the total number of students registered +1 and return an error if > 50
                         $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
@@ -111,22 +138,16 @@ class ControllerClassroomLinkUser extends Controller
                  * check that teacher does not add a demoStudent user @MODIF naser
                  */
 
-                if (in_array($demoStudent, array_map('strtolower', $data['users']))) {
+                if (in_array($demoStudent, array_map('strtolower', $usersToAdd))) {
                     return [
                         "isUsersAdded" => false,
                         "errorType" => "reservedNickname",
                         "currentNickname" => $demoStudent
                     ];
                 }
-                /**
-                 * 
-                 */
-
-
-
 
                 $passwords = [];
-                foreach ($data['users'] as $u) {
+                foreach ($usersToAdd as $u) {
                     $user = new User();
                     $user->setSurname('surname');
                     $user->setFirstname('firstname');
@@ -147,15 +168,37 @@ class ControllerClassroomLinkUser extends Controller
                     $this->entityManager->persist($classroomUser);
 
                     $studyGroup = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                        ->findOneBy(array('link' => $data['classroom']));
+                        ->findOneBy(array('link' => $classroomLink));
                     $linkClassroomUserToGroup = new ClassroomLinkUser($user, $studyGroup);
                     $linkClassroomUserToGroup->setRights(0);
                     $this->entityManager->persist($linkClassroomUserToGroup);
                 }
-                if (isset($data['existingUsers']) && count($data['existingUsers']) > 0) {
-                    foreach ($data['existingUsers'] as $eu) {
-                        $existingUser = $this->entityManager->getRepository('User\Entity\User')->findOneBy(['id' => $eu['id']]);
-                        $existingUser->setPseudo($eu['pseudo']);
+                if (isset($_POST['existingUsers']) && count($_POST['existingUsers']) > 0) {
+
+                    // bind incoming users
+                    $incomingUsersToUpdate = $_POST['existingUsers'];
+                    $usersToUpdate = [];
+                    $usersToUpdateErrorFlag = false;
+                    foreach ($incomingUsersToUpdate as $incomingUserToUpdate) {
+
+                        // bind and sanitize each incoming user
+                        $studentPseudo = preg_match($regexForPseudo, $incomingUserToUpdate['pseudo'])
+                            ? htmlspecialchars(strip_tags(trim($incomingUserToUpdate['pseudo'])), ENT_QUOTES)
+                            : '';
+                        $studentId = !empty($incomingUserToUpdate['id']) ? intval($incomingUserToUpdate['id']) : 0;
+                        if (empty($studentPseudo) || empty($studentId)) $usersToUpdateErrorFlag = true;
+                        else array_push(
+                            $usersToUpdate,
+                            array('pseudo' => $studentPseudo, 'id' => $studentId)
+                        );
+                    }
+
+                    if ($usersToUpdateErrorFlag == true) return array('errorType' => "backendReplyPseudoMissingInUpdateUsersArray");
+
+
+                    foreach ($usersToUpdate as $userToUpdate) {
+                        $existingUser = $this->entityManager->getRepository('User\Entity\User')->findOneBy(['id' => $userToUpdate['id']]);
+                        $existingUser->setPseudo($userToUpdate['pseudo']);
                         $this->entityManager->persist($existingUser);
                     }
                 }
@@ -164,11 +207,45 @@ class ControllerClassroomLinkUser extends Controller
 
                 return ["isUsersAdded" => true, "passwords" => $passwords];
             },
-            'add_users_by_csv' => function ($data) {
-                // get all students for this teacher
+            'add_users_by_csv' => function () {
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "addUsersByCsvNotAuthenticated"];
+
+                // bind incoming users, set empty student array to fill and set error flag to false
+                $incomingUsers = $_POST['users'];
+                $studentsToAdd = [];
+                $errorPseudoMissingFlag = false;
+
+                // bind and sanitize incoming users array
+                foreach ($incomingUsers as $incomingUser) {
+
+                    $studentPseudo = htmlspecialchars(strip_tags(trim($incomingUser['apprenant'])));
+                    $studentPassword = !empty($incomingUser['mot_de_passe'])
+                        ? htmlspecialchars(strip_tags(trim($incomingUser['mot_de_passe'])))
+                        :  passwordGenerator();
+
+                    // one of the pseudo is empty, set the error flag to true and stop the loop
+                    if (empty($studentPseudo)) {
+                        $errorPseudoMissingFlag = true;
+                        break;
+                    }
+
+                    // no error found, fille the student array
+                    array_push(
+                        $studentsToAdd,
+                        array('apprenant' => $studentPseudo, 'mot_de_passe' => $studentPassword)
+                    );
+                }
+
+                // error flag = true, return an error
+                if ($errorPseudoMissingFlag == true) return array('errorType' => "backendReplyPseudoMissingInCsv");
+
+                // sanitize the others data
                 $currentUserId = intval($_SESSION['id']);
-                $classroomLink = htmlspecialchars(strip_tags(trim($data['classroom'])));
+                $classroomLink = htmlspecialchars(strip_tags(trim($_POST['classroom'])));
 
                 // get the statuses for the current user
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
@@ -217,7 +294,7 @@ class ControllerClassroomLinkUser extends Controller
                 if (!$learnerNumberCheck["isAdmin"]) {
                     //@Note : the isPremium check is not deleted to restrein the actual user with the isPremium method
                     // the restrictions by application is not implemented to every user
-                    $addedLearnerNumber = count($data['users']);
+                    $addedLearnerNumber = count($studentsToAdd);
                     if ($learnerNumberCheck["isPremium"]) {
                         // computer the total number of students registered +1 and return an error if > 50
                         $totalLearnerCount = $learnerNumberCheck["learnerNumber"] + $addedLearnerNumber;
@@ -243,15 +320,9 @@ class ControllerClassroomLinkUser extends Controller
                     }
                 }
 
-                // end remove the limitations for CABRI
-                /////////////////////////////////////////
-
-                /**
-                 * check that teacher does not add a demoStudent user @MODIF naser
-                 */
-
-                for ($i = 0; $i < count($data['users']); $i++) {
-                    $currentUserName = strtolower($data['users'][$i]['apprenant']);
+                // check that teacher does not add a demoStudent (ie: .env var)             
+                for ($i = 0; $i < count($studentsToAdd); $i++) {
+                    $currentUserName = strtolower($studentsToAdd[$i]['apprenant']);
                     $demoStudentNameToTest = strtolower($demoStudent);
                     if ($currentUserName == $demoStudentNameToTest) {
                         return [
@@ -262,12 +333,10 @@ class ControllerClassroomLinkUser extends Controller
                     }
                 }
 
-                foreach ($data['users'] as $userToAdd) {
-                    // bind and sanitize incoming data
-                    $studentPseudo = htmlspecialchars(strip_tags(trim($userToAdd['apprenant'])));
-                    $studentPassword = !empty($userToAdd['mot_de_passe'])
-                        ? htmlspecialchars(strip_tags(trim($userToAdd['mot_de_passe'])))
-                        : passwordGenerator();
+                foreach ($studentsToAdd as $studentToAdd) {
+                    // extract and bind sanitized data
+                    $studentPseudo = $studentToAdd['apprenant'];
+                    $studentPassword = $studentToAdd['mot_de_passe'];
 
                     // create the user
                     $user = new User();
@@ -335,14 +404,17 @@ class ControllerClassroomLinkUser extends Controller
                         "classroom" => $studyGroup->getId()
                     ));
             },
-            'get_by_classroom' => function ($data) {
-                $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findBy(array("link" => $data['classroom']));
-                return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->findBy(array("classroom" => $classroom->getId(), "rights" => 0));
-            }, 'get_by_user' => function ($data) {
+            'get_by_user' => function () {
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "getByUserNotAuthenticated"];
+
+                $userId = intval($_SESSION['id']);
+
                 $user = $this->entityManager->getRepository('User\Entity\User')
-                    ->findOneBy(array("id" => $data['user']));
+                    ->findOneBy(array("id" => $userId));
                 return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findOneBy(array("user" => $user->getId()));
             },
@@ -410,6 +482,19 @@ class ControllerClassroomLinkUser extends Controller
                 }
                 return $activities;
             }, */
+            /* 
+            * @ToBeRemoved
+            * this method no called                 
+            'get_by_classroom' => function ($data) {
+                
+                
+                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                     ->findBy(array("link" => $data['classroom']));
+ 
+                 return $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                     ->findBy(array("classroom" => $classroom->getId(), "rights" => 0));
+ 
+             },  */
         );
     }
 }

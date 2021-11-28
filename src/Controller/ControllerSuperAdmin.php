@@ -701,19 +701,11 @@ class ControllerSuperAdmin extends Controller
                         $this->entityManager->persist($user);
 
                         // create the confirmation account link and set the email template to be used      
-
-                        /* 
-                        string $mail,
-                        string $emailTemplateBodyString,
-                        string $confirmationLinkString,
-                        string $emailSubjectString,
-                        string $bodyTitleString,
-                        string $textBeforeLinkString */
-                        // send email
+                        $accountConfirmationLink = $_ENV['VS_HOST'] . "/classroom/password_manager.php?page=update&token=$token";
                         $emailSent = $this->sendGenericMailWithToken(
                             $mail,
                             "_confirm_account",
-                            $_ENV['VS_HOST'] . "/classroom/password_manager.php?page=update&token=$token",
+                            $accountConfirmationLink,
                             'manager.users.mail.resetPassword.subject',
                             'manager.users.mail.resetPassword.bodyTitle',
                             'manager.users.mail.resetPassword.textBeforeLink'

@@ -41,16 +41,18 @@ class ControllerClassroom extends Controller
                     return $classrooms = [];
                 }
 
+                $demoStudent = htmlspecialchars(strip_tags(trim($this->envVariables['VS_DEMOSTUDENT'])));
                 // some classrooms found, push them into $classrooms array
                 $i = 0;
                 foreach ($classrooms as $classroom) {
                     $students = $this->entityManager
                         ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->getAllStudentsInClassroom($classroom->getClassroom()->getId(), 0);
-
+                        ->getAllStudentsInClassroom($classroom->getClassroom()->getId(), 0, $demoStudent);
+                    
                     $classrooms[$i] = array("classroom" => $classroom->getClassroom(), "students" => $students);
                     $i++;
                 }
+
                 return $classrooms;
             },
             'get_by_link' => function () {
