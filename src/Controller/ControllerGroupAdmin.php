@@ -10,6 +10,7 @@ use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
 use Doctrine\ORM\EntityManager;
 use Classroom\Entity\Applications;
+use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\UsersLinkApplications;
@@ -53,38 +54,29 @@ class ControllerGroupAdmin extends Controller
                         isset($data['firstname']) && $data['firstname'] != null &&
                         isset($data['surname']) && $data['surname'] != null &&
                         isset($data['groups']) && $data['groups'] != null &&
-                        isset($data['mail']) && $data['mail'] != null &&
-                        isset($data['grade']) &&
-                        isset($data['subject']) &&
-                        isset($data['school'])
+                        isset($data['mail']) && $data['mail'] != null
                     ) {
                         $admin = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $_SESSION['id']]);
-
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
                         $mail = htmlspecialchars($data['mail']);
-                        $school = htmlspecialchars($data['school']);
-                        $grade = (int)htmlspecialchars($data['grade']);
-                        $subject = (int)htmlspecialchars($data['subject']);
 
-                        // informations 
+                        // informations can be null
+                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
+                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
+
                         $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
                         $checkExist = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $mail]);
                         if (!$checkExist) {
-                            $user = new User;
+                            $user = new User();
                             $user->setFirstname($firstname);
                             $user->setSurname($surname);
-                            //$user->setPseudo($pseudo);
-                            // the pseudo field is not
-                            if ($pseudo != null) {
-                                $user->setPseudo($pseudo);
-                            } else {
-                                $user->setPseudo("anonyme");
-                            }
+                            $user->setPseudo($pseudo);
                             $objDateTime = new \DateTime('NOW');
                             $user->setInsertDate($objDateTime);
 
@@ -189,18 +181,15 @@ class ControllerGroupAdmin extends Controller
                     $email = isset($data['email'])  ? htmlspecialchars($data['email']) : null;
                     $password = isset($data['password'])  ? htmlspecialchars($data['password']) : null;
                     $password_confirm = isset($data['password_confirm'])  ? htmlspecialchars(strip_tags(trim($data['password_confirm']))) : null;
-                    $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
-                    $grade = isset($data['grade']) ? htmlspecialchars($data['grade']) : null;
-                    $subject = isset($data['subject']) ? htmlspecialchars($data['subject']) : null;
                     $groupCode = isset($data['gcode']) ? htmlspecialchars($data['gcode']) : null;
 
                     // informations 
                     $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
                     $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                     $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
-
-                    $grade = (int)$grade;
-                    $subject = (int)$subject;
+                    $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
+                    $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                    $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
 
                     $newsletter = $_POST['newsletter'] == "true" ? true : false;
                     $private = $_POST['private'] == "true" ? true : false;
@@ -211,19 +200,18 @@ class ControllerGroupAdmin extends Controller
                     $errors = [];
                     if (empty($firstname)) $errors['firstnameMissing'] = true;
                     if (empty($surname)) $errors['surnameMissing'] = true;
-                    if (empty($email)) $errors['emailMissing'] = true;
-                    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['emailInvalid'] = true;
-                    if (empty($password)) $errors['passwordMissing'] = true;
-                    elseif (strlen($password) < 7) $errors['invalidPassword'] = true;
-                    if (empty($password_confirm)) $errors['passwordConfirmMissing'] = true;
-                    elseif ($password !== $password_confirm) $errors['passwordsMismatch'] = true;
-
-                    if (empty($school)) $errors['schoolMissing'] = true;
-                    if (empty($grade)) $errors['gradeMissing'] = true;
-                    if (empty($subject)) $errors['subjectMissing'] = true;
-                    //if (empty($pseudo)) $errors['pseudoMissing'] = true;
-                    //if (empty($phone)) $errors['phoneMissing'] = true;
-                    //if (empty($bio)) $errors['bioMissing'] = true;
+                    if (empty($email))
+                        $errors['emailMissing'] = true;
+                    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL))
+                        $errors['emailInvalid'] = true;
+                    if (empty($password))
+                        $errors['passwordMissing'] = true;
+                    elseif (strlen($password) < 7)
+                        $errors['invalidPassword'] = true;
+                    if (empty($password_confirm))
+                        $errors['passwordConfirmMissing'] = true;
+                    elseif ($password !== $password_confirm)
+                        $errors['passwordsMismatch'] = true;
 
                     // check if the email is already listed in db
                     $emailAlreadyExists = $this->entityManager
@@ -246,15 +234,10 @@ class ControllerGroupAdmin extends Controller
                     $passwordHash = password_hash($password, PASSWORD_BCRYPT);
                     $emailSent = null;
                     // create user and persists it in memory
-                    $user = new User;
+                    $user = new User();
                     $user->setFirstname($firstname);
                     $user->setSurname($surname);
-                    // the pseudo field is not
-                    if ($pseudo != null) {
-                        $user->setPseudo($pseudo);
-                    } else {
-                        $user->setPseudo("anonyme");
-                    }
+                    $user->setPseudo($pseudo);
                     $user->setPassword($passwordHash);
                     $user->setInsertDate(new \DateTime());
                     $user->setUpdateDate(new \DateTime());
@@ -454,19 +437,19 @@ class ControllerGroupAdmin extends Controller
                         !empty($data['firstname']) &&
                         !empty($data['surname']) &&
                         !empty($data['groups']) &&
-                        !empty($data['mail']) &&
-                        isset($data['grade']) &&
-                        isset($data['subject'])
+                        !empty($data['mail'])
                     ) {
+                        // mandatory fields
                         $user_id = htmlspecialchars($data['user_id']);
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
                         $mail = htmlspecialchars($data['mail']);
-                        $school = htmlspecialchars($data['school']);
-                        $grade = (int)htmlspecialchars($data['grade']);
-                        $subject = (int)htmlspecialchars($data['subject']);
-                        // further information 
+
+                        // further information, can be null
+                        $school = isset($data['school']) ? htmlspecialchars($data['school']) : null;
+                        $grade = isset($data['grade']) ? (int)htmlspecialchars($data['grade']) : null;
+                        $subject = isset($data['subject']) ? (int)htmlspecialchars($data['subject']) : null;
                         $pseudo = isset($data['pseudo']) ? htmlspecialchars($data['pseudo']) : null;
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
@@ -480,11 +463,7 @@ class ControllerGroupAdmin extends Controller
                         $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                         $user->setFirstname($firstname);
                         $user->setSurname($surname);
-                        if ($pseudo != null) {
-                            $user->setPseudo($pseudo);
-                        } else {
-                            $user->setPseudo("anonyme");
-                        }
+                        $user->setPseudo($pseudo);
                         $user->setUpdateDate(new \DateTime());
                         $this->entityManager->persist($user);
 
@@ -811,6 +790,14 @@ class ControllerGroupAdmin extends Controller
                     }
                     return $groupInfo;
                 },
+                'registration_template'  => function () {
+                    return [
+                        'USER_USERNAME' => $_ENV['USER_USERNAME'],
+                        'USER_TEACHER_SECTION' => $_ENV['USER_TEACHER_SECTION'],
+                        'USER_PHONE' => $_ENV['USER_PHONE'],
+                        'USER_BIO' => $_ENV['USER_BIO']
+                    ];
+                },
             );
         }
     }
@@ -850,14 +837,12 @@ class ControllerGroupAdmin extends Controller
     // Check restrictions via applications
     private function isGroupFull(Int $group_id): ?array
     {
-        //include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
-
         $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
         $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
         // Get the default user restrictions in the database
         $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findBy(['name' => "groupDefaultRestrictions"]);
-        $groupRestriction = (array)json_decode($groupDefaultRestrictions->getRestrictions());
+        $groupRestriction = (array)json_decode($groupDefaultRestrictions[0]->getRestrictions());
         $maxTeacher = $groupRestriction['maxTeachers'];
 
         foreach ($applicationsOfGroup as $application) {
