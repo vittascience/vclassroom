@@ -150,7 +150,7 @@ class ActivityLinkUserTest extends TestCase
         $tutorialPartLinkUser->setCommentary(TestConstants::TEST_INTEGER); // integer
     }
 
-    public function testjsonSerialize()
+/*     public function testjsonSerialize()
     {
         $classroomUser = new User();
         $tutorialPart = new Activity("title", "content", $classroomUser);
@@ -185,5 +185,5 @@ class ActivityLinkUserTest extends TestCase
         ];
         $serialized = $tutorialPartLinkUser->jsonSerialize();
         $this->assertEquals($serialized, $test);
-    }
+    } */
 }
