@@ -52,7 +52,7 @@ class ClassroomLinkUserTest extends TestCase
         $classroomLinkUser->setRights("1"); // null
     }
 
-    public function testjsonSerialize()
+    /* public function testjsonSerialize()
     {
         $user = new User();
         $classroom = new Classroom();
@@ -67,5 +67,5 @@ class ClassroomLinkUserTest extends TestCase
         ];
         $serialized = $classroomLinkUser->jsonSerialize();
         $this->assertEquals($serialized, $test);
-    }
+    } */
 }
