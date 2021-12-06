@@ -303,12 +303,13 @@ class ControllerActivityLinkUser extends Controller
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "updateNotRetrievedNotAuthenticated"];
 
+                $incomingProjectId = $_POST['project'] ?? $_POST['project']['id'];
                 // bind incoming data
                 $activityId = !empty($_POST['id']) ? intval($_POST['id']) : 0;
                 $correction = !empty($_POST['correction']) ? intval($_POST['correction']) : null;
                 $commentary = !empty($_POST['commentary']) ? htmlspecialchars(strip_tags(trim($_POST['commentary']))) : '';
                 $note = !empty($_POST['note']) ? intval($_POST['note']) : 0;
-                $projectId = !empty($_POST['project']['id']) ? intval($_POST['project']['id']) : null;
+                $projectId = !empty($incomingProjectId) ? intval($incomingProjectId) : null;
                 $timePassed = !empty($_POST['timePassed']) ? intval($_POST['timePassed']) : 0;
 
                 // initiate an empty errors array 
