@@ -799,11 +799,11 @@ class ControllerGroupAdmin extends Controller
                     ];
                 },
                 'get_new_validation_mail' => function($data) {
-                    $mail = htmlspecialchars($data['mail']);
-                    $user = $this->entityManager->getRepository(Regular::class)->findOneBy(['mail' => $mail]);
+                    $email = htmlspecialchars($data['email']);
+                    $user = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $email]);
                     if ($user && !empty($user->getValidationMail())) {
                         $token = $user->getValidationToken();
-                        $response = $this->sendActivationLink($mail, $token);
+                        $response = $this->sendActivationLink($email, $token);
                         if ($response['emailSent']) {
                             return ['success' => true, 'message' => 'mail_sent'];
                         } else {
