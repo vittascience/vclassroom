@@ -798,6 +798,21 @@ class ControllerGroupAdmin extends Controller
                         'USER_BIO' => $_ENV['USER_BIO']
                     ];
                 },
+                'get_new_validation_mail' => function($data) {
+                    $mail = htmlspecialchars($data['mail']);
+                    $user = $this->entityManager->getRepository(Regular::class)->findOneBy(['mail' => $mail]);
+                    if ($user && !empty($user->getValidationMail())) {
+                        $token = $user->getValidationToken();
+                        $response = $this->sendActivationLink($mail, $token);
+                        if ($response['emailSent']) {
+                            return ['success' => true, 'message' => 'mail_sent'];
+                        } else {
+                            return ['success' => false, 'message' => 'mail_not_sent'];
+                        }
+                    } else {
+                        return ['success' => false, 'message' => 'user_not_found'];
+                    }
+                },
             );
         }
     }
