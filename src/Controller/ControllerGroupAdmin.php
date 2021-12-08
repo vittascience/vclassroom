@@ -801,7 +801,7 @@ class ControllerGroupAdmin extends Controller
                 'get_new_validation_mail' => function($data) {
                     $email = htmlspecialchars($data['email']);
                     $user = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $email]);
-                    if ($user && !empty($user->getValidationMail())) {
+                    if ($user && !empty($user->getValidationToken())) {
                         $token = $user->getValidationToken();
                         $response = $this->sendActivationLink($email, $token);
                         if ($response['emailSent']) {
