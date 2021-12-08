@@ -533,7 +533,7 @@ class ControllerSuperAdmin extends Controller
                         }
 
                         // Manage the group apps for user
-                        $appsManager = $this->manageAppsFromGroupsUsers($user_id, $application, $group, $user);
+                        $appsManager = $this->manageAppsFromGroupsUsers($user_id, $application, $groups, $user);
                         if ($appsManager != true) {
                             return $appsManager;
                         }
@@ -949,27 +949,29 @@ class ControllerSuperAdmin extends Controller
         return $emailSent;
     }
 
-    private function manageAppsFromGroupsUsers(Int $user_id, array $application, Groups $group, User $user)
+    private function manageAppsFromGroupsUsers(Int $user_id, array $application, ?array $groups, User $user)
     {
+        $group = "";
+        if (!empty($groups)) {
+            $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
+        }
         $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);
         $isAppActive = false;
         foreach ($application as $app) {
             foreach ($appFromGroupExist as $appFromGroup) {
                 if ($appFromGroup->getApplication()->getId() == $app[0] && $app[1] == false) {
                     $this->entityManager->remove($appFromGroup);
-                    $this->entityManager->flush();
                 } else if ($appFromGroup->getApplication()->getId() == $app[0]) {
                     $isAppActive = true;
                 }
             }
-            if (!$isAppActive && $app[1] == true) {
+            if (!$isAppActive && $app[1] == true && $group != "") {
                 $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app[0]]);
                 $newAppFromGroup = new UsersLinkApplicationsFromGroups();
                 $newAppFromGroup->setApplication($apps);
                 $newAppFromGroup->setGroup($group);
                 $newAppFromGroup->setUser($user);
                 $this->entityManager->persist($newAppFromGroup);
-                $this->entityManager->flush();
             }
             $isAppActive = false;
         }
