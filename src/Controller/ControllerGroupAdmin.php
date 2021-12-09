@@ -26,7 +26,6 @@ class ControllerGroupAdmin extends Controller
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             return false;
         } else {
-            header('Content-Type: application/json');
             $this->actions = array(
                 'get_all_groups_where_user_is_admin' => function () {
                     return $this->entityManager->getRepository(UsersLinkGroups::class)->groupWhereUserIsAdmin($_SESSION['id']);
@@ -285,10 +284,12 @@ class ControllerGroupAdmin extends Controller
                     );
                 },
                 'linkTeacherToGroup' => function ($data) {
+
+                    header('Content-Type: application/json');
+
                     // bind incoming data to the value provided or null
                     $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                     $group_id = isset($data['group_id']) ? htmlspecialchars($data['group_id']) : null;
-
 
                     // Check restrictions via applications
                     $canAddUser = $this->isGroupFull($group_id);
@@ -300,7 +301,7 @@ class ControllerGroupAdmin extends Controller
                     // Only one group at the same time
                     $userGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
                     if (count($userGroups) > 0) {
-                        return ['message' => 'User already in group'];
+                        return ['message' => 'userInGroup'];
                     }
                     // Only one group at the same time
 
