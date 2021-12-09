@@ -26,6 +26,7 @@ class ControllerGroupAdmin extends Controller
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             return false;
         } else {
+            header('Content-Type: application/json');
             $this->actions = array(
                 'get_all_groups_where_user_is_admin' => function () {
                     return $this->entityManager->getRepository(UsersLinkGroups::class)->groupWhereUserIsAdmin($_SESSION['id']);
