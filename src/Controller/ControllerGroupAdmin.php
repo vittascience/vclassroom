@@ -996,7 +996,7 @@ class ControllerGroupAdmin extends Controller
             }
         }
         // Si le requester n'est pas lié par au moins un groupe à l'utilisateur ou si l'utilisateur est admin alors nous retournons une erreur
-        if (!$isRelated || $user->getIsAdmin()) {
+        if (!$isRelated || ($user->getIsAdmin() && $user_id != $_SESSION['id'])) {
             return ['message' => 'not_allowed', 'isRelated' => $isRelated];
         } else {
             return ['message' => 'allowed'];
