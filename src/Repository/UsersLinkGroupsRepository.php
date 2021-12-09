@@ -40,7 +40,7 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         if ($group_id >= 1) {
             $result = $this->getEntityManager()
-                ->createQueryBuilder()->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights")
+                ->createQueryBuilder()->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active")
                 ->from(User::class, 'u')
                 ->innerJoin(UsersLinkGroups::class, 'g')
                 ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
@@ -63,7 +63,7 @@ class UsersLinkGroupsRepository extends EntityRepository
             if (!empty($users_id)) {
                 $result = $this->getEntityManager()
                     ->createQueryBuilder()
-                    ->select("u.id, u.surname, u.firstname, u.pseudo")
+                    ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active")
                     ->from(User::class, 'u')
                     ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                     ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
