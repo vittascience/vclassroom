@@ -800,7 +800,7 @@ class ControllerGroupAdmin extends Controller
                         'USER_BIO' => $_ENV['USER_BIO']
                     ];
                 },
-                'get_new_validation_mail' => function($data) {
+                'get_new_validation_mail' => function ($data) {
                     $email = htmlspecialchars($data['email']);
                     $user = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $email]);
                     if ($user) {
@@ -814,11 +814,86 @@ class ControllerGroupAdmin extends Controller
                             }
                         } else {
                             return ['success' => false, 'message' => 'no_token'];
-                        } 
+                        }
                     } else {
                         return ['success' => false, 'message' => 'user_not_found'];
                     }
                 },
+                'help_request_from_groupadmin' => function ($data) {
+                    /**
+                     * This method is called by the student (student help panel => clic on send message)
+                     */
+                    // allow only POST METHOD
+                    if ($_SERVER['REQUEST_METHOD'] !== 'POST') return array('error' => 'Method not Allowed');
+
+                    // accept only connected user
+                    if (empty($_SESSION['id'])) return ["errorType" => "userNotRetrievedNotAuthenticated"];
+
+                    // bind incoming data
+                    $subject = isset($_POST['subject']) ? htmlspecialchars(strip_tags(trim($_POST['subject']))) : null;
+                    $message = isset($_POST['message']) ? htmlspecialchars(strip_tags(trim($_POST['message']))) : null;
+                    $id = intval($_SESSION['id']);
+
+                    // initialize empty $errors array and $emailSent flag
+                    $errors = [];
+                    $emailSent = false;
+
+                    // check for errors if any
+                    if (empty($subject)) $errors['subjectMissing'] = true;
+                    if (empty($message)) $errors['messageMissing'] = true;
+                    if (empty($id)) $errors['invalidUserId'] = true;
+
+                    // some errors found, return them to the user
+                    if (!empty($errors)) {
+                        return array(
+                            'emailSent' => $emailSent,
+                            'errors' => $errors
+                        );
+                    }
+
+                    // retrieve the user from db
+                    $regularFound = $this->entityManager->getRepository(Regular::class)->find($id);
+
+                    if (!$regularFound) {
+                        // no user found, return an error
+                        return array(
+                            'emailSent' => $emailSent,
+                            'errorType' => 'unknownUser'
+                        );
+                    }
+
+                    // the user was found
+                    if ($regularFound) {
+                        
+                        $emailReceiver = $_ENV['VS_REPLY_TO_MAIL'];
+                        $replyToMail = $regularFound->getEmail();
+
+                        /////////////////////////////////////
+                        // PREPARE EMAIL TO BE SENT
+                        // received lang param
+                        $userLang = isset($_COOKIE['lng'])
+                            ? htmlspecialchars(strip_tags(trim($_COOKIE['lng'])))
+                            : 'fr';
+
+
+                        $emailTtemplateBody = $userLang . "_help_request";
+
+                        $body = "
+                        <br>
+                        <p>$message</p>
+                        <br>
+                    ";
+
+                        // send email
+                        $emailSent = Mailer::sendMail($emailReceiver, $subject, $body, strip_tags($body), $emailTtemplateBody, $replyToMail, $replyToName);
+                        /////////////////////////////////////
+
+                        return array(
+                            'emailSent' => $emailSent,
+                            'errorType' => 'noError'
+                        );
+                    }
+                }
             );
         }
     }
