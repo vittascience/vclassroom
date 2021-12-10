@@ -672,7 +672,7 @@ class ControllerSuperAdmin extends Controller
                                     $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
                                     if ($value[1] == true) {
                                         if (empty($value[2]) || empty($value[3])) {
-                                            return ['message' => 'missing data'];
+                                            return ['message' => 'missing data date'];
                                         }
                                         $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
                                         $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
