@@ -875,7 +875,7 @@ class ControllerGroupAdmin extends Controller
                             ? htmlspecialchars(strip_tags(trim($_COOKIE['lng'])))
                             : 'fr';
 
-
+                        $replyToName = $regularFound->getEmail();
                         $emailTtemplateBody = $userLang . "_help_request";
 
                         $body = "
