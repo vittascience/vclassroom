@@ -40,11 +40,11 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         if ($group_id >= 1) {
             $result = $this->getEntityManager()
-                ->createQueryBuilder()->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights")
+                ->createQueryBuilder()->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active")
                 ->from(User::class, 'u')
                 ->innerJoin(UsersLinkGroups::class, 'g')
                 ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
-                ->where('g.group = :id AND u.id = g.user AND r.active = 1')
+                ->where('g.group = :id AND u.id = g.user')
                 ->orderBy('g.rights', 'DESC')
                 ->addOrderBy($orderby)
                 ->setParameter('id', $group_id)
@@ -63,11 +63,10 @@ class UsersLinkGroupsRepository extends EntityRepository
             if (!empty($users_id)) {
                 $result = $this->getEntityManager()
                     ->createQueryBuilder()
-                    ->select("u.id, u.surname, u.firstname, u.pseudo")
+                    ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active")
                     ->from(User::class, 'u')
                     ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                     ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
-                    ->andWhere('r.active = 1')
                     ->setParameter('ids', $users_id)
                     ->orderBy($orderby)
                     ->getQuery();
@@ -88,7 +87,7 @@ class UsersLinkGroupsRepository extends EntityRepository
                 ->select("u.id, u.surname, u.firstname, u.pseudo, IDENTITY(r.user) as isRegular, r.active")
                 ->from(User::class, 'u')
                 ->leftJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
-                ->where('r.active is NULL OR r.active = 0')
+                ->where('r.active is NULL')
                 ->orderBy($orderby)
                 ->getQuery();
         }

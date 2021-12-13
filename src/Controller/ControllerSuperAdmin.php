@@ -227,7 +227,6 @@ class ControllerSuperAdmin extends Controller
                         isset($data['description']) && $data['description'] != null &&
                         isset($data['applications']) && $data['applications'] != null
                     ) {
-
                         $applications = json_decode($data['applications']);
                         $group_name = htmlspecialchars($data['name']);
                         $group_desc = htmlspecialchars($data['description']);
@@ -248,33 +247,7 @@ class ControllerSuperAdmin extends Controller
                         $lastgroup = $this->entityManager->getRepository(Groups::class)->findOneBy([], ['id' => 'desc']);
                         $group_id = $lastgroup->getId();
 
-                        foreach ($applications as $key => $value) {
-                            $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
-                            // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
-                            $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
-                            if ($value[1] == true) {
-                                $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                                $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
-                                if ($AppExist) {
-                                    $AppExist->setApplication($application);
-                                    $AppExist->setGroup($group);
-                                    $AppExist->setDateBegin($date_begin);
-                                    $AppExist->setDateEnd($date_end);
-                                    $this->entityManager->persist($AppExist);
-                                } else {
-                                    $Applications = new GroupsLinkApplications();
-                                    $Applications->setApplication($application);
-                                    $Applications->setGroup($group);
-                                    $Applications->setDateBegin($date_begin);
-                                    $Applications->setDateEnd($date_end);
-                                    $this->entityManager->persist($Applications);
-                                }
-                            } else {
-                                if ($AppExist) {
-                                    $this->entityManager->remove($AppExist);
-                                }
-                            }
-                        }
+                        $this->manageAppsForGroups($applications, $group_id, $group);
                         $this->entityManager->flush();
 
                         return ['response' => 'success'];
@@ -329,49 +302,7 @@ class ControllerSuperAdmin extends Controller
                         $group->setDescription($group_description);
                         $group->setName($group_name);
                         $this->entityManager->persist($group);
-
-                        foreach ($applications as $key => $value) {
-                            $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
-                            // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
-                            $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
-                            if ($value[1] == true) {
-                                $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                                $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
-                                $max_students_per_teachers = $value[4];
-                                $max_students_per_groups = $value[5];
-                                $max_teachers_per_groups = $value[6];
-
-                                if ($AppExist) {
-                                    $AppExist->setApplication($application);
-                                    $AppExist->setGroup($group);
-                                    $AppExist->setDateBegin($date_begin);
-                                    $AppExist->setDateEnd($date_end);
-                                    $AppExist->setmaxStudentsPerTeachers($max_students_per_teachers);
-                                    $AppExist->setmaxStudentsPerGroups($max_students_per_groups);
-                                    $AppExist->setmaxTeachersPerGroups($max_teachers_per_groups);
-                                    $this->entityManager->persist($AppExist);
-                                } else {
-                                    $Applications = new GroupsLinkApplications();
-                                    $Applications->setApplication($application);
-                                    $Applications->setGroup($group);
-                                    $Applications->setDateBegin($date_begin);
-                                    $Applications->setDateEnd($date_end);
-                                    $Applications->setmaxStudentsPerTeachers($max_students_per_teachers);
-                                    $Applications->setmaxStudentsPerGroups($max_students_per_groups);
-                                    $Applications->setmaxTeachersPerGroups($max_teachers_per_groups);
-                                    $this->entityManager->persist($Applications);
-                                }
-                            } else {
-                                if ($AppExist) {
-                                    $this->entityManager->remove($AppExist);
-                                    $appsGivenToTeachers = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
-                                        ->findBy(['group' => $group_id, 'application' => $value[0]]);
-                                    foreach ($appsGivenToTeachers as $app) {
-                                        $this->entityManager->remove($app);
-                                    }
-                                }
-                            }
-                        }
+                        $this->manageAppsForGroups($applications, $group_id, $group);
                         $this->entityManager->flush();
                         return ['message' => 'success'];
                     } else {
@@ -602,7 +533,7 @@ class ControllerSuperAdmin extends Controller
                         }
 
                         // Manage the group apps for user
-                        $appsManager = $this->manageAppsFromGroups($user_id, $application, $group, $user);
+                        $appsManager = $this->manageAppsFromGroupsUsers($user_id, $application, $groups, $user);
                         if ($appsManager != true) {
                             return $appsManager;
                         }
@@ -740,6 +671,9 @@ class ControllerSuperAdmin extends Controller
                                     // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
                                     $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
                                     if ($value[1] == true) {
+                                        if (empty($value[2]) || empty($value[3])) {
+                                            return ['message' => 'missing data date'];
+                                        }
                                         $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
                                         $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
                                         if ($AppExist) {
@@ -1018,30 +952,77 @@ class ControllerSuperAdmin extends Controller
         return $emailSent;
     }
 
-    private function manageAppsFromGroups(Int $user_id, array $application, Groups $group, User $user)
+    private function manageAppsFromGroupsUsers(Int $user_id, array $application, ?array $groups, User $user)
     {
+        $group = "";
+        if (!empty($groups)) {
+            $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
+        }
         $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);
         $isAppActive = false;
         foreach ($application as $app) {
             foreach ($appFromGroupExist as $appFromGroup) {
                 if ($appFromGroup->getApplication()->getId() == $app[0] && $app[1] == false) {
                     $this->entityManager->remove($appFromGroup);
-                    $this->entityManager->flush();
                 } else if ($appFromGroup->getApplication()->getId() == $app[0]) {
                     $isAppActive = true;
                 }
             }
-            if (!$isAppActive && $app[1] == true) {
+            if (!$isAppActive && $app[1] == true && $group != "") {
                 $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app[0]]);
                 $newAppFromGroup = new UsersLinkApplicationsFromGroups();
                 $newAppFromGroup->setApplication($apps);
                 $newAppFromGroup->setGroup($group);
                 $newAppFromGroup->setUser($user);
                 $this->entityManager->persist($newAppFromGroup);
-                $this->entityManager->flush();
             }
             $isAppActive = false;
         }
         return true;
+    }
+
+    private function manageAppsForGroups($applications, $group_id, $group) {
+        foreach ($applications as $key => $value) {
+            $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
+            // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
+            $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
+            if ($value[1] == true) {
+                $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
+                $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
+                $max_students_per_teachers = $value[4];
+                $max_students_per_groups = $value[5];
+                $max_teachers_per_groups = $value[6];
+
+                if ($AppExist) {
+                    $AppExist->setApplication($application);
+                    $AppExist->setGroup($group);
+                    $AppExist->setDateBegin($date_begin);
+                    $AppExist->setDateEnd($date_end);
+                    $AppExist->setmaxStudentsPerTeachers($max_students_per_teachers);
+                    $AppExist->setmaxStudentsPerGroups($max_students_per_groups);
+                    $AppExist->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $this->entityManager->persist($AppExist);
+                } else {
+                    $Applications = new GroupsLinkApplications();
+                    $Applications->setApplication($application);
+                    $Applications->setGroup($group);
+                    $Applications->setDateBegin($date_begin);
+                    $Applications->setDateEnd($date_end);
+                    $Applications->setmaxStudentsPerTeachers($max_students_per_teachers);
+                    $Applications->setmaxStudentsPerGroups($max_students_per_groups);
+                    $Applications->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $this->entityManager->persist($Applications);
+                }
+            } else {
+                if ($AppExist) {
+                    $this->entityManager->remove($AppExist);
+                    $appsGivenToTeachers = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
+                        ->findBy(['group' => $group_id, 'application' => $value[0]]);
+                    foreach ($appsGivenToTeachers as $app) {
+                        $this->entityManager->remove($app);
+                    }
+                }
+            }
+        }
     }
 }
