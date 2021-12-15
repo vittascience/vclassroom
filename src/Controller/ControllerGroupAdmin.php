@@ -795,7 +795,9 @@ class ControllerGroupAdmin extends Controller
                 'registration_template'  => function () {
                     return [
                         'USER_USERNAME' => $_ENV['USER_USERNAME'],
-                        'USER_TEACHER_SECTION' => $_ENV['USER_TEACHER_SECTION'],
+                        'USER_TEACHER_GRADE' => $_ENV['USER_TEACHER_GRADE'],
+                        'USER_TEACHER_SUBJECT' => $_ENV['USER_TEACHER_SUBJECT'],
+                        'USER_TEACHER_SCHOOL' => $_ENV['USER_TEACHER_SCHOOL'],
                         'USER_PHONE' => $_ENV['USER_PHONE'],
                         'USER_BIO' => $_ENV['USER_BIO']
                     ];
