@@ -661,7 +661,7 @@ class ControllerSuperAdmin extends Controller
                         $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                         $user_app = json_decode($data['user_app']);
 
-                        if ($user_id == null || $user_app == null) {
+                        if ($user_id == null) {
                             return ['message' => 'missing data'];
                         } else {
                             $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
