@@ -52,6 +52,12 @@ class UsersLinkApplications
     private $maxStudentsPerTeachers;
 
     /**
+     * @ORM\Column(name="max_activities_per_teachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxActivitiesPerTeachers;
+
+    /**
      * @return Int
      */
     public function getId(): ?int
@@ -149,6 +155,25 @@ class UsersLinkApplications
         return $this;
     }
 
+    /**
+     * @return Integer
+     */
+    public function getmaxActivitiesPerTeachers()
+    {
+        return $this->maxActivitiesPerTeachers;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return Applications
+     */
+    public function setmaxActivitiesPerTeachers(Int $maximum): self
+    {
+        $this->maxActivitiesPerTeachers = $maximum;
+        return $this;
+    }
+
+
     public function jsonSerialize()
     {
         return [
@@ -157,7 +182,8 @@ class UsersLinkApplications
             'user_id' => $this->getUser(),
             'date_begin' => $this->getDateBegin(),
             'date_end' => $this->getDateEnd(),
-            'max_students_per_teachers' => $this->getmaxStudentsPerTeachers()
+            'max_students_per_teachers' => $this->getmaxStudentsPerTeachers(),
+            'max_activities_per_teachers' => $this->getmaxActivitiesPerTeachers()
         ];
     }
 
