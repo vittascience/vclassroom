@@ -346,7 +346,7 @@ class UsersLinkGroupsRepository extends EntityRepository
             ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email, r.active")
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
-            ->where('u.firstname LIKE :name OR u.surname LIKE :name OR u.pseudo LIKE :name OR r.email LIKE :name')
+            ->where('u.firstname LIKE :name OR u.surname LIKE :name')
             ->setParameter('name', '%' . $string . '%')
             ->groupBy('u.id')
             ->getQuery();
@@ -384,12 +384,12 @@ class UsersLinkGroupsRepository extends EntityRepository
         // Get alls members with the property name somewhere where the user is related with a group where the requester is admin
         $Users = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("u.id, u.firstname, u.surname, u.pseudo, r.email")
+            ->select("u.id, u.firstname, u.surname, u.pseudo, r.email, r.active")
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
             ->innerJoin(UsersLinkGroups::class, 'ulg')
             ->where('ulg.user = u.id AND ulg.group IN (:ids)')
-            ->andwhere('u.firstname LIKE :name OR u.surname LIKE :name OR u.pseudo LIKE :name OR r.email LIKE :name')
+            ->andwhere('u.firstname LIKE :name OR u.surname LIKE :name')
             ->setParameter('name', '%' . $string . '%')
             ->setParameter('ids', $ids_groups)
             ->groupBy('u.id')
