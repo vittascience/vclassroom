@@ -285,6 +285,8 @@ class ControllerGroupAdmin extends Controller
                 },
                 'linkTeacherToGroup' => function ($data) {
 
+                    header('Content-Type: application/json');
+
                     // bind incoming data to the value provided or null
                     $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                     $group_id = isset($data['group_id']) ? htmlspecialchars($data['group_id']) : null;
@@ -292,7 +294,7 @@ class ControllerGroupAdmin extends Controller
                     // Check restrictions via applications
                     $canAddUser = $this->isGroupFull($group_id);
                     if (!$canAddUser['response']) {
-                        return ['message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']];
+                        return array('message' => 'limit', 'actualTeacherInGroup' => $canAddUser['teacher'], 'maximumTeacherInGroup' => $canAddUser['maximum']);
                     }
                     // Check restrictions via applications
 
@@ -347,14 +349,15 @@ class ControllerGroupAdmin extends Controller
                                 $textBeforeName = i18next::getTranslation('manager.group.join.mail.textBeforeName');
                                 $textAfterName = i18next::getTranslation('manager.group.join.mail.textAfterName');
                                 $body = "
-                                <br>
-                                <br>
-                                <p>$textBeforeName $userMail $textAfterName $groupName.
-                            ";
+                                            <br>
+                                            <br>
+                                            <p>$textBeforeName $userMail $textAfterName $groupName.
+                                        ";
                                 foreach ($adminMail as $value) {
-                                    $emailSent = Mailer::sendMail($value, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
+                                    Mailer::sendMail($value, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
                                 }
                             }
+                            
                             return ['message' => 'success'];
                         }
                     } else {
