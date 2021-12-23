@@ -742,19 +742,19 @@ class ControllerSuperAdmin extends Controller
                         if ($restriction && !empty($restriction_type)) {
                             $restriction->setActivityType($restriction_type);
                             $restriction->setMaxPerTeachers($restriction_max);
+                            $this->entityManager->persist($restriction);
                         } else if (!$restriction && !empty($restriction_type)) {
                             $restriction = new ActivityRestrictions();
                             $restriction->setApplication($application);
                             $restriction->setActivityType($restriction_type);
                             $restriction->setMaxPerTeachers($restriction_max);
-                        } else if ($restriction && $restriction_type) {
+                            $this->entityManager->persist($restriction);
+                        } else if ($restriction && empty($restriction_type)) {
                             $this->entityManager->remove($restriction);
                         }
-
-                        $this->entityManager->persist($restriction);
                         $this->entityManager->flush();
 
-                        return ['success' => true];
+                        return ['success' => true, 'message' => $restriction_type];
                     } else {
                         return ['success' => false, 'message' => 'missingData', 'data' => ['application_id' => !empty($data['application_id'])]];
                     }
