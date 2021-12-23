@@ -285,8 +285,6 @@ class ControllerGroupAdmin extends Controller
                 },
                 'linkTeacherToGroup' => function ($data) {
 
-                    header('Content-Type: application/json');
-
                     // bind incoming data to the value provided or null
                     $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                     $group_id = isset($data['group_id']) ? htmlspecialchars($data['group_id']) : null;
