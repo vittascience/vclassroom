@@ -730,32 +730,33 @@ class ControllerSuperAdmin extends Controller
                     }
                 },
                 'update_one_restriction_activity' => function ($data) {
-                    if (
-                        !empty($data['application_id']) &&
-                        !empty($data['restriction_type'])
-                    ) {
+                    if (!empty($data['application_id'])) {
+
                         $application_id = htmlspecialchars($data['application_id']);
                         $restriction_type = htmlspecialchars($data['restriction_type']);
                         $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
 
                         $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
-
                         $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
-                        if ($restriction) {
+                        
+                        if ($restriction && !empty($restriction_type)) {
                             $restriction->setActivityType($restriction_type);
                             $restriction->setMaxPerTeachers($restriction_max);
-                        } else {
+                        } else if (!$restriction && !empty($restriction_type)) {
                             $restriction = new ActivityRestrictions();
                             $restriction->setApplication($application);
                             $restriction->setActivityType($restriction_type);
                             $restriction->setMaxPerTeachers($restriction_max);
+                        } else if ($restriction && empty($restriction_type)) {
+                            $this->entityManager->remove($restriction);
                         }
+
                         $this->entityManager->persist($restriction);
                         $this->entityManager->flush();
 
                         return ['success' => true];
                     } else {
-                        return ['success' => false, 'message' => 'missingData', 'data' => ['application_id' => !empty($data['application_id']), 'restriction_type' => !empty($data['restriction_type'])]];
+                        return ['success' => false, 'message' => 'missingData', 'data' => ['application_id' => !empty($data['application_id'])]];
                     }
                 },
                 'get_default_restrictions' => function () {
