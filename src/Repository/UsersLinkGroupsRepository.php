@@ -265,7 +265,8 @@ class UsersLinkGroupsRepository extends EntityRepository
                     'image' => $value2['application_image'],
                     'date_end' => $value2['date_end'],
                     'date_begin' => $value2['date_begin'],
-                    'max_students' => $value2['max_students']
+                    'max_students' => $value2['max_students'],
+                    'max_activities' => $value2['max_activities']
                 ];
             }
         }
@@ -313,9 +314,9 @@ class UsersLinkGroupsRepository extends EntityRepository
         $ApplicationsFromGroup = $this->getEntityManager()
             ->createQueryBuilder()
             ->select('ulafg.id as id, 
-                                                    IDENTITY(ulafg.user) as user, 
-                                                    IDENTITY(ulafg.group) as group, 
-                                                    IDENTITY(ulafg.application) as application')
+                    IDENTITY(ulafg.user) as user, 
+                    IDENTITY(ulafg.group) as group, 
+                    IDENTITY(ulafg.application) as application')
             ->from(UsersLinkApplicationsFromGroups::class, 'ulafg')
             ->where('ulafg.user = :id')
             ->setParameter('id', $user_id)
