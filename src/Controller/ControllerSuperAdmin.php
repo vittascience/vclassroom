@@ -716,17 +716,10 @@ class ControllerSuperAdmin extends Controller
                     }
                     return ['Admin' => false];
                 },
-                'get_all_activities_restrictions_applications' => function ($data) {
+                'get_restriction_activity_applications' => function ($data) {
                     if (!empty($data['application_id'])) {
                         $application_id = htmlspecialchars($data['application_id']);
-
-                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findBy(['application' => $application_id]);
-                    }
-                },
-                'get_one_restriction_activity' => function ($data) {
-                    if (!empty($data['restriction_id'])) {
-                        $restriction_id = htmlspecialchars($data['restriction_id']);
-                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
+                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
                     }
                 },
                 'update_one_restriction_activity' => function ($data) {
