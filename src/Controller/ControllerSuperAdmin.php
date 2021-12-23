@@ -952,6 +952,8 @@ class ControllerSuperAdmin extends Controller
                 $max_students_per_teachers = $value[4];
                 $max_students_per_groups = $value[5];
                 $max_teachers_per_groups = $value[6];
+                $max_activities_per_groups = $value[7];
+                $max_activities_per_teachers = $value[8];
 
                 if ($AppExist) {
                     $AppExist->setApplication($application);
@@ -961,6 +963,8 @@ class ControllerSuperAdmin extends Controller
                     $AppExist->setmaxStudentsPerTeachers($max_students_per_teachers);
                     $AppExist->setmaxStudentsPerGroups($max_students_per_groups);
                     $AppExist->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
+                    $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
                     $this->entityManager->persist($AppExist);
                 } else {
                     $Applications = new GroupsLinkApplications();
@@ -971,6 +975,8 @@ class ControllerSuperAdmin extends Controller
                     $Applications->setmaxStudentsPerTeachers($max_students_per_teachers);
                     $Applications->setmaxStudentsPerGroups($max_students_per_groups);
                     $Applications->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $Applications->setmaxActivitiesPerGroups($max_activities_per_groups);
+                    $Applications->setmaxActivitiesPerTeachers($max_activities_per_teachers);
                     $this->entityManager->persist($Applications);
                 }
             } else {
