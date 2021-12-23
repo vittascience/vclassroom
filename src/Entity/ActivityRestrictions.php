@@ -39,7 +39,6 @@ class ActivityRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $maxPerTeachers;
 
-
     /**
      * @return Int
      */

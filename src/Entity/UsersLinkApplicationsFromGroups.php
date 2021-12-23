@@ -2,9 +2,10 @@
 
 namespace Classroom\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Google\Service\AndroidManagement\Application;
 use User\Entity\User;
+use Classroom\Entity\Groups;
+use Doctrine\ORM\Mapping as ORM;
+use Classroom\Entity\Applications;
 
 
 /**
@@ -53,7 +54,7 @@ class UsersLinkApplicationsFromGroups
     }
 
     /**
-     * @return Application
+     * @return Applications
      */
     public function getApplication()
     {

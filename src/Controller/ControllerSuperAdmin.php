@@ -800,10 +800,6 @@ class ControllerSuperAdmin extends Controller
                     $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'groupDefaultRestrictions']);
                     return $restrictions;
                 },
-                'get_default_activities_restrictions' => function () {
-                    $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-                    return $restrictions;
-                },
                 'update_default_users_restrictions' => function ($data) {
                     if (isset($data['maxStudents'])) {
 
