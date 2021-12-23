@@ -94,7 +94,7 @@ class GroupsRepository extends EntityRepository
                                     gla.maxStudentsPerGroups as max_students_per_groups,
                                     gla.maxStudentsPerTeachers as max_students_per_teachers,
                                     gla.maxActivitiesPerGroups as max_activities_per_groups,
-                                    gla.maxActivitiesPerTeachers as max_activities_per_teachers,")
+                                    gla.maxActivitiesPerTeachers as max_activities_per_teachers")
                                     
             ->from(GroupsLinkApplications::class, 'gla')
             ->where('gla.group = :id')
