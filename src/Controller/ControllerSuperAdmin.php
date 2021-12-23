@@ -738,7 +738,7 @@ class ControllerSuperAdmin extends Controller
 
                         $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
                         $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
-                        
+
                         if ($restriction && !empty($restriction_type)) {
                             $restriction->setActivityType($restriction_type);
                             $restriction->setMaxPerTeachers($restriction_max);
@@ -747,7 +747,7 @@ class ControllerSuperAdmin extends Controller
                             $restriction->setApplication($application);
                             $restriction->setActivityType($restriction_type);
                             $restriction->setMaxPerTeachers($restriction_max);
-                        } else if ($restriction && empty($restriction_type)) {
+                        } else if ($restriction && $restriction_type) {
                             $this->entityManager->remove($restriction);
                         }
 
