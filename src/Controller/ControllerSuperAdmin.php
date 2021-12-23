@@ -682,6 +682,7 @@ class ControllerSuperAdmin extends Controller
                                             $AppExist->setDateBegin($date_begin);
                                             $AppExist->setDateEnd($date_end);
                                             $AppExist->setmaxStudentsPerTeachers($value[4]);
+                                            $AppExist->setmaxActivitiesPerTeachers($value[5]);
                                             $this->entityManager->persist($AppExist);
                                         } else {
                                             $Applications = new UsersLinkApplications();
@@ -690,6 +691,7 @@ class ControllerSuperAdmin extends Controller
                                             $Applications->setDateBegin($date_begin);
                                             $Applications->setDateEnd($date_end);
                                             $Applications->setmaxStudentsPerTeachers($value[4]);
+                                            $Applications->setmaxActivitiesPerTeachers($value[5]);
                                             $this->entityManager->persist($Applications);
                                         }
                                     } else {
