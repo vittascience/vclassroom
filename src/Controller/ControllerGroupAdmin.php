@@ -433,6 +433,65 @@ class ControllerGroupAdmin extends Controller
                         return ['message' => 'missing data'];
                     }
                 },
+                'delete_user' => function ($data) {
+                    if (isset($data['user_id']) && $data['user_id'] != null) {
+                        $user_id = htmlspecialchars($data['user_id']);
+
+                        // Check if the requester is related to the user and if the user is not an admin
+                        $Authorization = $this->getAuthorization($this->entityManager, $user_id);
+                        if ($Authorization['message'] == "not_allowed")
+                            return ['message' => 'not_allowed'];
+
+
+                        $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
+                        $this->entityManager->remove($user);
+
+                        $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
+                        if ($userR) {
+                            $this->entityManager->remove($userR);
+                        }
+
+                        $userT = $this->entityManager->getRepository(Teacher::class)->findOneBy(['user' => $user_id]);
+                        if ($userT) {
+                            $this->entityManager->remove($userT);
+                        }
+
+                        // Delete the link between the user and the group
+                        $userlinkgroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
+                        foreach ($userlinkgroups as $key_ulg => $value_ulg) {
+                            $this->entityManager->remove($userlinkgroups[$key_ulg]);
+                        }
+
+                        // Delete the link between the user and the application
+                        $userlinkapplications = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['user' => $user_id]);
+                        foreach ($userlinkapplications as $key_ula => $value_ula) {
+                            $this->entityManager->remove($userlinkapplications[$key_ula]);
+                        }
+                        $this->entityManager->flush();
+                        return ['message' => 'success'];
+                    } else {
+                        return ['message' => 'missing data'];
+                    }
+                },
+                'activate_user' => function ($data) {
+                    if (isset($data['user_id']) && $data['user_id'] != null) {
+
+                        $user_id = htmlspecialchars($data['user_id']);
+
+                        $Authorization = $this->getAuthorization($this->entityManager, $user_id);
+                        if ($Authorization['message'] == "not_allowed")
+                            return ['message' => 'not_allowed'];
+
+                        $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
+                        if ($userR) {
+                            $userR->setActive(1);
+                            $this->entityManager->persist($userR);
+                        }
+                        $this->entityManager->flush();
+                    } else {
+                        return ['message' => 'missing data'];
+                    }
+                },
                 'update_user' => function ($data) {
                     if (
                         !empty($data['user_id']) &&
