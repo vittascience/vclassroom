@@ -488,6 +488,7 @@ class ControllerGroupAdmin extends Controller
                             $this->entityManager->persist($userR);
                         }
                         $this->entityManager->flush();
+                        return ['message' => 'success'];
                     } else {
                         return ['message' => 'missing data'];
                     }
