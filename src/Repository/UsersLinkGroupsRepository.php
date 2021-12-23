@@ -223,7 +223,13 @@ class UsersLinkGroupsRepository extends EntityRepository
         // Récupère les applications liées à l'utilisateur
         $ApplicationsOfUsers = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("a.id AS application_id, a.image AS application_image, u.id AS user_id, ula.dateBegin as date_begin, ula.dateEnd as date_end, ula.maxStudentsPerTeachers as max_students")
+            ->select("a.id AS application_id, 
+                        a.image AS application_image, 
+                        u.id AS user_id, 
+                        ula.dateBegin as date_begin, 
+                        ula.dateEnd as date_end, 
+                        ula.maxStudentsPerTeachers as max_students,
+                        ula.maxActivitiesPerTeachers as max_activities")
             ->from(Applications::class, 'a')
             ->innerJoin(UsersLinkApplications::class, 'ula', Join::WITH, 'a.id = ula.application')
             ->innerJoin(User::class, 'u', Join::WITH, 'u.id = ula.user')
