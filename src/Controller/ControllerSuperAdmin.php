@@ -682,6 +682,7 @@ class ControllerSuperAdmin extends Controller
                                             $AppExist->setDateBegin($date_begin);
                                             $AppExist->setDateEnd($date_end);
                                             $AppExist->setmaxStudentsPerTeachers($value[4]);
+                                            $AppExist->setmaxActivitiesPerTeachers($value[5]);
                                             $this->entityManager->persist($AppExist);
                                         } else {
                                             $Applications = new UsersLinkApplications();
@@ -690,6 +691,7 @@ class ControllerSuperAdmin extends Controller
                                             $Applications->setDateBegin($date_begin);
                                             $Applications->setDateEnd($date_end);
                                             $Applications->setmaxStudentsPerTeachers($value[4]);
+                                            $Applications->setmaxActivitiesPerTeachers($value[5]);
                                             $this->entityManager->persist($Applications);
                                         }
                                     } else {
@@ -716,76 +718,40 @@ class ControllerSuperAdmin extends Controller
                     }
                     return ['Admin' => false];
                 },
-                'get_all_activities_restrictions_applications' => function ($data) {
+                'get_restriction_activity_applications' => function ($data) {
                     if (!empty($data['application_id'])) {
                         $application_id = htmlspecialchars($data['application_id']);
-
-                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findBy(['application' => $application_id]);
-                    }
-                },
-                'get_one_restriction_activity' => function ($data) {
-                    if (!empty($data['restriction_id'])) {
-                        $restriction_id = htmlspecialchars($data['restriction_id']);
-                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
+                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
                     }
                 },
                 'update_one_restriction_activity' => function ($data) {
-                    if (
-                        !empty($data['restriction_id']) &&
-                        !empty($data['application_id']) &&
-                        !empty($data['restriction_type'])
-                    ) {
-                        $restriction_id = htmlspecialchars($data['restriction_id']);
+                    if (!empty($data['application_id'])) {
+
                         $application_id = htmlspecialchars($data['application_id']);
                         $restriction_type = htmlspecialchars($data['restriction_type']);
                         $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
+
                         $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
+                        $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
 
-                        $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
-                        $restriction->setApplication($application);
-                        $restriction->setActivityType($restriction_type);
-                        $restriction->setMaxPerTeachers($restriction_max);
-                        $this->entityManager->persist($restriction);
-                        $this->entityManager->flush();
-
-                        return ['success' => true];
-                    } else {
-                        return ['success' => false, 'message' => 'missingData'];
-                    }
-                },
-                'create_one_restriction_activity' => function ($data) {
-                    if (
-                        !empty($data['application_id']) &&
-                        !empty($data['restriction_type'])
-                    ) {
-                        $application_id = htmlspecialchars($data['application_id']);
-                        $restriction_type = htmlspecialchars($data['restriction_type']);
-                        $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
-                        $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
-
-                        $restriction = new ActivityRestrictions();
-                        $restriction->setApplication($application);
-                        $restriction->setActivityType($restriction_type);
-                        $restriction->setMaxPerTeachers($restriction_max);
-                        $this->entityManager->persist($restriction);
-                        $this->entityManager->flush();
-
-                        return ['success' => true];
-                    } else {
-                        return ['success' => false, 'message' => 'missingData'];
-                    }
-                },
-                'delete_one_restriction_activity' => function ($data) {
-                    if (!empty($data['restriction_id'])) {
-                        $restriction_id = htmlspecialchars($data['restriction_id']);
-                        $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $restriction_id]);
-                        if ($restriction) {
+                        if ($restriction && !empty($restriction_type)) {
+                            $restriction->setActivityType($restriction_type);
+                            $restriction->setMaxPerTeachers($restriction_max);
+                            $this->entityManager->persist($restriction);
+                        } else if (!$restriction && !empty($restriction_type)) {
+                            $restriction = new ActivityRestrictions();
+                            $restriction->setApplication($application);
+                            $restriction->setActivityType($restriction_type);
+                            $restriction->setMaxPerTeachers($restriction_max);
+                            $this->entityManager->persist($restriction);
+                        } else if ($restriction && empty($restriction_type)) {
                             $this->entityManager->remove($restriction);
-                            $this->entityManager->flush();
-                            return ['success' => true];
                         }
+                        $this->entityManager->flush();
+
+                        return ['success' => true, 'message' => $restriction_type];
                     } else {
-                        return ['success' => false, 'message' => 'missingData'];
+                        return ['success' => false, 'message' => 'missingData', 'data' => ['application_id' => !empty($data['application_id'])]];
                     }
                 },
                 'get_default_restrictions' => function () {
@@ -798,10 +764,6 @@ class ControllerSuperAdmin extends Controller
                 },
                 'get_default_groups_restrictions' => function () {
                     $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'groupDefaultRestrictions']);
-                    return $restrictions;
-                },
-                'get_default_activities_restrictions' => function () {
-                    $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
                     return $restrictions;
                 },
                 'update_default_users_restrictions' => function ($data) {
@@ -844,7 +806,7 @@ class ControllerSuperAdmin extends Controller
                         return ['message' => "missing data"];
                     }
                 },
-                'update_default_activities_restrictions' => function ($data) {
+                /* 'update_default_activities_restrictions' => function ($data) {
                     if (isset($data['restrictions'])) {
 
                         $restrictionsData = json_decode($data['restrictions']);
@@ -906,7 +868,7 @@ class ControllerSuperAdmin extends Controller
                     } else {
                         return ['message' => "missing data"];
                     }
-                }
+                } */
             );
         }
     }
@@ -992,6 +954,8 @@ class ControllerSuperAdmin extends Controller
                 $max_students_per_teachers = $value[4];
                 $max_students_per_groups = $value[5];
                 $max_teachers_per_groups = $value[6];
+                $max_activities_per_groups = $value[7];
+                $max_activities_per_teachers = $value[8];
 
                 if ($AppExist) {
                     $AppExist->setApplication($application);
@@ -1001,6 +965,8 @@ class ControllerSuperAdmin extends Controller
                     $AppExist->setmaxStudentsPerTeachers($max_students_per_teachers);
                     $AppExist->setmaxStudentsPerGroups($max_students_per_groups);
                     $AppExist->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
+                    $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
                     $this->entityManager->persist($AppExist);
                 } else {
                     $Applications = new GroupsLinkApplications();
@@ -1011,6 +977,8 @@ class ControllerSuperAdmin extends Controller
                     $Applications->setmaxStudentsPerTeachers($max_students_per_teachers);
                     $Applications->setmaxStudentsPerGroups($max_students_per_groups);
                     $Applications->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $Applications->setmaxActivitiesPerGroups($max_activities_per_groups);
+                    $Applications->setmaxActivitiesPerTeachers($max_activities_per_teachers);
                     $this->entityManager->persist($Applications);
                 }
             } else {

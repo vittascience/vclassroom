@@ -69,6 +69,20 @@ class GroupsLinkApplications
 
 
     /**
+     * @ORM\Column(name="max_activities_per_groups", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxActivitiesPerGroups;
+
+
+    /**
+     * @ORM\Column(name="max_activities_per_teachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxActivitiesPerTeachers;
+
+
+    /**
      * @return Int
      */
     public function getId(): ?int
@@ -203,6 +217,42 @@ class GroupsLinkApplications
         return $this;
     }
 
+    /**
+     * @return Integer
+     */
+    public function getmaxActivitiesPerGroups()
+    {
+        return $this->maxActivitiesPerGroups;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return GroupsLinkApplications
+     */
+    public function setmaxActivitiesPerGroups(Int $maximum): self
+    {
+        $this->maxActivitiesPerGroups = $maximum;
+        return $this;
+    }
+
+    /**
+     * @return Integer
+     */
+    public function getmaxActivitiesPerTeachers()
+    {
+        return $this->maxActivitiesPerTeachers;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return GroupsLinkApplications
+     */
+    public function setmaxActivitiesPerTeachers(Int $maximum): self
+    {
+        $this->maxActivitiesPerTeachers = $maximum;
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
@@ -213,7 +263,10 @@ class GroupsLinkApplications
             'date_end' => $this->getDateEnd(),
             'max_students_per_group' => $this->getmaxStudentsPerGroups(),
             'max_teachers_per_group' => $this->getmaxTeachersPerGroups(),
-            'max_students_per_teachers' => $this->getmaxStudentsPerTeachers()
+            'max_students_per_teachers' => $this->getmaxStudentsPerTeachers(),
+            'max_activities_per_group' => $this->getmaxActivitiesPerGroups(),
+            'max_activities_per_teachers' => $this->getmaxActivitiesPerTeachers()
+
         ];
     }
 
