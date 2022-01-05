@@ -30,11 +30,11 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
      * @var string
      */
     private $school;
-    /**
-     * @ORM\Column(name="groupe", type="string", length=255, nullable=true)
+   /**
+     * @ORM\Column(name="gar_code", type="string", length=255, nullable=true)
      * @var string
      */
-    private $groupe;
+    private $garCode;
     /**
      * @ORM\Column(name="link", type="string", length=5, nullable=false)
      * @var string
@@ -126,19 +126,19 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * @return string
      */
-    public function getGroupe()
+    public function getGarCode()
     {
-        return $this->groupe;
+        return $this->garCode;
     }
     /**
-     * @param string $groupe
+     * @param string $garCode
      */
-    public function setGroupe($groupe)
+    public function setGarCode($garCode)
     {
-        if (is_string($groupe) && strlen($groupe) < 255) {
-            $this->groupe = $groupe;
+        if (is_string($garCode) && strlen($garCode) < 255) {
+            $this->garCode = $garCode;
         } else {
-            throw new EntityDataIntegrityException("groupe needs to be string with a lenght lesser than 255");
+            throw new EntityDataIntegrityException("gar code needs to be string with a lenght lesser than 255");
         }
     }
     /**
@@ -240,7 +240,7 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
             'id' => $this->getId(),
             'name' => $this->getName(),
             'school' => $this->getSchool(),
-            'groupe' => $this->getGroupe(),
+            'garCode' => $this->getGarCode(),
             'link' => $this->getLink(),
             'isChanged' => $this->getIsChanged(),
             'isBlocked' => $this->getIsBlocked(),

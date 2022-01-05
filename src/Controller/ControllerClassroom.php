@@ -315,7 +315,7 @@ class ControllerClassroom extends Controller
                 // set the data to return
                 $name = $classroomFound->getName();
                 $link = $classroomFound->getLink();
-                $group = $classroomFound->getGroupe();
+                $garCode = $classroomFound->getGarCode();
 
                 // remove the classroom 
                 $this->entityManager->remove($classroomFound);
@@ -327,7 +327,7 @@ class ControllerClassroom extends Controller
                 return [
                     'name' => $name,
                     'link' => $link,
-                    'group' => $group 
+                    'garCode' => $garCode
                 ];  
             },
             'get_teacher_account' => function () {
