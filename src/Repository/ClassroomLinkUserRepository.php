@@ -116,7 +116,7 @@ class ClassroomLinkUserRepository extends EntityRepository
        
     }
 
-    public function getTeacherClassroomBy($teacherId,$classroomName,$uai,$relatedGroup){
+    public function getTeacherClassroomBy($teacherId,$classroomName,$uai,$classroomCode){
         $classroom = $this->getEntityManager()
                             ->createQueryBuilder()
                             ->select('c')
@@ -125,12 +125,12 @@ class ClassroomLinkUserRepository extends EntityRepository
                             ->where('clu.user = :teacherId')
                             ->andWhere('c.name = :classroomName')
                             ->andWhere('c.uai = :uai')
-                            ->andWhere('c.groupe = :relatedGroup')
+                            ->andWhere('c.garCode = :classroomCode')
                             ->setParameters(array(
                                 'teacherId' => $teacherId,
                                 'classroomName' => $classroomName,
                                 'uai' => $uai,
-                                'relatedGroup' => $relatedGroup
+                                'classroomCode' => $classroomCode
                             ))
                             ->getQuery()
                             ->getResult();
