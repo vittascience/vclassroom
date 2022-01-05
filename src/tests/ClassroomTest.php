@@ -74,7 +74,7 @@ class ClassroomTest extends TestCase
             'school' => 'default',
             'isChanged' => false,
             'isBlocked' => false,
-            'groupe' => null
+            'garCode' => null
         ];
         $serialized = $classroom->jsonSerialize();
         unset($serialized["link"]);
