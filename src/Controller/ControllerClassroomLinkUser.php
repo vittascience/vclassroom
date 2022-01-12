@@ -123,6 +123,8 @@ class ControllerClassroomLinkUser extends Controller
                     } else {
                         // Groups and teacher limitation per application
                         $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, $addedLearnerNumber);
+                        var_dump($limitationsReached);
+                        die;
                         if (!$limitationsReached['canAdd']) {
                             return [
                                 "isUsersAdded" => false,
