@@ -173,7 +173,7 @@ class ControllerSuperAdmin extends Controller
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
 
-                        return ['message' => 'success'];
+                        return ['message' => 'success', 'application_id' => $app->getId()];
                     } else {
                         return ['message' => 'missing data'];
                     }
