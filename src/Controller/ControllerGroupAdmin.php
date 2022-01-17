@@ -820,8 +820,8 @@ class ControllerGroupAdmin extends Controller
                             ]);
                         $appActivitiesLimit = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application->getApplication()]);
                         if ($appActivitiesLimit) {
-                            $activityType = $appDetails->getActivityType();
-                            $activityLimit = $appDetails->getMaxPerTeachers();
+                            $activityType = $appActivitiesLimit->getActivityType();
+                            $activityLimit = $appActivitiesLimit->getMaxPerTeachers();
                         } else {
                             $activityType = null;
                             $activityLimit = null;
