@@ -818,7 +818,7 @@ class ControllerGroupAdmin extends Controller
                                 'group' => $application->getGroup(),
                                 'application' => $application->getApplication()
                             ]);
-                        $appActivitiesLimit = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['application' => $application->getApplication()]);
+                        $appActivitiesLimit = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application->getApplication()]);
                         if ($appActivitiesLimit) {
                             $activityType = $appActivitiesLimit->getActivityType();
                         } else {
@@ -835,8 +835,8 @@ class ControllerGroupAdmin extends Controller
                             'actualTeachers' => count($teachersFromGroupWithThisApp),
                             'maxTeachers' => $application->getmaxTeachersPerGroups(),
                             'activityType' => $activityType,
-                            'activityMaxPerTeahcer' => $application->maxActivitiesPerTeachers(),
-                            'activityLimit' => $application->maxActivitiesPerGroups()
+                            'activityMaxPerTeahcer' => $application->getmaxActivitiesPerTeachers(),
+                            'activityLimit' => $application->getmaxActivitiesPerGroups()
                         ];
 
                         // count the students in the group
