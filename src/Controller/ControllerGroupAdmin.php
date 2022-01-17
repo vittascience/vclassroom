@@ -13,6 +13,7 @@ use Classroom\Entity\Applications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
