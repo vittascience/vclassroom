@@ -818,7 +818,7 @@ class ControllerGroupAdmin extends Controller
                                 'group' => $application->getGroup(),
                                 'application' => $application->getApplication()
                             ]);
-                        $appActivitiesLimit = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['id' => $application->getApplication()]);
+                        $appActivitiesLimit = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application_id' => $application->getApplication()]);
                         if ($appActivitiesLimit) {
                             $activityType = $appDetails->getActivityType();
                             $activityLimit = $appDetails->getMaxPerTeachers();
