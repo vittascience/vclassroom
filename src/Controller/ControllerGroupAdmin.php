@@ -835,7 +835,7 @@ class ControllerGroupAdmin extends Controller
                             'actualTeachers' => count($teachersFromGroupWithThisApp),
                             'maxTeachers' => $application->getmaxTeachersPerGroups(),
                             'activityType' => $activityType,
-                            'activityMaxPerTeahcer' => $application->getmaxActivitiesPerTeachers(),
+                            'activityMaxPerTeacher' => $application->getmaxActivitiesPerTeachers(),
                             'activityLimit' => $application->getmaxActivitiesPerGroups()
                         ];
 
