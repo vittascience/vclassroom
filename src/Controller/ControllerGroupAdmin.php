@@ -71,6 +71,8 @@ class ControllerGroupAdmin extends Controller
                         $phone = isset($data['phone']) ? htmlspecialchars($data['phone']) : null;
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
+                        $application = isset($data['application']) ? json_decode($data['application']) : null;
+
                         $checkExist = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $mail]);
                         if (!$checkExist) {
                             $user = new User();
@@ -131,6 +133,11 @@ class ControllerGroupAdmin extends Controller
                             $this->entityManager->persist($teacher);
                             $this->entityManager->flush();
 
+                                                    // Manage the group apps for user
+                            $appsManager = $this->manageAppsFromGroups($user->getId(), $application, $groups, $group, $user);
+                            if ($appsManager != true) {
+                                return $appsManager;
+                            }
 
 
                             $userLang = isset($_COOKIE['lng']) ? htmlspecialchars(strip_tags(trim($_COOKIE['lng']))) : 'fr';
