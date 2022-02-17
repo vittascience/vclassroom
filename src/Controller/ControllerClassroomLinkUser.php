@@ -124,11 +124,15 @@ class ControllerClassroomLinkUser extends Controller
                         // Groups and teacher limitation per application
                         $limitationsReached = $this->entityManager->getRepository(Applications::class)->isStudentsLimitReachedForTeacher($currentUserId, $addedLearnerNumber);
                         if (!$limitationsReached['canAdd']) {
+                            $groupInfo = array_key_exists("groupInfo", $limitationsReached) ? $limitationsReached["groupInfo"] : null;
+                            $teacherInfo = array_key_exists("teacherInfo", $limitationsReached) ? $limitationsReached["teacherInfo"] : null;
                             return [
                                 "isUsersAdded" => false,
                                 "currentLearnerCount" => $limitationsReached["teacherInfo"]["actualStudents"],
                                 "addedLearnerNumber" => $addedLearnerNumber,
-                                "message" => $limitationsReached['message']
+                                "message" => $limitationsReached['message'],
+                                "teacherInfo" => $teacherInfo,
+                                "groupInfo" => $groupInfo
                             ];
                         }
                     }

@@ -13,6 +13,7 @@ use Classroom\Entity\Applications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
@@ -824,7 +825,12 @@ class ControllerGroupAdmin extends Controller
                                 'group' => $application->getGroup(),
                                 'application' => $application->getApplication()
                             ]);
-
+                        $appActivitiesLimit = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application->getApplication()]);
+                        if ($appActivitiesLimit) {
+                            $activityType = $appActivitiesLimit->getActivityType();
+                        } else {
+                            $activityType = null;
+                        }
                         $groupApplicationInfo = [
                             'outDated' => $application->getDateEnd() < $today,
                             'name' => $appDetails->getName(),
@@ -835,6 +841,9 @@ class ControllerGroupAdmin extends Controller
                             'maxStudentsPerTeacher' => $application->getmaxStudentsPerTeachers(),
                             'actualTeachers' => count($teachersFromGroupWithThisApp),
                             'maxTeachers' => $application->getmaxTeachersPerGroups(),
+                            'activityType' => $activityType,
+                            'activityMaxPerTeacher' => $application->getmaxActivitiesPerTeachers(),
+                            'activityLimit' => $application->getmaxActivitiesPerGroups()
                         ];
 
                         // count the students in the group
