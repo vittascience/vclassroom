@@ -123,6 +123,12 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $url="";
 
+    /**
+     * @ORM\Column(name="response", type="text", nullable=true)
+     * @var String
+     */
+    private $response;
+
     public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
     {
         $this->setUser($user);
@@ -140,6 +146,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->setAutocorrection($autocorrection);
         $this->setReference($reference);
         $this->setUrl($url);
+        $this->setResponse($response);
     }
     /**
      * @return User
@@ -493,10 +500,30 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      *
      * @return  self
      */ 
-    public function setUrl( $url)
+    public function setUrl($url)
     {
         $this->url = $url;
 
+        return $this;
+    }
+
+
+    /**
+     * Get the value of dateSend
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * Set the value of response
+     * @param  string  $response
+     * @return  self
+     */
+    public function setResponse($response)
+    {
+        $this->response = $response;
         return $this;
     }
     
@@ -531,7 +558,8 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'evaluation' => $this->getEvaluation(),
             'project' => $project,
             'reference' => $this->getReference(),
-            'url'=> $this->getUrl()
+            'url'=> $this->getUrl(),
+            'response' => $this->getResponse()
         ];
     }
 
