@@ -129,7 +129,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $response;
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = null)
     {
         $this->setUser($user);
         $this->setActivity($activity);
