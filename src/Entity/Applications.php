@@ -39,7 +39,7 @@ class Applications
 
 
     /**
-     * @ORM\Column(name="is_lti", type="boolean", nullable=true, default=false)
+     * @ORM\Column(name="is_lti", type="boolean", nullable=true)
      * @var bool
      */
     private $isLti;
