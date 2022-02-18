@@ -277,6 +277,40 @@ class LtiToolTest extends TestCase{
         $this->assertSame($providedValue, $this->ltiTool->getRedirectionUrl());
     }
 
+    public function testGetDeepLinkIsNotNullByDefault(){
+        $this->assertNotNull($this->ltiTool->getDeepLinkUrl());
+    }
+
+    /** @dataProvider provideUrls */
+    public function testGetDeepLinkUrlReturnsValue($providedValue){
+        $fakeDeepLinkUrlSetterDeclaration = function() use($providedValue){
+            return $this->deepLinkUrl = $providedValue;
+        };
+
+        $fakeDeepLinkUrlSetterExecution = $fakeDeepLinkUrlSetterDeclaration->bindTo(
+            $this->ltiTool,
+            LtiTool::class 
+        );
+
+        $fakeDeepLinkUrlSetterExecution();
+
+        $this->assertEquals($providedValue, $this->ltiTool->getDeepLinkUrl());
+    }
+
+    /** @dataProvider provideNonStringValue */
+    public function testSetDeepLinkUrlRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->ltiTool->setDeepLinkUrl($providedValue);
+    }
+
+    /** @dataProvider provideUrls */
+    public function testSetDeepLinkUrlAcceptsValidValue($providedValue){
+        $this->assertSame('',$this->ltiTool->getDeepLinkUrl());
+
+        $this->ltiTool->setDeepLinkUrl($providedValue);
+        $this->assertSame($providedValue, $this->ltiTool->getDeepLinkUrl());
+    }
+
 
 
 
@@ -339,6 +373,8 @@ class LtiToolTest extends TestCase{
      * => testSetPublicKeySetRejectsInvalidValue
      * => testSetLoginUrlRejectsInvalidValue
      * => testSetRedirectionUrlAcceptsValidValue
+     * => testGetDeepLinkUrlReturnsValue
+     * => testSetDeepLinkUrlRejectsInvalidValue
      * */
     public function provideNonStringValue(){
         return array(
@@ -356,6 +392,7 @@ class LtiToolTest extends TestCase{
      * => testGetLoginUrlReturnsValidValue
      * => testSetLoginUrlAcceptsValidValue
      * => testGetRedirectionUrlReturnsValue
+     * => testSetDeepLinkUrlAcceptsValidValue
      * */
     public function provideUrls(){
         return array(

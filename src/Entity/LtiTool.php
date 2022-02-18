@@ -57,7 +57,7 @@ class LtiTool{
     /**
      * @ORM\Column(name="deeplink_url", type="string", length=255, nullable=false)
      */
-    private $deepLinkUrl; 
+    private $deepLinkUrl = ''; 
 
     /**
      * @ORM\Column(name="private_key", type="string", length=10000, nullable=false)
@@ -255,6 +255,9 @@ class LtiTool{
      */ 
     public function setDeepLinkUrl($deepLinkUrl)
     {
+        if(!is_string($deepLinkUrl)){
+            throw new EntityDataIntegrityException("The deep link url has to be a string value");
+        }
         $this->deepLinkUrl = $deepLinkUrl;
 
         return $this;
