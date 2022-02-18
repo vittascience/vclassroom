@@ -42,7 +42,7 @@ class LtiTool{
     /**
      * @ORM\Column(name="public_key_set", type="string", length=255, nullable=false)
      */
-    private $publicKeySet; 
+    private $publicKeySet = ''; 
 
     /**
      * @ORM\Column(name="login_url", type="string", length=255, nullable=false)
@@ -186,6 +186,9 @@ class LtiTool{
      */ 
     public function setPublicKeySet($publicKeySet)
     {
+        if(!is_string($publicKeySet)){
+            throw new EntityDataIntegrityException("The public key set has to be a string value");
+        }
         $this->publicKeySet = $publicKeySet;
 
         return $this;

@@ -175,6 +175,41 @@ class LtiToolTest extends TestCase{
         $this->assertSame($providedValue, $this->ltiTool->getToolUrl());
     }
 
+    public function testGetPublicKeySetIsNotNullByDefault(){
+        $this->assertNotNull($this->ltiTool->getPublicKeySet());
+    }
+
+    /** @dataProvider provideUrls */
+    public function testGetPublicKeySetReturnsValue($providedValue){
+        $fakePublicKeySetSetterDeclaration = function() use ($providedValue){
+            return $this->publicKeySet = $providedValue;
+        };
+
+        $fakePublicKeySetSetterExecution = $fakePublicKeySetSetterDeclaration->bindTo(
+            $this->ltiTool,
+            LtiTool::class 
+        );
+
+        $fakePublicKeySetSetterExecution();
+
+        $this->assertSame($providedValue, $this->ltiTool->getPublicKeySet());
+    }
+
+    /** @dataProvider provideNonStringValue */
+    public function testSetPublicKeySetRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->ltiTool->setPublicKeySet($providedValue);
+    }
+
+    /** @dataProvider provideUrls */
+    public function testSetPublicKeySetAcceptsValidValue($providedValue){
+        $this->assertSame('', $this->ltiTool->getPublicKeySet());
+
+        $this->ltiTool->setPublicKeySet($providedValue);
+        $this->assertSame($providedValue, $this->ltiTool->getPublicKeySet());
+    }
+
+
 
 
     /** dataProvider for testGetIdReturnsId */
@@ -230,7 +265,9 @@ class LtiToolTest extends TestCase{
     /** 
      * dataProvider for 
      * => testGetClientIdRejectsInValidValue 
-     * => 
+     * => testSetDeploymentIdRejectsInvalidValue
+     * => testSetToolUrlRejectsInvalidValue
+     * => testSetPublicKeySetRejectsInvalidValue
      * */
     public function provideNonStringValue(){
         return array(
@@ -241,7 +278,11 @@ class LtiToolTest extends TestCase{
         );
     }
 
-    /** dataProvider for testGetToolUrlReturnsUrl */
+    /** 
+     * dataProvider for 
+     * => testGetToolUrlReturnsUrl 
+     * => testSetPublicKeySetAcceptsValidValue
+     * */
     public function provideUrls(){
         return array(
             array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
