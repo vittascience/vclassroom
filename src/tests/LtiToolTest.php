@@ -243,6 +243,40 @@ class LtiToolTest extends TestCase{
         $this->assertSame($providedValue, $this->ltiTool->getLoginUrl());
     }
 
+    public function testGetRedirectionUrlIsNotNullByDefault(){
+        $this->assertNotNull($this->ltiTool->getRedirectionUrl());
+    }
+
+    /** @dataProvider provideUrls */
+    public function testGetRedirectionUrlReturnsValue($providedValue){
+        $fakeRedirectionUrlSetterDeclaration = function() use($providedValue){
+            return $this->redirectionUrl = $providedValue;
+        };
+
+        $fakeRedirectionUrlExecution = $fakeRedirectionUrlSetterDeclaration->bindTo(
+            $this->ltiTool,
+            LtiTool::class
+        );
+
+        $fakeRedirectionUrlExecution();
+
+        $this->assertSame($providedValue, $this->ltiTool->getRedirectionUrl());
+    }
+
+    /** @dataProvider provideNonStringValue */
+    public function testSetRedirectionUrlRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+    $this->ltiTool->setRedirectionUrl($providedValue);
+    }
+
+    /** @dataProvider provideUrls */
+    public function testSetRedirectionUrlAcceptsValidValue($providedValue){
+        $this->assertSame('', $this->ltiTool->getRedirectionUrl());
+
+        $this->ltiTool->setRedirectionUrl($providedValue);
+        $this->assertSame($providedValue, $this->ltiTool->getRedirectionUrl());
+    }
+
 
 
 
@@ -283,8 +317,9 @@ class LtiToolTest extends TestCase{
 
     /** 
      * dataProvider for 
-     * => testGetClientIdReturnsValidValue 
-     * => 
+     * => testGetClientIdReturnsValidValue
+     * => testGetDeploymentIdReturnsValue
+     * => testSetDeploymentIdAcceptsValidValue
      */
     public function provideStringValues(){
         return array(
@@ -303,6 +338,7 @@ class LtiToolTest extends TestCase{
      * => testSetToolUrlRejectsInvalidValue
      * => testSetPublicKeySetRejectsInvalidValue
      * => testSetLoginUrlRejectsInvalidValue
+     * => testSetRedirectionUrlAcceptsValidValue
      * */
     public function provideNonStringValue(){
         return array(
@@ -319,6 +355,7 @@ class LtiToolTest extends TestCase{
      * => testSetPublicKeySetAcceptsValidValue
      * => testGetLoginUrlReturnsValidValue
      * => testSetLoginUrlAcceptsValidValue
+     * => testGetRedirectionUrlReturnsValue
      * */
     public function provideUrls(){
         return array(

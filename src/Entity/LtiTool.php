@@ -52,7 +52,7 @@ class LtiTool{
     /**
      * @ORM\Column(name="redirection_url", type="string", length=255, nullable=false)
      */
-    private $redirectionUrl; 
+    private $redirectionUrl = ''; 
 
     /**
      * @ORM\Column(name="deeplink_url", type="string", length=255, nullable=false)
@@ -232,6 +232,9 @@ class LtiTool{
      */ 
     public function setRedirectionUrl($redirectionUrl)
     {
+        if(!is_string($redirectionUrl)){
+            throw new EntityDataIntegrityException("The redirection url has to be a string value");
+        }
         $this->redirectionUrl = $redirectionUrl;
 
         return $this;
