@@ -47,7 +47,7 @@ class LtiTool{
     /**
      * @ORM\Column(name="login_url", type="string", length=255, nullable=false)
      */
-    private $loginUrl; 
+    private $loginUrl = ''; 
 
     /**
      * @ORM\Column(name="redirection_url", type="string", length=255, nullable=false)
@@ -209,6 +209,9 @@ class LtiTool{
      */ 
     public function setLoginUrl($loginUrl)
     {
+        if(!is_string($loginUrl)){
+            throw new EntityDataIntegrityException("The login url has to be a string value");
+        }
         $this->loginUrl = $loginUrl;
 
         return $this;

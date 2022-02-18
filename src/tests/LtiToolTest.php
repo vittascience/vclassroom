@@ -209,6 +209,40 @@ class LtiToolTest extends TestCase{
         $this->assertSame($providedValue, $this->ltiTool->getPublicKeySet());
     }
 
+    public function testGetLoginUrlIsNotNullByDefault(){
+        $this->assertNotNull($this->ltiTool->getLoginUrl());
+    }
+
+    /** @dataProvider provideUrls */
+    public function testGetLoginUrlReturnsValidValue($providedValue){
+        $fakeLoginUrlSetterDeclaration = function() use($providedValue){
+            return $this->loginUrl = $providedValue;
+        };
+
+        $fakeLoginUrlSetterExecution = $fakeLoginUrlSetterDeclaration->bindTo(
+            $this->ltiTool,
+            LtiTool::class 
+        );
+
+        $fakeLoginUrlSetterExecution();
+
+        $this->assertSame($providedValue, $this->ltiTool->getLoginUrl());
+    }
+
+    /** @dataProvider provideNonStringValue */
+    public function testSetLoginUrlRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->ltiTool->setLoginUrl($providedValue);
+    }
+
+    /** @dataProvider provideUrls */
+    public function testSetLoginUrlAcceptsValidValue($providedValue){
+        $this->assertSame('', $this->ltiTool->getLoginUrl());
+
+        $this->ltiTool->setLoginUrl($providedValue);
+        $this->assertSame($providedValue, $this->ltiTool->getLoginUrl());
+    }
+
 
 
 
@@ -268,6 +302,7 @@ class LtiToolTest extends TestCase{
      * => testSetDeploymentIdRejectsInvalidValue
      * => testSetToolUrlRejectsInvalidValue
      * => testSetPublicKeySetRejectsInvalidValue
+     * => testSetLoginUrlRejectsInvalidValue
      * */
     public function provideNonStringValue(){
         return array(
@@ -282,6 +317,8 @@ class LtiToolTest extends TestCase{
      * dataProvider for 
      * => testGetToolUrlReturnsUrl 
      * => testSetPublicKeySetAcceptsValidValue
+     * => testGetLoginUrlReturnsValidValue
+     * => testSetLoginUrlAcceptsValidValue
      * */
     public function provideUrls(){
         return array(
