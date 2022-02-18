@@ -4,6 +4,7 @@
 namespace Classroom\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Utils\Exceptions\EntityDataIntegrityException;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\LtiToolRepository")
@@ -21,22 +22,22 @@ class LtiTool{
      * @ORM\OneToOne(targetEntity="Classroom\Entity\Applications")
      * @ORM\JoinColumn(name="application_id", referencedColumnName="id", onDelete="CASCADE",nullable=false)
      */
-    private $applicationId; 
+    private $application; 
 
     /**
      * @ORM\Column(name="client_id", type="string",length=255, nullable=false)
      */
-    private $clientId;
+    private $clientId = '';
 
     /**
      * @ORM\Column(name="deployment_id", type="string", length=255, nullable=false)
      */
-    private $deploymentId; 
+    private $deploymentId = ''; 
 
     /**
      * @ORM\Column(name="tool_url", type="string", length=255, nullable=false)
      */
-    private $toolUrl; 
+    private $toolUrl = ''; 
 
     /**
      * @ORM\Column(name="public_key_set", type="string", length=255, nullable=false)
@@ -59,7 +60,7 @@ class LtiTool{
     private $deepLinkUrl; 
 
     /**
-     * @ORM\Column(name="private_key", type="string", length=255, nullable=false)
+     * @ORM\Column(name="private_key", type="string", length=10000, nullable=false)
      */
     private $privateKey; 
 
@@ -81,9 +82,9 @@ class LtiTool{
     /**
      * Get the value of applicationId
      */ 
-    public function getApplicationId()
+    public function getApplication()
     {
-        return $this->applicationId;
+        return $this->application;
     }
 
     /**
@@ -91,9 +92,12 @@ class LtiTool{
      *
      * @return  self
      */ 
-    public function setApplicationId($applicationId)
+    public function setApplication($application)
     {
-        $this->applicationId = $applicationId;
+        if(!($application instanceof Applications)){
+            throw new EntityDataIntegrityException("The application has to be an instance of Applications class");
+        }
+        $this->application = $application;
 
         return $this;
     }
@@ -113,6 +117,9 @@ class LtiTool{
      */ 
     public function setClientId($clientId)
     {
+        if(!is_string($clientId)){
+            throw new EntityDataIntegrityException("The client id has to be a string value");
+        }
         $this->clientId = $clientId;
 
         return $this;
@@ -133,6 +140,9 @@ class LtiTool{
      */ 
     public function setDeploymentId($deploymentId)
     {
+        if(!is_string($deploymentId)){
+            throw new EntityDataIntegrityException("The deployment id has to be a string");
+        }
         $this->deploymentId = $deploymentId;
 
         return $this;
@@ -153,6 +163,9 @@ class LtiTool{
      */ 
     public function setToolUrl($toolUrl)
     {
+        if(!is_string($toolUrl)){
+            throw new EntityDataIntegrityException("The tool url has to be a string value");
+        }
         $this->toolUrl = $toolUrl;
 
         return $this;
