@@ -15,6 +15,7 @@ use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
+use Classroom\Entity\LtiTool;
 
 class ControllerSuperAdmin extends Controller
 {
@@ -112,13 +113,70 @@ class ControllerSuperAdmin extends Controller
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+                        $application_lti = isset($data['application_lti']) ? htmlspecialchars($data['application_lti']) : null;
 
                         $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
+                        if ($application_lti) {
+                            $app->setIsLti($application_lti);
+                        }
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
+
+                         // Only for lti apps
+                        if ($application_lti) {
+                            $clientId = isset($data['clientId']) ? htmlspecialchars($data['clientId']) : null;
+                            $deploymentId = isset($data['deploymentId']) ? htmlspecialchars($data['deploymentId']) : null;
+                            $toolUrl = isset($data['toolUrl']) ? htmlspecialchars($data['toolUrl']) : null;
+                            $publicKeySet = isset($data['publicKeySet']) ? htmlspecialchars($data['publicKeySet']) : null;
+                            $loginUrl = isset($data['loginUrl']) ? htmlspecialchars($data['loginUrl']) : null;
+                            $redirectionUrl = isset($data['redirectionUrl']) ? htmlspecialchars($data['redirectionUrl']) : null;
+                            $deepLinkUrl = isset($data['deepLinkUrl']) ? htmlspecialchars($data['deepLinkUrl']) : null;
+                            $privateKey = isset($data['privateKey']) ? htmlspecialchars($data['privateKey']) : null;
+
+                            // Check if data are not null
+                            if (
+                                $clientId == null || 
+                                $deploymentId == null || 
+                                $toolUrl == null || 
+                                $publicKeySet == null || 
+                                $loginUrl == null || 
+                                $redirectionUrl == null || 
+                                $deepLinkUrl == null || 
+                                $privateKey == null
+                            ) {
+                                return ['message' => 'missing data'];
+                            }
+
+                            $ltiTool = new LtiTool();
+                            $ltiTool->setApplicationId($app->getId());
+                            $ltiTool->setClientId($clientId);
+                            $ltiTool->setDeploymentId($deploymentId);
+                            $ltiTool->setToolUrl($toolUrl);
+                            $ltiTool->setPublicKeySet($publicKeySet);
+                            $ltiTool->setLoginUrl($loginUrl);
+                            $ltiTool->setRedirectionUrl($redirectionUrl);
+                            $ltiTool->setDeepLinkUrl($deepLinkUrl);
+                            $ltiTool->setPrivateKey($privateKey);
+    
+                            $uid = "";
+                            do {
+                                $uid = uniqid();
+                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['Kid' => $uid]);
+                            } while ($isUnique);
+                            $ltiTool->setKid($uid);
+                            
+                            $this->entityManager->persist($ltiTool);
+                            $this->entityManager->flush();
+                        } else {
+                            $ltiTool = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                            if ($ltiTool) {
+                                $this->entityManager->remove($ltiTool);
+                                $this->entityManager->flush();
+                            }
+                        }
 
                         return ['message' => 'success'];
                     } else {
@@ -135,6 +193,7 @@ class ControllerSuperAdmin extends Controller
                         $userLinkApp = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['application' => $application_id]);
                         $userLinkApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['application' => $application_id]);
                         $restrictionsApp = $this->entityManager->getRepository(ActivityRestrictions::class)->findBy(['application' => $application_id]);
+
 
                         foreach ($groupLinkApp as $groupApp) {
                             $this->entityManager->remove($groupApp);
@@ -165,13 +224,51 @@ class ControllerSuperAdmin extends Controller
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+                        $application_lti = isset($data['application_lti']) ? htmlspecialchars($data['application_lti']) : null;
 
                         $app = new Applications();
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
+                        if ($application_lti) {
+                            $app->setIsLti($application_lti);
+                        }
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
+
+                        // Only for lti apps
+
+                        if ($application_lti) {
+                            $clientId = isset($data['clientId']) ? htmlspecialchars($data['clientId']) : null;
+                            $deploymentId = isset($data['deploymentId']) ? htmlspecialchars($data['deploymentId']) : null;
+                            $toolUrl = isset($data['toolUrl']) ? htmlspecialchars($data['toolUrl']) : null;
+                            $publicKeySet = isset($data['publicKeySet']) ? htmlspecialchars($data['publicKeySet']) : null;
+                            $loginUrl = isset($data['loginUrl']) ? htmlspecialchars($data['loginUrl']) : null;
+                            $redirectionUrl = isset($data['redirectionUrl']) ? htmlspecialchars($data['redirectionUrl']) : null;
+                            $deepLinkUrl = isset($data['deepLinkUrl']) ? htmlspecialchars($data['deepLinkUrl']) : null;
+                            $privateKey = isset($data['privateKey']) ? htmlspecialchars($data['privateKey']) : null;
+
+                            $ltiTool = new LtiTool();
+                            $ltiTool->setApplicationId($app->getId());
+                            $ltiTool->setClientId($clientId);
+                            $ltiTool->setDeploymentId($deploymentId);
+                            $ltiTool->setToolUrl($toolUrl);
+                            $ltiTool->setPublicKeySet($publicKeySet);
+                            $ltiTool->setLoginUrl($loginUrl);
+                            $ltiTool->setRedirectionUrl($redirectionUrl);
+                            $ltiTool->setDeepLinkUrl($deepLinkUrl);
+                            $ltiTool->setPrivateKey($privateKey);
+    
+                            $uid = "";
+                            do {
+                                $uid = uniqid();
+                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['Kid' => $uid]);
+                            } while ($isUnique);
+                            $ltiTool->setKid($uid);
+
+                            $this->entityManager->persist($ltiTool);
+                            $this->entityManager->flush();
+                        }
 
                         return ['message' => 'success', 'application_id' => $app->getId()];
                     } else {
@@ -806,69 +903,6 @@ class ControllerSuperAdmin extends Controller
                         return ['message' => "missing data"];
                     }
                 },
-                /* 'update_default_activities_restrictions' => function ($data) {
-                    if (isset($data['restrictions'])) {
-
-                        $restrictionsData = json_decode($data['restrictions']);
-                        $restrictionsFormatted = [];
-
-                        foreach ($restrictionsData as $restriction) {
-                            $restrictionsFormatted[$restriction[0]] = (int)$restriction[1];
-                        }
-
-                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-                        $arrayRestriction = json_encode($restrictionsFormatted);
-                        $restrictions->setRestrictions($arrayRestriction);
-                        $this->entityManager->persist($restrictions);
-                        $this->entityManager->flush();
-
-                        return ['message' => "success"];
-                    } else {
-                        return ['message' => "missing data"];
-                    }
-                },
-                'add_default_activities_restrictions' => function ($data) {
-                    if (isset($data['restrictions'])) {
-
-                        $restrictionsData = json_decode($data['restrictions']);
-                        $restrictionsFormatted = [];
-
-                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-
-                        $restrictionsFormatted = (array)json_decode($restrictions->getRestrictions());
-                        if (!array_key_exists($restrictionsData[0], $restrictionsFormatted)) {
-                            $restrictionsFormatted[$restrictionsData[0]] = (int)$restrictionsData[1];
-
-                            $arrayRestriction = json_encode($restrictionsFormatted);
-                            $restrictions->setRestrictions($arrayRestriction);
-                            $this->entityManager->persist($restrictions);
-                            $this->entityManager->flush();
-
-                            return ['message' => "success"];
-                        } else {
-                            return ['message' => "alreadyexist"];
-                        }
-                    } else {
-                        return ['message' => "missing data"];
-                    }
-                },
-                'delete_default_activities_restrictions' => function ($data) {
-                    if (isset($data['restrictions'])) {
-
-                        $restrictionsData = htmlspecialchars($data['restrictions']);
-                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-                        $restrictionsFormatted = (array)json_decode($restrictions->getRestrictions());
-                        unset($restrictionsFormatted[$restrictionsData]);
-                        $arrayRestriction = json_encode($restrictionsFormatted);
-                        $restrictions->setRestrictions($arrayRestriction);
-                        $this->entityManager->persist($restrictions);
-                        $this->entityManager->flush();
-
-                        return ['message' => "success"];
-                    } else {
-                        return ['message' => "missing data"];
-                    }
-                } */
             );
         }
     }
