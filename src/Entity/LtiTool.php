@@ -60,14 +60,14 @@ class LtiTool{
     private $deepLinkUrl = ''; 
 
     /**
-     * @ORM\Column(name="private_key", type="string", length=10000, nullable=false)
+     * @ORM\Column(name="private_key", type="text", length=10000, nullable=false)
      */
-    private $privateKey; 
+    private $privateKey = ''; 
 
     /**
      * @ORM\Column(name="kid", type="string", length=255, nullable=false)
      */
-    private $kid; 
+    private $kid = ''; 
 
 
 
@@ -278,6 +278,9 @@ class LtiTool{
      */ 
     public function setPrivateKey($privateKey)
     {
+        if(!is_string($privateKey)){
+            throw new EntityDataIntegrityException("The private key has to be a string value");
+        }
         $this->privateKey = $privateKey;
 
         return $this;
@@ -298,6 +301,9 @@ class LtiTool{
      */ 
     public function setKid($kid)
     {
+        if(!is_string($kid)){
+            throw new EntityDataIntegrityException("The kid has to be a string value");
+        }
         $this->kid = $kid;
 
         return $this;

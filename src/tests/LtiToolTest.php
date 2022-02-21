@@ -311,8 +311,73 @@ class LtiToolTest extends TestCase{
         $this->assertSame($providedValue, $this->ltiTool->getDeepLinkUrl());
     }
 
+    public function testGetPrivateKeyIsNotNullByDefault(){
+        $this->assertNotNull($this->ltiTool->getPrivateKey());
+    }
 
+    /** @dataProvider providePrivateKeys */
+    public function testGetPrivateKeyReturnsValue($providedValue){
+        $fakePrivateKeySetterDeclaration = function() use ($providedValue){
+            $this->privateKey = $providedValue;
+        };
 
+        $fakePrivateKeySetterExecution = $fakePrivateKeySetterDeclaration->bindTo(
+            $this->ltiTool,
+            LtiTool::class 
+        );
+
+        $fakePrivateKeySetterExecution();
+
+        $this->assertEquals($providedValue, $this->ltiTool->getPrivateKey());
+    }
+
+    /** @dataProvider provideNonStringValue */
+    public function testSetPrivateKeyRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->ltiTool->setPrivateKey($providedValue);
+    }
+
+    /** @dataProvider providePrivateKeys */
+    public function testSetPrivateKeyAcceptsValidValue($providedValue){
+        $this->assertSame('',$this->ltiTool->getPrivateKey());
+
+        $this->ltiTool->setPrivateKey($providedValue);
+        $this->assertEquals($providedValue, $this->ltiTool->getPrivateKey());
+    }
+
+    public function testGetKidIsNotNullByDefault(){
+        $this->assertNotNull($this->ltiTool->getKid());
+    }
+
+    /** @dataProvider provideStringValues */
+    public function testGetKidReturnsValue($providedValue){
+        $fakeKidSetterDeclaration = function() use ($providedValue){
+            return $this->kid = $providedValue;
+        };
+
+        $fakeKidSetterExecution = $fakeKidSetterDeclaration->bindTo(
+            $this->ltiTool,
+            LtiTool::class
+        );
+
+        $fakeKidSetterExecution();
+
+        $this->assertEquals($providedValue, $this->ltiTool->getKid());
+    }
+
+    /** @dataProvider provideNonStringValue */
+    public function testSetKidRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->ltiTool->setKid($providedValue);
+    }
+
+    /** @dataProvider provideStringValues */
+    public function testSetKidAcceptsValidValue($providedValue){
+        $this->assertEquals('', $this->ltiTool->getKid());
+
+        $this->ltiTool->setKid($providedValue);
+        $this->assertEquals($providedValue,$this->ltiTool->getKid() );
+    }
 
     /** dataProvider for testGetIdReturnsId */
     public function provideIds(){
@@ -399,6 +464,70 @@ class LtiToolTest extends TestCase{
             array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
             array('https://goole.com'),
             array('https://fr.vittascience.com'),
+        );
+    }
+
+    /**
+     *  dataProvider for 
+     * => testGetPrivateKeyReturnsValue 
+     * => testSetPrivateKeyAcceptsValidValue
+     * */
+    public function providePrivateKeys(){
+        return array(
+            array('-----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEA12qnagqeOVhD95g4Xt3Z8MKhzVwu8Du6HWzadvoUqk7xOYHf
+            HhulR2ro6nSU+x7l97Eq18PU1Ho2BBxVTsa90YGvWHNOXz5vitmVVg795dSEfkYG
+            GOfsDhpliv2S/eQxAGwU7gPukNnGTnHG2UIKlV55i/Lk5gnlE1dvZWwaTm1K6PW6
+            Q1OIPkwDyFQ7gB6AplqqC5EvJyynPE7yRrMXRkzWK63fpGMKiJLx9uopGAylCzg3
+            MtXBGTL6X0uQBChPunfJzD5oLpT9HZdgbLiZ8tJOUo9tjEo5ZWd/8xlozfASjy0n
+            HWQ7opy7o5xFD9vXEMm027YSDOT9lMKox9m35QIDAQABAoIBAC8DYNw8ywFa6SJ9
+            Pzg9FNZ9s9Bc4QWfE2ReoGM8+wucRPs3A9nPUMgAZirdHLKdsLTZHq+OVsG0lltZ
+            T6jsqPqzYfBc4erZdoCIMhZhGTpyoiPo5mXDH/qH+kdWRiFRDvy3me3EP+mvDZ+L
+            J0m9JxAoWUCY1yn5WNxaxb4N1MPuoaZXY66cvjSh02mQEQh+lqT5BeHvBHqlXB7i
+            8sw8GsevrAgoIyne9C9TIzB2fpNRLJHclSQWRZJ/Y92Bk2D0k1BXsSI2/4zMESCa
+            yfGmLgBrfGvKilV2nGfcyr8Re8IfWgihuazMC8I4CHprBgbN+8HnOWIII9448LD0
+            R2PvaNUCgYEA+nin99auSJLd4FvB3Dp//ymEwhZt/c5mvDzhTgp1fgAaAb/229qc
+            gBqR+eycGRskZeDrXJm+sE/9OaYThT6y/8q7h2O8YJpxTkaPgyJUehFm6DEEXI5j
+            RzI7MKHZsWJCUhnjhEBNSFkB+pWdECkWMrZhTORz6GA3Oi/nP33lrGcCgYEA3Cvp
+            2bpe0m3pvlhftYzBAuaH/0emjyhzUj+3yDnBJrqDBPbRWv0fsP7ilhJmkImFZW5m
+            kuKgg1bpbYQWt6jpRVL/3u5QRsNzmbU45WQE8oiHEpgxKSeNdOvBUg7ucXaKgdUH
+            up+PZXA7nKjF1aGzwGJNJE43li+Jd4rtaS17CdMCgYBSAUj1MvuS1UsBlukswpZ/
+            o0dNCGzwqTAnt0MI+xGmtD/PjNs09ilBI/HhQt+EtMdA99f3VHsDXN0Kj95aRMH0
+            T5sAY94cPtSUDTQVehrwcFwh71J/Pzsv5zlL3eHZWtNd8A32kdr7sfCc63kl/l2/
+            Msk+lJmCXmYWjfKHbh/RRwKBgQCj1gmue4EUFbZabmjKMHNwNRv+WtMWtIMcMU4R
+            MOkKaMAWcZRYoQN0MjdqdUbdR3h8girSItJO6d3KIQDGqmrrq1e8DJqwDcF4H+K2
+            0DbeQ7o/nAD5HvWki8rPxUyqIgvvkRavSQzr7xhs+yo8Tpf0ETJWUd4LZFRnIHqK
+            Sc3FAQKBgG55jUpSZQbS9P/SD1/a1Z0P0kC+ceS16YjfeYR0KqYNc3Ff+tJr6m4P
+            MOkmhN3SqY6dVNFFFrEhgdQu6SOgsizKpTt4y8L2wj0sMRGbikinjEIQ+r7F0MYE
+            9ypDPx/QLmqNUoFuN8H8e++mvatzZS7VaCOiM4QMSKVak/ebFjcS
+            -----END RSA PRIVATE KEY-----'),
+            array('-----BEGIN RSA PRIVATE KEY-----
+            zsgivsigvoijqù^A8osiSa75nmqmakwNNocLA2N2huWM9At/tjSZOFX1r4+PDclS
+            zxhMw+ZcgHH+E/05Ec6Vcfd75i8Z+Bxu4ctbYk2FNIvRMN5UgWqxZ5Pf70n8UFxj
+            GqdwhUA7/n5KOFoUd9F6wLKa6OzsoiizgzsepzsrgpzXhZxNrJjCqxSEkLkOK3xJ
+            0J2npuZ59kipDEDZkRTWz3al09wQ0nvAgCc96DGH+jCgy0msA0OZQ9SmDE9CCMbD
+            T86ogLugPFCvo5g5zqBBX9Ak3czsuLS6Ni9Wco8ZSxoaCIsPXK0RJpt6Jvbjclqb
+            4imsobifxy5LsAV0l/weNWmU2DpzJsLgeK6VVwIDAQABAoIBAQC2R1RUdfjJUrOQ
+            rWk8so7XVBfO15NwEXhAkhUYnpmPAF/zlgijqszq$psozVIW6bbLKCtuRCVMX9ev
+            fIbkkLU0ErhqPi3QATcXL/z1r8+bAUprhpNAg9fvfM/ZukXDRged6MPNMC11nseE
+            p8HUU4oHNwXVyL6FvmstrHyYoEnkjIiMk34O2MFjAavoIJhM0gkoXVnxRP5MNi1n
+            GPVhK+TfZyRri20x1Rh3CsIq36PUyxCICWkD7jftLGqVdQBfuii600LP5v7nuHz9
+            LDsCeY7xRJu0eLdDk7/9ukb8fuq6/+3VYMYChYWvpw4DaH8qDHxZfWzMyaI489ma
+            l27lhgdxAoGBAPkxH6WuZM/GOowjySuruRjAVyJ4stfe9l/x8MrqnFA2Q8stqK69
+            60Y9LDrSaAx7QutvzZ64br2WMlvnGdJw868z4/JmvoAqW3IHUXzqRAHgOk/8Y3ze
+            Sjd7t3R0O3v6qAbQjyRYYgfAMZo7PzXW8FKNGsakAedEKW0b94HYndKpAoGBAPkr
+            grtARp2nnd1WGuxgQMjX++HjT0p9x7fTMCtfvYhZguU9AlCx53VHFeGc6fqsDkUm
+            BFv0dqMnw0TPzEQqLElBIh87TGS4JSXmcbQcejIx+ry2kMFuyMZIPuvZCnLfB/d7
+            Qu2DU6mdeIBME/8AX5kBqn1ekddioESdSkHkkif/AoGAaPCeAjjZ7YHuP/wGCOUN
+            UvYU+8hWkIAtwyPxIpMAdusTS6oTwlrqjK7QRIk9FhyGhv2TWwcSY7avyHIfNrco
+            eBzjHr7T9MdhsTiRwYgqUZvrEqoX/4rhOFJaZKlaL5DUV+JWlZi+18LBYNEYgoTc
+            ufcAUqzYvFrBE1jWt5DQjdkCgYATs6sMn1J2GNDUtYA/fITi3KEgBVc5rqRiFqLS
+            aymTZHCDK8XJF6gTj+FdC4k8tuoR8aWal8Phtr0r7bpbEXKbADlwesHZnO3jB0uq
+            UC4hVe5biZv8j4P0mbXP9ENtPdFlciuimCW/XaIvktRp71+fu4/9hcLGYxgFFOLQ
+            PwCHhQKBgGMCxIcueUkLnI9r0KkjtXap9mIgdgERwQPN0Cm9Tx35ZEzRp95kf4C6
+            MPsVOwZk5gNvvQngx4iaw9fNYG+PF2yNuDZ+EFwI0vpmGCKRQEke9/VCOFucMsjg
+            jMhbU+jrqRIJKisP7MCE1NRhymCPpQf/stEPl0nS5rj+mZJHQEGq
+            -----END RSA PRIVATE KEY-----')
         );
     }
    
