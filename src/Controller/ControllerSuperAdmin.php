@@ -113,54 +113,57 @@ class ControllerSuperAdmin extends Controller
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
-                        $application_lti = isset($data['application_lti']) ? htmlspecialchars($data['application_lti']) : null;
+                        $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
                         $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
-                        if ($application_lti) {
-                            $app->setIsLti($application_lti);
+                        if ($lti_data['isLti']) {
+                            $app->setIsLti($lti_data['isLti']);
+                        } else {
+                            $app->setIsLti(false);
                         }
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
 
                          // Only for lti apps
-                        if ($application_lti) {
-                            $clientId = isset($data['clientId']) ? htmlspecialchars($data['clientId']) : null;
-                            $deploymentId = isset($data['deploymentId']) ? htmlspecialchars($data['deploymentId']) : null;
-                            $toolUrl = isset($data['toolUrl']) ? htmlspecialchars($data['toolUrl']) : null;
-                            $publicKeySet = isset($data['publicKeySet']) ? htmlspecialchars($data['publicKeySet']) : null;
-                            $loginUrl = isset($data['loginUrl']) ? htmlspecialchars($data['loginUrl']) : null;
-                            $redirectionUrl = isset($data['redirectionUrl']) ? htmlspecialchars($data['redirectionUrl']) : null;
-                            $deepLinkUrl = isset($data['deepLinkUrl']) ? htmlspecialchars($data['deepLinkUrl']) : null;
-                            $privateKey = isset($data['privateKey']) ? htmlspecialchars($data['privateKey']) : null;
+                        if ($lti_data['isLti']) {
+                            $lti_data['clientId'] = isset($lti_data['clientId']) ? htmlspecialchars($lti_data['clientId']) : null;
+                            $lti_data['deploymentId'] = isset($lti_data['deploymentId']) ? htmlspecialchars($lti_data['deploymentId']) : null;
+                            $lti_data['toolUrl'] = isset($lti_data['toolUrl']) ? htmlspecialchars($lti_data['toolUrl']) : null;
+                            $lti_data['publicKeySet'] = isset($lti_data['publicKeySet']) ? htmlspecialchars($lti_data['publicKeySet']) : null;
+                            $lti_data['loginUrl'] = isset($lti_data['loginUrl']) ? htmlspecialchars($lti_data['loginUrl']) : null;
+                            $lti_data['redirectionUrl'] = isset($lti_data['redirectionUrl']) ? htmlspecialchars($lti_data['redirectionUrl']) : null;
+                            $lti_data['deepLinkUrl'] = isset($lti_data['deepLinkUrl']) ? htmlspecialchars($lti_data['deepLinkUrl']) : null;
+                            $lti_data['privateKey'] = isset($lti_data['privateKey']) ? htmlspecialchars($lti_data['privateKey']) : null;
 
                             // Check if data are not null
                             if (
-                                $clientId == null || 
-                                $deploymentId == null || 
-                                $toolUrl == null || 
-                                $publicKeySet == null || 
-                                $loginUrl == null || 
-                                $redirectionUrl == null || 
-                                $deepLinkUrl == null || 
-                                $privateKey == null
+                                $lti_data['clientId'] == null || 
+                                $lti_data['deploymentId'] == null || 
+                                $lti_data['toolUrl'] == null || 
+                                $lti_data['publicKeySet'] == null || 
+                                $lti_data['loginUrl'] == null || 
+
+                                $lti_data['redirectionUrl'] == null ||
+                                $lti_data['deepLinkUrl'] == null ||
+                                $lti_data['privateKey'] == null
                             ) {
                                 return ['message' => 'missing data'];
                             }
 
                             $ltiTool = new LtiTool();
                             $ltiTool->setApplicationId($app->getId());
-                            $ltiTool->setClientId($clientId);
-                            $ltiTool->setDeploymentId($deploymentId);
-                            $ltiTool->setToolUrl($toolUrl);
-                            $ltiTool->setPublicKeySet($publicKeySet);
-                            $ltiTool->setLoginUrl($loginUrl);
-                            $ltiTool->setRedirectionUrl($redirectionUrl);
-                            $ltiTool->setDeepLinkUrl($deepLinkUrl);
-                            $ltiTool->setPrivateKey($privateKey);
-    
+                            $ltiTool->setClientId($lti_data['clientId']);
+                            $ltiTool->setDeploymentId($lti_data['deploymentId']);
+                            $ltiTool->setToolUrl($lti_data['toolUrl']);
+                            $ltiTool->setPublicKeySet($lti_data['publicKeySet']);
+                            $ltiTool->setLoginUrl($lti_data['loginUrl']);
+                            $ltiTool->setRedirectionUrl($lti_data['redirectionUrl']);
+                            $ltiTool->setDeepLinkUrl($lti_data['deepLinkUrl']);
+                            $ltiTool->setPrivateKey($lti_data['privateKey']);
+
                             $uid = "";
                             do {
                                 $uid = uniqid();
@@ -224,48 +227,66 @@ class ControllerSuperAdmin extends Controller
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
-                        $application_lti = isset($data['application_lti']) ? htmlspecialchars($data['application_lti']) : null;
+                        $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
                         $app = new Applications();
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
-                        if ($application_lti) {
-                            $app->setIsLti($application_lti);
+                        if ($lti_data['isLti']) {
+                            $app->setIsLti($lti_data['isLti']);
+                        } else {
+                            $app->setIsLti(false);
                         }
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
 
                         // Only for lti apps
 
-                        if ($application_lti) {
-                            $clientId = isset($data['clientId']) ? htmlspecialchars($data['clientId']) : null;
-                            $deploymentId = isset($data['deploymentId']) ? htmlspecialchars($data['deploymentId']) : null;
-                            $toolUrl = isset($data['toolUrl']) ? htmlspecialchars($data['toolUrl']) : null;
-                            $publicKeySet = isset($data['publicKeySet']) ? htmlspecialchars($data['publicKeySet']) : null;
-                            $loginUrl = isset($data['loginUrl']) ? htmlspecialchars($data['loginUrl']) : null;
-                            $redirectionUrl = isset($data['redirectionUrl']) ? htmlspecialchars($data['redirectionUrl']) : null;
-                            $deepLinkUrl = isset($data['deepLinkUrl']) ? htmlspecialchars($data['deepLinkUrl']) : null;
-                            $privateKey = isset($data['privateKey']) ? htmlspecialchars($data['privateKey']) : null;
+                        // Only for lti apps
+                        if ($lti_data['isLti']) {
+                            $lti_data['clientId'] = isset($lti_data['clientId']) ? htmlspecialchars($lti_data['clientId']) : null;
+                            $lti_data['deploymentId'] = isset($lti_data['deploymentId']) ? htmlspecialchars($lti_data['deploymentId']) : null;
+                            $lti_data['toolUrl'] = isset($lti_data['toolUrl']) ? htmlspecialchars($lti_data['toolUrl']) : null;
+                            $lti_data['publicKeySet'] = isset($lti_data['publicKeySet']) ? htmlspecialchars($lti_data['publicKeySet']) : null;
+                            $lti_data['loginUrl'] = isset($lti_data['loginUrl']) ? htmlspecialchars($lti_data['loginUrl']) : null;
+                            $lti_data['redirectionUrl'] = isset($lti_data['redirectionUrl']) ? htmlspecialchars($lti_data['redirectionUrl']) : null;
+                            $lti_data['deepLinkUrl'] = isset($lti_data['deepLinkUrl']) ? htmlspecialchars($lti_data['deepLinkUrl']) : null;
+                            $lti_data['privateKey'] = isset($lti_data['privateKey']) ? htmlspecialchars($lti_data['privateKey']) : null;
+
+                            // Check if data are not null
+                            if (
+                                $lti_data['clientId'] == null || 
+                                $lti_data['deploymentId'] == null || 
+                                $lti_data['toolUrl'] == null || 
+                                $lti_data['publicKeySet'] == null || 
+                                $lti_data['loginUrl'] == null || 
+
+                                $lti_data['redirectionUrl'] == null ||
+                                $lti_data['deepLinkUrl'] == null ||
+                                $lti_data['privateKey'] == null
+                            ) {
+                                return ['message' => 'missing data'];
+                            }
 
                             $ltiTool = new LtiTool();
                             $ltiTool->setApplicationId($app->getId());
-                            $ltiTool->setClientId($clientId);
-                            $ltiTool->setDeploymentId($deploymentId);
-                            $ltiTool->setToolUrl($toolUrl);
-                            $ltiTool->setPublicKeySet($publicKeySet);
-                            $ltiTool->setLoginUrl($loginUrl);
-                            $ltiTool->setRedirectionUrl($redirectionUrl);
-                            $ltiTool->setDeepLinkUrl($deepLinkUrl);
-                            $ltiTool->setPrivateKey($privateKey);
-    
+                            $ltiTool->setClientId($lti_data['clientId']);
+                            $ltiTool->setDeploymentId($lti_data['deploymentId']);
+                            $ltiTool->setToolUrl($lti_data['toolUrl']);
+                            $ltiTool->setPublicKeySet($lti_data['publicKeySet']);
+                            $ltiTool->setLoginUrl($lti_data['loginUrl']);
+                            $ltiTool->setRedirectionUrl($lti_data['redirectionUrl']);
+                            $ltiTool->setDeepLinkUrl($lti_data['deepLinkUrl']);
+                            $ltiTool->setPrivateKey($lti_data['privateKey']);
+
                             $uid = "";
                             do {
                                 $uid = uniqid();
                                 $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['Kid' => $uid]);
                             } while ($isUnique);
                             $ltiTool->setKid($uid);
-
+                            
                             $this->entityManager->persist($ltiTool);
                             $this->entityManager->flush();
                         }
