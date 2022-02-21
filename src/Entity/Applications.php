@@ -39,6 +39,13 @@ class Applications
 
 
     /**
+     * @ORM\Column(name="is_lti", type="boolean", nullable=true)
+     * @var bool
+     */
+    private $isLti;
+
+
+    /**
      * @return Integer
      */
     public function getId(): ?int
@@ -100,13 +107,27 @@ class Applications
         return $this;
     }
 
+
+    public function getIsLti(): ?bool
+    {
+        return $this->isLti;
+    }
+
+    public function setIsLti(bool $isLti): self
+    {
+        $this->isLti = $isLti;
+
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
             'id' => $this->getId(),
             'name' => $this->getName(),
             'description' => $this->getDescription(),
-            'image' => $this->getImage()
+            'image' => $this->getImage(),
+            'isLti' => $this->getIsLti()
         ];
     }
 
