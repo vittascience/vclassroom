@@ -283,7 +283,6 @@ class LtiTool{
     {
         return [
             'id' => $this->getId(),
-            'applicationId' => $this->getApplicationId(),
             'clientId' => $this->getClientId(),
             'deploymentId' => $this->getDeploymentId(),
             'toolUrl' => $this->getToolUrl(),
