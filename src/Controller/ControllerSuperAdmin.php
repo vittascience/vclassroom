@@ -96,9 +96,13 @@ class ControllerSuperAdmin extends Controller
                 'get_application_by_id' => function ($data) {
                     if (isset($data['application_id']) && $data['application_id'] != null) {
                         $application_id = htmlspecialchars($data['application_id']);
-                        return $this->entityManager->getRepository(Applications::class)
-                            ->findOneBy(['id' => $application_id])
-                            ->jsonSerialize();
+
+                        $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id])->jsonSerialize();
+                        $ltiData = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                        if ($ltiData) {
+                            $app['lti'] = $ltiData->jsonSerialize();
+                        }
+                        return $app;
                     } else {
                         return ['message' => 'missing data'];
                     }
@@ -154,7 +158,7 @@ class ControllerSuperAdmin extends Controller
                             }
 
                             $ltiTool = new LtiTool();
-                            $ltiTool->setApplicationId($app->getId());
+                            $ltiTool->setApplicationId($app);
                             $ltiTool->setClientId($lti_data['clientId']);
                             $ltiTool->setDeploymentId($lti_data['deploymentId']);
                             $ltiTool->setToolUrl($lti_data['toolUrl']);
@@ -167,7 +171,7 @@ class ControllerSuperAdmin extends Controller
                             $uid = "";
                             do {
                                 $uid = uniqid();
-                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['Kid' => $uid]);
+                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['kid' => $uid]);
                             } while ($isUnique);
                             $ltiTool->setKid($uid);
                             
@@ -270,7 +274,7 @@ class ControllerSuperAdmin extends Controller
                             }
 
                             $ltiTool = new LtiTool();
-                            $ltiTool->setApplicationId($app->getId());
+                            $ltiTool->setApplicationId($app);
                             $ltiTool->setClientId($lti_data['clientId']);
                             $ltiTool->setDeploymentId($lti_data['deploymentId']);
                             $ltiTool->setToolUrl($lti_data['toolUrl']);
@@ -283,7 +287,7 @@ class ControllerSuperAdmin extends Controller
                             $uid = "";
                             do {
                                 $uid = uniqid();
-                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['Kid' => $uid]);
+                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['kid' => $uid]);
                             } while ($isUnique);
                             $ltiTool->setKid($uid);
                             

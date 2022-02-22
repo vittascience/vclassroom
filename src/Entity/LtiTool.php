@@ -277,4 +277,31 @@ class LtiTool{
 
         return $this;
     }
+
+
+    public function jsonSerialize()
+    {
+        return [
+            'id' => $this->getId(),
+            'applicationId' => $this->getApplicationId(),
+            'clientId' => $this->getClientId(),
+            'deploymentId' => $this->getDeploymentId(),
+            'toolUrl' => $this->getToolUrl(),
+            'publicKeySet' => $this->getPublicKeySet(),
+            'loginUrl' => $this->getLoginUrl(),
+            'redirectionUrl' => $this->getRedirectionUrl(),
+            'deepLinkUrl' => $this->getDeepLinkUrl(),
+            'privateKey' => $this->getPrivateKey(),
+            'kid' => $this->getKid()
+        ];
+    }
+
+    public static function jsonDeserialize($jsonDecoded)
+    {
+        $classInstance = new self();
+        foreach ($jsonDecoded as $attributeName => $attributeValue) {
+            $classInstance->{$attributeName} = $attributeValue;
+        }
+        return $classInstance;
+    }
 }
