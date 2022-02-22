@@ -157,18 +157,28 @@ class ControllerSuperAdmin extends Controller
                                 return ['message' => 'missing data'];
                             }
 
-                            $ltiTool = new LtiTool();
-                            $ltiTool->setApplicationId($app);
-                            $ltiTool->setClientId($lti_data['clientId']);
-                            $ltiTool->setDeploymentId($lti_data['deploymentId']);
-                            $ltiTool->setToolUrl($lti_data['toolUrl']);
-                            $ltiTool->setPublicKeySet($lti_data['publicKeySet']);
-                            $ltiTool->setLoginUrl($lti_data['loginUrl']);
-                            $ltiTool->setRedirectionUrl($lti_data['redirectionUrl']);
-                            $ltiTool->setDeepLinkUrl($lti_data['deepLinkUrl']);
-                            $ltiTool->setPrivateKey($lti_data['privateKey']);
-                            
-                            $this->entityManager->persist($ltiTool);
+                            $lti = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                            if (!$lti){
+                                $lti = new LtiTool();
+                                $lti->setApplicationId($application_id);
+                                $uid = "";
+                                do {
+                                    $uid = uniqid();
+                                    $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['kid' => $uid]);
+                                } while ($isUnique);
+                                $lti->setKid($uid);
+                            }
+
+                            $lti->setClientId($lti_data['clientId']);
+                            $lti->setDeploymentId($lti_data['deploymentId']);
+                            $lti->setToolUrl($lti_data['toolUrl']);
+                            $lti->setPublicKeySet($lti_data['publicKeySet']);
+                            $lti->setLoginUrl($lti_data['loginUrl']);
+                            $lti->setRedirectionUrl($lti_data['redirectionUrl']);
+                            $lti->setDeepLinkUrl($lti_data['deepLinkUrl']);
+                            $lti->setPrivateKey($lti_data['privateKey']);
+
+                            $this->entityManager->persist($lti);
                             $this->entityManager->flush();
                         } else {
                             $ltiTool = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
