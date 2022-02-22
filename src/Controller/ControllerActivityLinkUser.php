@@ -7,6 +7,7 @@ use Learn\Entity\Activity;
 use Classroom\Entity\Classroom;
 use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\ActivityLinkClassroom;
 
 class ControllerActivityLinkUser extends Controller
