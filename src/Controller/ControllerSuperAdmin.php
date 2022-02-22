@@ -167,13 +167,6 @@ class ControllerSuperAdmin extends Controller
                             $ltiTool->setRedirectionUrl($lti_data['redirectionUrl']);
                             $ltiTool->setDeepLinkUrl($lti_data['deepLinkUrl']);
                             $ltiTool->setPrivateKey($lti_data['privateKey']);
-
-                            $uid = "";
-                            do {
-                                $uid = uniqid();
-                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['kid' => $uid]);
-                            } while ($isUnique);
-                            $ltiTool->setKid($uid);
                             
                             $this->entityManager->persist($ltiTool);
                             $this->entityManager->flush();
