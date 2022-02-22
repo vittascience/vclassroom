@@ -68,6 +68,7 @@ class ControllerActivityLinkUser extends Controller
                 return $arrayData;
             },
             'get_student_activities' => function () {
+               
                 /**
                  * This method is used on the student activity panel 
                  */
@@ -80,11 +81,11 @@ class ControllerActivityLinkUser extends Controller
                 // bind and sanitize incoming data to check if the logged user is the teacher
                 $userId = intval($_SESSION['id']);
                 $arrayData = array();
-
+               
                 $arrayData['newActivities'] = $this->entityManager
                     ->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->getNewActivities($userId);
-
+              
                 $arrayData['currentActivities'] = $this->entityManager
                     ->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->getCurrentActivities($userId);
@@ -96,8 +97,28 @@ class ControllerActivityLinkUser extends Controller
                 $arrayData['savedActivities'] = $this->entityManager
                     ->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->getSavedActivities($userId);
+                
+                // convert doctrine object to php object in order to add a custom property
+                $dataToSend = json_decode(json_encode($arrayData));
 
-                return $arrayData;
+                // loop through activities type
+                foreach($dataToSend as $MainActivitiesType){
+                    // loop through single activity
+                    foreach($MainActivitiesType as $activityLinkUser){
+                        
+                        // get the activity restriction by type
+                        $activityRestriction = $this->entityManager
+                            ->getRepository(ActivityRestrictions::class)
+                            ->findOneBy(array(
+                                'activityType'=> $activityLinkUser->activity->type
+                            ));
+                        
+                        // bind isLti property to $dataToSend
+                        $activityLinkUser->activity->isLti = $activityRestriction->getApplication()->getIsLti();
+                        
+                    }
+                }
+                return $dataToSend;
             },
             'add_users' => function () {
                 /**
