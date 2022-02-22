@@ -4,6 +4,7 @@
 namespace Classroom\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Utils\Exceptions\EntityDataIntegrityException;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\LtiToolRepository")
@@ -21,52 +22,52 @@ class LtiTool{
      * @ORM\OneToOne(targetEntity="Classroom\Entity\Applications")
      * @ORM\JoinColumn(name="application_id", referencedColumnName="id", onDelete="CASCADE",nullable=false)
      */
-    private $applicationId; 
+    private $application; 
 
     /**
      * @ORM\Column(name="client_id", type="string",length=255, nullable=false)
      */
-    private $clientId;
+    private $clientId = '';
 
     /**
      * @ORM\Column(name="deployment_id", type="string", length=255, nullable=false)
      */
-    private $deploymentId; 
+    private $deploymentId = ''; 
 
     /**
      * @ORM\Column(name="tool_url", type="string", length=255, nullable=false)
      */
-    private $toolUrl; 
+    private $toolUrl = ''; 
 
     /**
      * @ORM\Column(name="public_key_set", type="string", length=255, nullable=false)
      */
-    private $publicKeySet; 
+    private $publicKeySet = ''; 
 
     /**
      * @ORM\Column(name="login_url", type="string", length=255, nullable=false)
      */
-    private $loginUrl; 
+    private $loginUrl = ''; 
 
     /**
      * @ORM\Column(name="redirection_url", type="string", length=255, nullable=false)
      */
-    private $redirectionUrl; 
+    private $redirectionUrl = ''; 
 
     /**
      * @ORM\Column(name="deeplink_url", type="string", length=255, nullable=false)
      */
-    private $deepLinkUrl; 
+    private $deepLinkUrl = ''; 
 
     /**
-     * @ORM\Column(name="private_key", type="string", length=255, nullable=false)
+     * @ORM\Column(name="private_key", type="text", length=10000, nullable=false)
      */
-    private $privateKey; 
+    private $privateKey = ''; 
 
     /**
      * @ORM\Column(name="kid", type="string", length=255, nullable=false)
      */
-    private $kid; 
+    private $kid = ''; 
 
 
 
@@ -81,9 +82,9 @@ class LtiTool{
     /**
      * Get the value of applicationId
      */ 
-    public function getApplicationId()
+    public function getApplication()
     {
-        return $this->applicationId;
+        return $this->application;
     }
 
     /**
@@ -91,9 +92,12 @@ class LtiTool{
      *
      * @return  self
      */ 
-    public function setApplicationId($applicationId)
+    public function setApplication($application)
     {
-        $this->applicationId = $applicationId;
+        if(!($application instanceof Applications)){
+            throw new EntityDataIntegrityException("The application has to be an instance of Applications class");
+        }
+        $this->application = $application;
 
         return $this;
     }
@@ -113,6 +117,9 @@ class LtiTool{
      */ 
     public function setClientId($clientId)
     {
+        if(!is_string($clientId)){
+            throw new EntityDataIntegrityException("The client id has to be a string value");
+        }
         $this->clientId = $clientId;
 
         return $this;
@@ -133,6 +140,9 @@ class LtiTool{
      */ 
     public function setDeploymentId($deploymentId)
     {
+        if(!is_string($deploymentId)){
+            throw new EntityDataIntegrityException("The deployment id has to be a string");
+        }
         $this->deploymentId = $deploymentId;
 
         return $this;
@@ -153,6 +163,9 @@ class LtiTool{
      */ 
     public function setToolUrl($toolUrl)
     {
+        if(!is_string($toolUrl)){
+            throw new EntityDataIntegrityException("The tool url has to be a string value");
+        }
         $this->toolUrl = $toolUrl;
 
         return $this;
@@ -173,6 +186,9 @@ class LtiTool{
      */ 
     public function setPublicKeySet($publicKeySet)
     {
+        if(!is_string($publicKeySet)){
+            throw new EntityDataIntegrityException("The public key set has to be a string value");
+        }
         $this->publicKeySet = $publicKeySet;
 
         return $this;
@@ -193,6 +209,9 @@ class LtiTool{
      */ 
     public function setLoginUrl($loginUrl)
     {
+        if(!is_string($loginUrl)){
+            throw new EntityDataIntegrityException("The login url has to be a string value");
+        }
         $this->loginUrl = $loginUrl;
 
         return $this;
@@ -213,6 +232,9 @@ class LtiTool{
      */ 
     public function setRedirectionUrl($redirectionUrl)
     {
+        if(!is_string($redirectionUrl)){
+            throw new EntityDataIntegrityException("The redirection url has to be a string value");
+        }
         $this->redirectionUrl = $redirectionUrl;
 
         return $this;
@@ -233,6 +255,9 @@ class LtiTool{
      */ 
     public function setDeepLinkUrl($deepLinkUrl)
     {
+        if(!is_string($deepLinkUrl)){
+            throw new EntityDataIntegrityException("The deep link url has to be a string value");
+        }
         $this->deepLinkUrl = $deepLinkUrl;
 
         return $this;
@@ -253,6 +278,9 @@ class LtiTool{
      */ 
     public function setPrivateKey($privateKey)
     {
+        if(!is_string($privateKey)){
+            throw new EntityDataIntegrityException("The private key has to be a string value");
+        }
         $this->privateKey = $privateKey;
 
         return $this;
@@ -273,6 +301,9 @@ class LtiTool{
      */ 
     public function setKid($kid)
     {
+        if(!is_string($kid)){
+            throw new EntityDataIntegrityException("The kid has to be a string value");
+        }
         $this->kid = $kid;
 
         return $this;
