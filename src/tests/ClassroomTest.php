@@ -74,6 +74,16 @@ class ClassroomTest extends TestCase
         $this->expectException(EntityDataIntegrityException::class);
         $this->classroom->setGarCode($providedValue);
     }
+
+    /** @dataProvider provideGarCodeStrings */
+    public function testSetGarCodeAcceptsStringValue($providedValue){
+        $this->assertNull($this->classroom->getGarCode());
+        
+        $this->classroom->setGarCode($providedValue);
+        $this->assertSame($providedValue, $this->classroom->getGarCode());
+    }
+
+
     public function testLinkIsSet()
     {
         //$classroom = new Classroom();
@@ -105,6 +115,17 @@ class ClassroomTest extends TestCase
             array([]),
             array(1),
             array(new \stdClass),
+        );
+    }
+
+      /** dataProvider testSetGarCodeAcceptsStringValue */
+      public function provideGarCodeStrings(){
+        return array(
+            array('2B'),
+            array('BTS1SN'),
+            array('10255~GOA21_3-SC_GR'),
+            array('10255~GOA21_3-SC_GR3'),
+            array('10255~GOA21_3-SC_GR2')
         );
     }
 }
