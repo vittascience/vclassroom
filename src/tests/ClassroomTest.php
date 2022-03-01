@@ -83,13 +83,51 @@ class ClassroomTest extends TestCase
         $this->assertSame($providedValue, $this->classroom->getGarCode());
     }
 
-
     public function testLinkIsSet()
     {
         //$classroom = new Classroom();
         $this->classroom->setLink(); // right argument
         $this->assertEquals(preg_match('/[a-z0-9]{5}/', $this->classroom->getLink()), true);
     }
+
+    /** @dataProvider provideNonBooleanValues */
+    public function testSetIsChangedRejectsNonBooleanValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->classroom->setIsChanged($providedValue);
+    }
+
+    /** @dataProvider provideNonBooleanValues */
+    public function testSetIsBlockedRejectsNonBooleanValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->classroom->setIsBlocked($providedValue);
+    }
+
+    /** @dataProvider provideTrueAndFalseAsString */
+    public function testSetIsBlockedAcceptsTrueAndFalseAsString($providedValue){
+        $this->assertFalse($this->classroom->getIsBlocked());
+
+        $this->classroom->setIsBlocked($providedValue);
+        $this->assertIsBool($this->classroom->getIsBlocked());
+    }
+
+    public function testGetUaiIsNullByDefault(){
+        $this->assertNull($this->classroom->getUai());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetUaiRejectsNonStringValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->classroom->setUai($providedValue);
+    }
+    
+    /** @dataProvider provideUaiStrings */
+    public function testSetUaiAcceptsValidStringValue($providedValue){
+        $this->assertNull($this->classroom->getUai());
+
+        $this->classroom->setUai($providedValue);
+        $this->assertSame($providedValue, $this->classroom->getUai());
+    }
+
     public function testjsonSerialize()
     {
         //$classroom = new Classroom();
@@ -108,7 +146,11 @@ class ClassroomTest extends TestCase
         $this->assertEquals($serialized, $test);
     }
     
-    /** dataProvider for testSetGarCodeRejectsNonStringValue */
+    /**
+     * dataProvider for 
+     * => testSetGarCodeRejectsNonStringValue
+     * => testGetUaiRejectsNonStringValue
+     */
     public function provideNonStringValues()
     {
         return array(
@@ -126,6 +168,31 @@ class ClassroomTest extends TestCase
             array('10255~GOA21_3-SC_GR'),
             array('10255~GOA21_3-SC_GR3'),
             array('10255~GOA21_3-SC_GR2')
+        );
+    }
+
+     /** dataProvider testSetIsChangedRejectsNonBooleanValue */
+     public function provideNonBooleanValues(){
+        return array(
+            array([]),
+            array(new \stdClass()),
+            array('')
+        );
+    }
+
+    public function provideTrueAndFalseAsString(){
+        return array(
+            array('true'),
+            array('false')
+        );
+    }
+    
+    /** dataProvider for testSetUaiAcceptsValidStringValue */
+    public function provideUaiStrings(){
+        return array(
+            array('0180591V'),
+            array('0180591B'),
+            array('1250591C')
         );
     }
 }
