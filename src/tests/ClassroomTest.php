@@ -110,6 +110,24 @@ class ClassroomTest extends TestCase
         $this->assertIsBool($this->classroom->getIsBlocked());
     }
 
+    public function testGetUaiIsNullByDefault(){
+        $this->assertNull($this->classroom->getUai());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetUaiRejectsNonStringValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->classroom->setUai($providedValue);
+    }
+    
+    /** @dataProvider provideUaiStrings */
+    public function testSetUaiAcceptsValidStringValue($providedValue){
+        $this->assertNull($this->classroom->getUai());
+
+        $this->classroom->setUai($providedValue);
+        $this->assertSame($providedValue, $this->classroom->getUai());
+    }
+
     public function testjsonSerialize()
     {
         //$classroom = new Classroom();
@@ -128,7 +146,11 @@ class ClassroomTest extends TestCase
         $this->assertEquals($serialized, $test);
     }
     
-    /** dataProvider for testSetGarCodeRejectsNonStringValue */
+    /**
+     * dataProvider for 
+     * => testSetGarCodeRejectsNonStringValue
+     * => testGetUaiRejectsNonStringValue
+     */
     public function provideNonStringValues()
     {
         return array(
@@ -148,7 +170,7 @@ class ClassroomTest extends TestCase
             array('10255~GOA21_3-SC_GR2')
         );
     }
-    
+
      /** dataProvider testSetIsChangedRejectsNonBooleanValue */
      public function provideNonBooleanValues(){
         return array(
@@ -162,6 +184,15 @@ class ClassroomTest extends TestCase
         return array(
             array('true'),
             array('false')
+        );
+    }
+    
+    /** dataProvider for testSetUaiAcceptsValidStringValue */
+    public function provideUaiStrings(){
+        return array(
+            array('0180591V'),
+            array('0180591B'),
+            array('1250591C')
         );
     }
 }

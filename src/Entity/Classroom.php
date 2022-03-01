@@ -229,6 +229,9 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
      */ 
     public function setUai($uai)
     {
+        if(!is_string($uai)){
+            throw new EntityDataIntegrityException("The uai has to be a string");
+        }
         $this->uai = $uai;
 
         return $this;
