@@ -15,141 +15,142 @@ class ActivityLinkUserTest extends TestCase
 {
     public const TEST_RIGHTS = 1;
     public const TEXT_MAX_LENGTH = 2000;
+    private $activityLinkUser ;
+    private $activity;
+    private $user;
+
+    public function setUp():void{
+        $mockedUser = $this->createMock(User::class);
+        $mockedActivity = $this->createMock(Activity::class);
+        $mockedActivity->method('getTitle')->willReturn('title');
+        $mockedActivity->method('getContent')->willReturn('content');
+        $mockedActivity->method('getUser')->willReturn(77);
+        
+        $this->user = $mockedUser; // new User();
+        $this->activity = $mockedActivity;// new Activity("title", "content", 77);
+        $this->activityLinkUser = new ActivityLinkUser($this->activity, $this->user);
+    }
+
+    public function tearDown(): void{
+        $this->user = null;
+        $this->activity = null;
+        $this->activityLinkUser = null;
+    }
+   
     public function testUserIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-        $tutorialPartLinkUser->setUser($classroomUser); // right argument
-        $this->assertEquals($tutorialPartLinkUser->getUser(), $classroomUser);
+        $this->activityLinkUser->setUser( $this->user); // right argument
+        $this->assertEquals($this->activityLinkUser->getUser(), $this->user);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setUser(TestConstants::TEST_INTEGER); // integer
-        $tutorialPartLinkUser->setUser(true); // boolean
-        $tutorialPartLinkUser->setUser(null); // null
+        $this->activityLinkUser->setUser(TestConstants::TEST_INTEGER); // integer
+        $this->activityLinkUser->setUser(true); // boolean
+        $this->activityLinkUser->setUser(null); // null
     }
 
     public function testActivityIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-        $tutorialPartLinkUser->setActivity($tutorialPart); // right argument
-        $this->assertEquals($tutorialPartLinkUser->getActivity(), $tutorialPart);
+        $this->activityLinkUser->setActivity($this->activity); // right argument
+        $this->assertEquals($this->activityLinkUser->getActivity(), $this->activity);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setActivity(TestConstants::TEST_INTEGER); // integer
-        $tutorialPartLinkUser->setActivity(true); // boolean
-        $tutorialPartLinkUser->setActivity(null); // null
+        $this->activityLinkUser->setActivity(TestConstants::TEST_INTEGER); // integer
+        $this->activityLinkUser->setActivity(true); // boolean
+        $this->activityLinkUser->setActivity(null); // null
     }
     public function testTriesIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-        $tutorialPartLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
-        $this->assertEquals($tutorialPartLinkUser->getTries(), 5);
+        $this->activityLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
+        $this->assertEquals($this->activityLinkUser->getTries(), 5);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setTries(-1); // negative
-        $tutorialPartLinkUser->setTries(true); // boolean
-        $tutorialPartLinkUser->setTries(50000000000000000000000000000000000); // null
-        $tutorialPartLinkUser->setTries("1"); // null
+        $this->activityLinkUser->setTries(-1); // negative
+        $this->activityLinkUser->setTries(true); // boolean
+        $this->activityLinkUser->setTries(50000000000000000000000000000000000); // null
+        $this->activityLinkUser->setTries("1"); // null
     }
 
     public function testTimePassedIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-        $tutorialPartLinkUser->setTimePassed(TestConstants::TEST_INTEGER); // right argument
-        $this->assertEquals($tutorialPartLinkUser->getTimePassed(), 5);
+        $this->activityLinkUser->setTimePassed(TestConstants::TEST_INTEGER); // right argument
+        $this->assertEquals($this->activityLinkUser->getTimePassed(), 5);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setTimePassed(-1); // negative
-        $tutorialPartLinkUser->setTimePassed(true); // boolean
-        $tutorialPartLinkUser->setTimePassed(50000000000000000000000000000000000); // null
-        $tutorialPartLinkUser->setTimePassed("1"); // string
+        $this->activityLinkUser->setTimePassed(-1); // negative
+        $this->activityLinkUser->setTimePassed(true); // boolean
+        $this->activityLinkUser->setTimePassed(50000000000000000000000000000000000); // null
+        $this->activityLinkUser->setTimePassed("1"); // string
     }
 
     public function testCoefficientIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-        $tutorialPartLinkUser->setCoefficient(TestConstants::TEST_INTEGER); // right argument
-        $this->assertEquals($tutorialPartLinkUser->getCoefficient(), 5);
+        $this->activityLinkUser->setCoefficient(TestConstants::TEST_INTEGER); // right argument
+        $this->assertEquals($this->activityLinkUser->getCoefficient(), 5);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setCoefficient(-1); // negative
-        $tutorialPartLinkUser->setCoefficient(true); // boolean
-        $tutorialPartLinkUser->setCoefficient(500000); // null
-        $tutorialPartLinkUser->setCoefficient("1"); // string
+        $this->activityLinkUser->setCoefficient(-1); // negative
+        $this->activityLinkUser->setCoefficient(true); // boolean
+        $this->activityLinkUser->setCoefficient(500000); // null
+        $this->activityLinkUser->setCoefficient("1"); // string
     }
 
     public function testDateEndSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
         $date = new \DateTime();
-        $tutorialPartLinkUser->setDateEnd($date);
-        $this->assertEquals($tutorialPartLinkUser->getDateEnd(), $date);
+        $this->activityLinkUser->setDateEnd($date);
+        $this->assertEquals($this->activityLinkUser->getDateEnd(), $date);
     }
 
     public function testDateBeginIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
         $date = new \DateTime();
-        $tutorialPartLinkUser->setDateBegin($date);
-        $this->assertEquals($tutorialPartLinkUser->getDateBegin(), $date);
+        $this->activityLinkUser->setDateBegin($date);
+        $this->assertEquals($this->activityLinkUser->getDateBegin(), $date);
     }
 
     public function testNoteIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setNote(TestConstants::TEST_STRING); // should ne be a string
-        $tutorialPartLinkUser->setNote(null); // should not be null
+        $this->activityLinkUser->setNote(TestConstants::TEST_STRING); // should ne be a string
+        $this->activityLinkUser->setNote(null); // should not be null
     }
 
     public function testIntroductionIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-
         $acceptedIntroduction = 'aaaa';
         $nonAcceptedIntroduction = '';
         for ($i = 0; $i <= self::TEXT_MAX_LENGTH; $i++) //add more than 1000 characters 
             $nonAcceptedIntroduction .= 'a';
 
-        $tutorialPartLinkUser->setIntroduction($acceptedIntroduction); // right value
-        $this->assertEquals($tutorialPartLinkUser->getIntroduction(), $acceptedIntroduction);
+        $this->activityLinkUser->setIntroduction($acceptedIntroduction); // right value
+        $this->assertEquals($this->activityLinkUser->getIntroduction(), $acceptedIntroduction);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setIntroduction(null); // null
-        $tutorialPartLinkUser->setIntroduction($nonAcceptedIntroduction);
-        $tutorialPartLinkUser->setIntroduction(TestConstants::TEST_INTEGER); // integer
+        $this->activityLinkUser->setIntroduction(null); // null
+        $this->activityLinkUser->setIntroduction($nonAcceptedIntroduction);
+        $this->activityLinkUser->setIntroduction(TestConstants::TEST_INTEGER); // integer
     }
 
     public function testCommentaryIsSet()
     {
-        $classroomUser = new User();
-        $tutorialPart = new Activity("title", "content", 77);
-        $tutorialPartLinkUser = new ActivityLinkUser($tutorialPart, $classroomUser);
-
         $acceptedCommentary = 'aaaa';
         $nonAcceptedCommentary = '';
         for ($i = 0; $i <= self::TEXT_MAX_LENGTH; $i++) //add more than 1000 characters 
             $nonAcceptedCommentary .= 'a';
 
-        $tutorialPartLinkUser->setCommentary($acceptedCommentary); // right value
-        $this->assertEquals($tutorialPartLinkUser->getCommentary(), $acceptedCommentary);
+        $this->activityLinkUser->setCommentary($acceptedCommentary); // right value
+        $this->assertEquals($this->activityLinkUser->getCommentary(), $acceptedCommentary);
         $this->expectException(EntityDataIntegrityException::class);
-        $tutorialPartLinkUser->setCommentary(null); // null
-        $tutorialPartLinkUser->setCommentary($nonAcceptedCommentary);
-        $tutorialPartLinkUser->setCommentary(TestConstants::TEST_INTEGER); // integer
+        $this->activityLinkUser->setCommentary(null); // null
+        $this->activityLinkUser->setCommentary($nonAcceptedCommentary);
+        $this->activityLinkUser->setCommentary(TestConstants::TEST_INTEGER); // integer
     }
 
+
+
+    /** dataProvider for testGetIdReturnValue */
+    public function provideIds(){
+        return array(
+            array(1),
+            array(65),
+            array(1000),
+        );
+    }
+    
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
