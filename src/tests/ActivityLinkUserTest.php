@@ -93,7 +93,7 @@ class ActivityLinkUserTest extends TestCase
         $this->assertInstanceOf(Project::class, $this->activityLinkUser->getProject());
     }
 
-    /** @dataProvider provideProjectInvalidValue */
+    /** @dataProvider provideInvalidObjectValues */
     public function testSetProjectRejectsInvalidValue($providedValue){
         $this->expectException(EntityDataIntegrityException::class);
         $this->activityLinkUser->setProject($providedValue);
@@ -108,6 +108,36 @@ class ActivityLinkUserTest extends TestCase
         $this->assertInstanceOf(Project::class, $this->activityLinkUser->getProject());
     }
 
+    /** @dataProvider provideCourseObjects */
+    public function testGetCourseReturnsCourseObject($providedValue){
+        $fakeCourseSetterDeclaration = function() use($providedValue){
+            return $this->course = $providedValue;
+        };
+
+        $fakeCourseSetterExecution = $fakeCourseSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeCourseSetterExecution();
+
+        $this->assertInstanceOf(Course::class, $this->activityLinkUser->getCourse());
+    }
+
+    /** @dataProvider provideInvalidObjectValues */
+    public function testSetCourseRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setCourse($providedValue);
+    }
+
+    /** @dataProvider provideCourseObjects */
+    public function testSetCourseAcceptsValidCourseValue($providedValue){
+        $this->assertNull($this->activityLinkUser->getCourse());
+
+        $this->activityLinkUser->setCourse($providedValue);
+        $this->assertEquals($providedValue, $this->activityLinkUser->getCourse());
+        $this->assertInstanceOf(Course::class, $this->activityLinkUser->getCourse());
+    }
     public function testTriesIsSet()
     {
         $this->activityLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
@@ -202,7 +232,7 @@ class ActivityLinkUserTest extends TestCase
             array(1000),
         );
     }
-    
+
     /**
      * dataProvider for 
      * => testGetProjectReturnsAnInstanceOfProject
@@ -220,8 +250,12 @@ class ActivityLinkUserTest extends TestCase
         );
     }
 
-    /** dataProvider for testSetProjectRejectsInvalidValue */
-    public function provideProjectInvalidValue(){
+    /** 
+     * dataProvider for 
+     * => testSetProjectRejectsInvalidValue 
+     * => testSetCourseRejectsInvalidValue
+     * */
+    public function provideInvalidObjectValues(){
         return array(
             array(new \stdClass()),
             array([]),
@@ -230,6 +264,18 @@ class ActivityLinkUserTest extends TestCase
         );
     }
 
+    /** dataProvider for testGetCourseReturnsCourseObject */
+    public function provideCourseObjects(){
+        $mockedCourse1 = $this->createMock(Course::class);
+        $mockedCourse2 = $this->createMock(Course::class);
+        $mockedCourse3 = $this->createMock(Course::class);
+
+        return array(
+            array($mockedCourse1),
+            array($mockedCourse2),
+            array($mockedCourse3),
+        );
+    }
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
