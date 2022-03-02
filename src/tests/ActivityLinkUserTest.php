@@ -145,6 +145,12 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setDateBegin($providedValue);
     }
 
+     /** @dataProvider provideInvalidDateValues */
+     public function testSetDateEndRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setDateEnd($providedValue);
+    }
+    
     public function testTriesIsSet()
     {
         $this->activityLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
