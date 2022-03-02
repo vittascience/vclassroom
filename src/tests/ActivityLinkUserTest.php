@@ -2,14 +2,15 @@
 
 namespace Classroom\Tests;
 
-use PHPUnit\Framework\TestCase;
-use Learn\Entity\Activity;
-use Learn\Entity\Course;
 use User\Entity\User;
-use Classroom\Entity\ActivityLinkUser;
+use Learn\Entity\Course;
 use Utils\TestConstants;
-use Utils\Exceptions\EntityDataIntegrityException;
+use Learn\Entity\Activity;
+use Interfaces\Entity\Project;
+use PHPUnit\Framework\TestCase;
+use Classroom\Entity\ActivityLinkUser;
 use Utils\Exceptions\EntityOperatorException;
+use Utils\Exceptions\EntityDataIntegrityException;
 
 class ActivityLinkUserTest extends TestCase
 {
@@ -54,7 +55,7 @@ class ActivityLinkUserTest extends TestCase
 
         $this->assertEquals($providedValue, $this->activityLinkUser->getId());
     }
-    
+
     public function testUserIsSet()
     {
         $this->activityLinkUser->setUser( $this->user); // right argument
@@ -74,6 +75,39 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setActivity(true); // boolean
         $this->activityLinkUser->setActivity(null); // null
     }
+    
+    /** @dataProvider provideProjectObjects */
+    public function testGetProjectReturnsAnInstanceOfProject($providedValue){
+        $fakeProjectSetterDeclaration = function() use($providedValue){
+            $this->project = $providedValue;
+        };
+
+        $fakeProjectSetterExecution = $fakeProjectSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeProjectSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getProject());
+        $this->assertInstanceOf(Project::class, $this->activityLinkUser->getProject());
+    }
+
+    /** @dataProvider provideProjectInvalidValue */
+    public function testSetProjectRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setProject($providedValue);
+    }
+
+    /** @dataProvider provideProjectObjects */
+    public function testSetProjectAcceptsValidValue($providedValue){
+        $this->assertNull($this->activityLinkUser->getProject());
+
+        $this->activityLinkUser->setProject($providedValue);
+        $this->assertEquals($providedValue, $this->activityLinkUser->getProject());
+        $this->assertInstanceOf(Project::class, $this->activityLinkUser->getProject());
+    }
+
     public function testTriesIsSet()
     {
         $this->activityLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
@@ -166,6 +200,33 @@ class ActivityLinkUserTest extends TestCase
             array(1),
             array(65),
             array(1000),
+        );
+    }
+    
+    /**
+     * dataProvider for 
+     * => testGetProjectReturnsAnInstanceOfProject
+     * => testSetProjectAcceptsValidValue
+     */
+    public function provideProjectObjects(){
+        $project1 = $this->createMock(Project::class);
+        $project2 = $this->createMock(Project::class);
+        $project3 = $this->createMock(Project::class);
+
+        return array(
+            array($project1),
+            array($project2),
+            array($project3)
+        );
+    }
+
+    /** dataProvider for testSetProjectRejectsInvalidValue */
+    public function provideProjectInvalidValue(){
+        return array(
+            array(new \stdClass()),
+            array([]),
+            array(1),
+            array('1251'),
         );
     }
 
