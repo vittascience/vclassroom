@@ -37,6 +37,24 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser = null;
     }
    
+    /** @dataProvider provideIds */
+    public function testGetIdReturnsValue($providedValue){
+        $this->assertNull($this->activityLinkUser->getId());
+
+        $fakeIdSetterDeclaration = function() use($providedValue){
+            return $this->id = $providedValue;
+        };
+
+        $fakeIdSetterExecution = $fakeIdSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class
+        );
+
+        $fakeIdSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getId());
+    }
+    
     public function testUserIsSet()
     {
         $this->activityLinkUser->setUser( $this->user); // right argument
@@ -150,7 +168,7 @@ class ActivityLinkUserTest extends TestCase
             array(1000),
         );
     }
-    
+
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
