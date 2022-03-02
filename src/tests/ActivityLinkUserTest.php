@@ -138,6 +138,13 @@ class ActivityLinkUserTest extends TestCase
         $this->assertEquals($providedValue, $this->activityLinkUser->getCourse());
         $this->assertInstanceOf(Course::class, $this->activityLinkUser->getCourse());
     }
+
+    /** @dataProvider provideInvalidDateValues */
+    public function testSetDateBeginRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setDateBegin($providedValue);
+    }
+
     public function testTriesIsSet()
     {
         $this->activityLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
@@ -276,6 +283,16 @@ class ActivityLinkUserTest extends TestCase
             array($mockedCourse3),
         );
     }
+
+    /** dataProvider for testSetDateBeginRejectsInvalidValue */
+    public function provideInvalidDateValues(){
+        return array(
+            array(new \stdClass()),
+            array([]),
+            array(1)
+        );
+    }
+
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
