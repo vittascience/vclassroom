@@ -103,6 +103,14 @@ class LtiToolTest extends TestCase{
         $this->ltiTool->setClientId($providedValue);
     }
 
+    /** @dataProvider provideStringValues */
+    public function testSetClientIdAcceptsValidValue($providedValue){
+        $this->assertSame('',$this->ltiTool->getClientId());
+
+        $this->ltiTool->setClientId($providedValue);
+        $this->assertEquals($providedValue, $this->ltiTool->getClientId());
+    }
+
     public function testGetDeploymentIdIsNotNullByDefault(){
         $this->assertNotNull($this->ltiTool->getDeploymentId());
     }
