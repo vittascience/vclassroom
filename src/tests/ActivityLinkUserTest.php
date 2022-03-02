@@ -150,7 +150,28 @@ class ActivityLinkUserTest extends TestCase
         $this->expectException(EntityDataIntegrityException::class);
         $this->activityLinkUser->setDateEnd($providedValue);
     }
-    
+
+    /** @dataProvider provideDateValues */
+    public function testGetDateSendReturnValidValue($providedValue){
+        $fakeDateSendSetterDeclaration = function() use($providedValue){
+            return $this->dateSend = $providedValue;
+        };
+
+        $fakeDateSendSetterExecution = $fakeDateSendSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+        $fakeDateSendSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getDateSend());
+    }
+
+    /** @dataProvider provideInvalidDateValues */
+    public function testSetDateSendRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setDateSend($providedValue);
+    }
+
     public function testTriesIsSet()
     {
         $this->activityLinkUser->setTries(TestConstants::TEST_INTEGER); // right argument
@@ -290,7 +311,12 @@ class ActivityLinkUserTest extends TestCase
         );
     }
 
-    /** dataProvider for testSetDateBeginRejectsInvalidValue */
+   /** 
+     * dataProvider for 
+     * => testSetDateBeginRejectsInvalidValue 
+     * => testSetDateEndRejectsInvalidValue
+     * => testSetDateSendRejectsInvalidValue
+     */
     public function provideInvalidDateValues(){
         return array(
             array(new \stdClass()),
@@ -299,6 +325,15 @@ class ActivityLinkUserTest extends TestCase
         );
     }
 
+    /** dataProvider testGetDateSendReturnValidValue */
+    public function provideDateValues(){
+        return array(
+            array('2021-12-13 00:00:00'),
+            array('2022-01-13 15:00:00'),
+            array('2022-01-13 00:00:00'),
+        );
+    }
+    
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
