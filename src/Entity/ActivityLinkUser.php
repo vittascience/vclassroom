@@ -127,9 +127,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @ORM\Column(name="response", type="text", nullable=true)
      * @var String
      */
-    private $response;
+    private $response = "";
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = null)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = "")
     {
         $this->setUser($user);
         $this->setActivity($activity);
@@ -456,11 +456,10 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setAutocorrection($autocorrection)
     {
-        if ($autocorrection == "false" || $autocorrection == false) {
-            $this->autocorrection = false;
-        } else {
-            $this->autocorrection = true;
+        if(!is_bool($autocorrection)  ){
+            throw new EntityDataIntegrityException("The auto correction field has to be a boolean value");
         }
+        $this->autocorrection = $autocorrection;
     }
 
     /**
@@ -476,11 +475,11 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setEvaluation($evaluation)
     {
-        if ($evaluation == "false" || $evaluation == false) {
-            $this->evaluation = false;
-        } else {
-            $this->evaluation = true;
+        if(!is_bool($evaluation)  ){
+            throw new EntityDataIntegrityException("The evaluation field has to be a boolean value");
         }
+        $this->evaluation = $evaluation;
+        
     }
 
     /**
@@ -502,6 +501,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */ 
     public function setUrl($url)
     {
+        if(!is_string($url)){
+            throw new EntityDataIntegrityException("The url has to be a string");
+        }
         $this->url = $url;
 
         return $this;
@@ -523,6 +525,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setResponse($response)
     {
+        if(!is_string($response)){
+            throw new EntityDataIntegrityException("The response has to be a string");
+        }
         $this->response = $response;
         return $this;
     }

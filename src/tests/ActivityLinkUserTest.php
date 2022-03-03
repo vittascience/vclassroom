@@ -256,7 +256,172 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setCommentary(TestConstants::TEST_INTEGER); // integer
     }
 
+    /** @dataProvider provideIntegerValues */
+    public function testGetCorrectionReturnsValue($providedValue){
+        $fakeCorrectionSetterDeclaration = function() use ($providedValue){
+            return $this->correction = $providedValue;
+        };
 
+        $fakeCorrectionSetterExecution = $fakeCorrectionSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeCorrectionSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getCorrection());
+    }
+
+    /** @dataProvider provideInvalidValues */
+    public function testSetCorrectionRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setCorrection($providedValue);
+    }
+
+     /** @dataProvider provideIntegerValues */
+    public function testCorrectionAcceptsValidValue($providedValue){
+        $this->assertNull($this->activityLinkUser->getCorrection());
+
+        $this->activityLinkUser->setCorrection($providedValue);
+        $this->assertEquals($providedValue, $this->activityLinkUser->getCorrection());
+        $this->assertIsInt($this->activityLinkUser->getCorrection());
+
+    }
+
+     /** @dataProvider provideReferenceValues */
+     public function testGetReferenceReturnsValue($providedValue){
+        $fakeReferenceSetterDeclaration = function() use($providedValue){
+            return $this->reference = $providedValue;
+        };
+
+        $fakeReferenceSetterExecution = $fakeReferenceSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeReferenceSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getReference());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetReferenceRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setReference($providedValue);
+    }
+
+    /** @dataProvider provideIntegerValues */
+    public function testGetNoteReturnsValue($providedValue){
+        $fakeNoteSetterDeclaration = function()use($providedValue){
+            return $this->note = $providedValue;
+        };
+
+        $fakeNoteSetterExecution = $fakeNoteSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeNoteSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getNote());
+        $this->assertIsInt($this->activityLinkUser->getNote());
+    }
+
+    /** @dataProvider provideBooleanValues */
+    public function testGetAutoCorrectionReturnsValue($providedValue){
+        $fakeAutoCorrectionSetterDeclaration = function() use($providedValue){
+            return $this->autocorrection = $providedValue;
+        };
+
+        $fakeAutoCorrectionSetterExecution = $fakeAutoCorrectionSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeAutoCorrectionSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getAutocorrection());
+    }
+
+     /** @dataProvider provideBooleanValues */
+     public function testSetAutoCorrectionAcceptsValidValue($providedValue){
+        $this->assertFalse($this->activityLinkUser->getAutocorrection());
+
+         $this->activityLinkUser->setAutocorrection($providedValue);
+         $this->assertEquals($providedValue, $this->activityLinkUser->getAutocorrection());
+     }
+
+     /** @dataProvider provideInvalidValues */
+     public function testSetAutoCorrectionRejectsInvalidValue($providedValue){
+         $this->expectException(EntityDataIntegrityException::class);
+         $this->activityLinkUser->setAutocorrection($providedValue);
+     }
+
+      /** @dataProvider provideBooleanValues */
+      public function testGetEvaluationReturnsValue($providedValue){
+        $fakeEvaluationSetterDeclaration = function() use($providedValue){
+            return $this->evaluation = $providedValue;
+        };
+
+        $fakeEvaluationSetterExecution = $fakeEvaluationSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeEvaluationSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getEvaluation());
+     }
+
+     /** @dataProvider provideInvalidValues */
+     public function testSetEvaluationRejectsInvalidValue($providedValue){
+         $this->expectException(EntityDataIntegrityException::class);
+         $this->activityLinkUser->setEvaluation($providedValue);
+     }
+
+     /** @dataProvider provideUrls */
+     public function testGetUrlReturnsValue($providedValue){
+        $fakeUrlSetterDeclaration = function() use($providedValue){
+            return $this->url = $providedValue;
+        };
+
+        $fakeUrlSetterExecution = $fakeUrlSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeUrlSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getUrl());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetUrlRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setUrl($providedValue);
+    }
+
+     /** @dataProvider provideStringValues */
+     public function testGetResponseReturnsValue($providedValue){
+        $fakeResponseSetterDeclaration = function() use($providedValue){
+            return $this->response = $providedValue;
+        };
+
+        $fakeResponseSetterExecution = $fakeResponseSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeResponseSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getResponse());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetResponseRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setResponse($providedValue);
+    }
 
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
@@ -334,6 +499,77 @@ class ActivityLinkUserTest extends TestCase
         );
     }
     
+    /** dataProvider for testGetCorrectionReturnsValue */
+    public function  provideIntegerValues(){
+        return array(
+            array(0),
+            array(1),
+            array(2),
+            array(3),
+        );
+     }
+ 
+    /**
+     *  dataProvider for 
+     * => testSetCorrectionRejectsInvalidValue 
+     * => testSetAutoCorrectionRejectsInvalidValue
+     */
+     public function provideInvalidValues(){
+         return array(
+             array('1'),
+             array([]),
+             array(new \stdClass()),
+             array(2000)
+         );
+     }
+ 
+     /** dataProvider for testGetReferenceReturnsValue */
+    public function provideReferenceValues(){
+        return array(
+            array('1638797610'),
+            array('1638801064'),
+            array('1638803456'),
+        );
+    }
+
+    /** dataProvider for testSetReferenceRejectsInvalidValue */
+    public function provideNonStringValues(){
+        return array(
+            array(1),
+            array(new \stdClass()),
+            array([]),
+        );
+    }
+
+    /** 
+     * dataProvider for
+     * => testGetAutoCorrectionReturnsValue
+     */
+    public function provideBooleanValues(){
+        return array(
+            array(true),
+            array(false),
+        );
+    }
+
+    /** dataProvider for  */
+    public function provideUrls(){
+        return array(
+            array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
+            array('https://goole.com'),
+            array('https://fr.vittascience.com'),
+        );
+    }
+
+    /** dataProvider for testSetResponseRejectsInvalidValue */
+    public function provideStringValues(){
+        return array(
+            array('response1'),
+            array('string1'),
+            array('some more string example')
+        );
+    }
+
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
