@@ -256,7 +256,7 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setCommentary(TestConstants::TEST_INTEGER); // integer
     }
 
-    /** @dataProvider provideCorrectionValues */
+    /** @dataProvider provideIntegerValues */
     public function testGetCorrectionReturnsValue($providedValue){
         $fakeCorrectionSetterDeclaration = function() use ($providedValue){
             return $this->correction = $providedValue;
@@ -278,7 +278,7 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setCorrection($providedValue);
     }
 
-     /** @dataProvider provideCorrectionValues */
+     /** @dataProvider provideIntegerValues */
     public function testCorrectionAcceptsValidValue($providedValue){
         $this->assertNull($this->activityLinkUser->getCorrection());
 
@@ -308,6 +308,23 @@ class ActivityLinkUserTest extends TestCase
     public function testSetReferenceRejectsInvalidValue($providedValue){
         $this->expectException(EntityDataIntegrityException::class);
         $this->activityLinkUser->setReference($providedValue);
+    }
+
+    /** @dataProvider provideIntegerValues */
+    public function testGetNoteReturnsValue($providedValue){
+        $fakeNoteSetterDeclaration = function()use($providedValue){
+            return $this->note = $providedValue;
+        };
+
+        $fakeNoteSetterExecution = $fakeNoteSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeNoteSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getNote());
+        $this->assertIsInt($this->activityLinkUser->getNote());
     }
 
     /** dataProvider for testGetIdReturnValue */
@@ -387,7 +404,7 @@ class ActivityLinkUserTest extends TestCase
     }
     
     /** dataProvider for testGetCorrectionReturnsValue */
-    public function  provideCorrectionValues(){
+    public function  provideIntegerValues(){
         return array(
             array(0),
             array(1),
