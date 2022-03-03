@@ -401,6 +401,28 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setUrl($providedValue);
     }
 
+     /** @dataProvider provideStringValues */
+     public function testGetResponseReturnsValue($providedValue){
+        $fakeResponseSetterDeclaration = function() use($providedValue){
+            return $this->response = $providedValue;
+        };
+
+        $fakeResponseSetterExecution = $fakeResponseSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeResponseSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getResponse());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetResponseRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setResponse($providedValue);
+    }
+
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
         return array(
@@ -536,6 +558,15 @@ class ActivityLinkUserTest extends TestCase
             array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
             array('https://goole.com'),
             array('https://fr.vittascience.com'),
+        );
+    }
+
+    /** dataProvider for testSetResponseRejectsInvalidValue */
+    public function provideStringValues(){
+        return array(
+            array('response1'),
+            array('string1'),
+            array('some more string example')
         );
     }
 
