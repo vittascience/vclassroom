@@ -256,7 +256,37 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setCommentary(TestConstants::TEST_INTEGER); // integer
     }
 
+    /** @dataProvider provideCorrectionValues */
+    public function testGetCorrectionReturnsValue($providedValue){
+        $fakeCorrectionSetterDeclaration = function() use ($providedValue){
+            return $this->correction = $providedValue;
+        };
 
+        $fakeCorrectionSetterExecution = $fakeCorrectionSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeCorrectionSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getCorrection());
+    }
+
+    /** @dataProvider provideInvalidCorrectionValues */
+    public function testSetCorrectionRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setCorrection($providedValue);
+    }
+
+     /** @dataProvider provideCorrectionValues */
+    public function testCorrectionAcceptsValidValue($providedValue){
+        $this->assertNull($this->activityLinkUser->getCorrection());
+
+        $this->activityLinkUser->setCorrection($providedValue);
+        $this->assertEquals($providedValue, $this->activityLinkUser->getCorrection());
+        $this->assertIsInt($this->activityLinkUser->getCorrection());
+
+    }
 
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
@@ -334,6 +364,26 @@ class ActivityLinkUserTest extends TestCase
         );
     }
     
+    /** dataProvider for testGetCorrectionReturnsValue */
+    public function  provideCorrectionValues(){
+        return array(
+            array(0),
+            array(1),
+            array(2),
+            array(3),
+        );
+     }
+ 
+     /** dataProvider for testSetCorrectionRejectsInvalidValue  */
+     public function provideInvalidCorrectionValues(){
+         return array(
+             array('1'),
+             array([]),
+             array(new \stdClass()),
+             array(2000)
+         );
+     }
+ 
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
