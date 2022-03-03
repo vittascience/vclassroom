@@ -357,6 +357,28 @@ class ActivityLinkUserTest extends TestCase
          $this->activityLinkUser->setAutocorrection($providedValue);
      }
 
+      /** @dataProvider provideBooleanValues */
+      public function testGetEvaluationReturnsValue($providedValue){
+        $fakeEvaluationSetterDeclaration = function() use($providedValue){
+            return $this->evaluation = $providedValue;
+        };
+
+        $fakeEvaluationSetterExecution = $fakeEvaluationSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeEvaluationSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getEvaluation());
+     }
+
+     /** @dataProvider provideInvalidValues */
+     public function testSetEvaluationRejectsInvalidValue($providedValue){
+         $this->expectException(EntityDataIntegrityException::class);
+         $this->activityLinkUser->setEvaluation($providedValue);
+     }
+     
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
         return array(

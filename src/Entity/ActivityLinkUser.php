@@ -475,11 +475,11 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setEvaluation($evaluation)
     {
-        if ($evaluation == "false" || $evaluation == false) {
-            $this->evaluation = false;
-        } else {
-            $this->evaluation = true;
+        if(!is_bool($evaluation)  ){
+            throw new EntityDataIntegrityException("The evaluation field has to be a boolean value");
         }
+        $this->evaluation = $evaluation;
+        
     }
 
     /**
