@@ -456,11 +456,10 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setAutocorrection($autocorrection)
     {
-        if ($autocorrection == "false" || $autocorrection == false) {
-            $this->autocorrection = false;
-        } else {
-            $this->autocorrection = true;
+        if(!is_bool($autocorrection)  ){
+            throw new EntityDataIntegrityException("The auto correction field has to be a boolean value");
         }
+        $this->autocorrection = $autocorrection;
     }
 
     /**

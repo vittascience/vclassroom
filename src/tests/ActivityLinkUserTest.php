@@ -272,7 +272,7 @@ class ActivityLinkUserTest extends TestCase
         $this->assertEquals($providedValue, $this->activityLinkUser->getCorrection());
     }
 
-    /** @dataProvider provideInvalidCorrectionValues */
+    /** @dataProvider provideInvalidValues */
     public function testSetCorrectionRejectsInvalidValue($providedValue){
         $this->expectException(EntityDataIntegrityException::class);
         $this->activityLinkUser->setCorrection($providedValue);
@@ -326,6 +326,36 @@ class ActivityLinkUserTest extends TestCase
         $this->assertEquals($providedValue, $this->activityLinkUser->getNote());
         $this->assertIsInt($this->activityLinkUser->getNote());
     }
+
+    /** @dataProvider provideBooleanValues */
+    public function testGetAutoCorrectionReturnsValue($providedValue){
+        $fakeAutoCorrectionSetterDeclaration = function() use($providedValue){
+            return $this->autocorrection = $providedValue;
+        };
+
+        $fakeAutoCorrectionSetterExecution = $fakeAutoCorrectionSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeAutoCorrectionSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getAutocorrection());
+    }
+
+     /** @dataProvider provideBooleanValues */
+     public function testSetAutoCorrectionAcceptsValidValue($providedValue){
+        $this->assertFalse($this->activityLinkUser->getAutocorrection());
+
+         $this->activityLinkUser->setAutocorrection($providedValue);
+         $this->assertEquals($providedValue, $this->activityLinkUser->getAutocorrection());
+     }
+
+     /** @dataProvider provideInvalidValues */
+     public function testSetAutoCorrectionRejectsInvalidValue($providedValue){
+         $this->expectException(EntityDataIntegrityException::class);
+         $this->activityLinkUser->setAutocorrection($providedValue);
+     }
 
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
@@ -413,8 +443,12 @@ class ActivityLinkUserTest extends TestCase
         );
      }
  
-     /** dataProvider for testSetCorrectionRejectsInvalidValue  */
-     public function provideInvalidCorrectionValues(){
+    /**
+     *  dataProvider for 
+     * => testSetCorrectionRejectsInvalidValue 
+     * => testSetAutoCorrectionRejectsInvalidValue
+     */
+     public function provideInvalidValues(){
          return array(
              array('1'),
              array([]),
@@ -438,6 +472,17 @@ class ActivityLinkUserTest extends TestCase
             array(1),
             array(new \stdClass()),
             array([]),
+        );
+    }
+
+    /** 
+     * dataProvider for
+     * => testGetAutoCorrectionReturnsValue
+     */
+    public function provideBooleanValues(){
+        return array(
+            array(true),
+            array(false),
         );
     }
 
