@@ -288,6 +288,28 @@ class ActivityLinkUserTest extends TestCase
 
     }
 
+     /** @dataProvider provideReferenceValues */
+     public function testGetReferenceReturnsValue($providedValue){
+        $fakeReferenceSetterDeclaration = function() use($providedValue){
+            return $this->reference = $providedValue;
+        };
+
+        $fakeReferenceSetterExecution = $fakeReferenceSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeReferenceSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getReference());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetReferenceRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setReference($providedValue);
+    }
+
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
         return array(
@@ -384,6 +406,24 @@ class ActivityLinkUserTest extends TestCase
          );
      }
  
+     /** dataProvider for testGetReferenceReturnsValue */
+    public function provideReferenceValues(){
+        return array(
+            array('1638797610'),
+            array('1638801064'),
+            array('1638803456'),
+        );
+    }
+
+    /** dataProvider for testSetReferenceRejectsInvalidValue */
+    public function provideNonStringValues(){
+        return array(
+            array(1),
+            array(new \stdClass()),
+            array([]),
+        );
+    }
+
 /*     public function testjsonSerialize()
     {
         $classroomUser = new User();
