@@ -378,7 +378,29 @@ class ActivityLinkUserTest extends TestCase
          $this->expectException(EntityDataIntegrityException::class);
          $this->activityLinkUser->setEvaluation($providedValue);
      }
-     
+
+     /** @dataProvider provideUrls */
+     public function testGetUrlReturnsValue($providedValue){
+        $fakeUrlSetterDeclaration = function() use($providedValue){
+            return $this->url = $providedValue;
+        };
+
+        $fakeUrlSetterExecution = $fakeUrlSetterDeclaration->bindTo(
+            $this->activityLinkUser,
+            ActivityLinkUser::class 
+        );
+
+        $fakeUrlSetterExecution();
+
+        $this->assertEquals($providedValue, $this->activityLinkUser->getUrl());
+    }
+
+    /** @dataProvider provideNonStringValues */
+    public function testSetUrlRejectsInvalidValue($providedValue){
+        $this->expectException(EntityDataIntegrityException::class);
+        $this->activityLinkUser->setUrl($providedValue);
+    }
+
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
         return array(
@@ -505,6 +527,15 @@ class ActivityLinkUserTest extends TestCase
         return array(
             array(true),
             array(false),
+        );
+    }
+
+    /** dataProvider for  */
+    public function provideUrls(){
+        return array(
+            array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
+            array('https://goole.com'),
+            array('https://fr.vittascience.com'),
         );
     }
 
