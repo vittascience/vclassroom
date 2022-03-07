@@ -233,23 +233,33 @@ class ControllerActivityLinkUser extends Controller
                             ->getRepository('Classroom\Entity\Classroom')
                             ->findOneBy(array("id" => $classroomId));
                         if ($classroom) {
-                            if ($retroAttribution == 'true') {
-                                // the classroom was found 
-                                // and the activity has to attributed to all future students joining the classroom
-                                // check if there is already a record in classroom_activities_link_classroom
-                                $linkActivityToClassroomExists = $this->entityManager
-                                    ->getRepository(ActivityLinkClassroom::class)
-                                    ->findOneBy(array(
-                                        'classroom' => $classroom,
-                                        'activity' => $activity
-                                    ));
 
+                            // the classroom was found 
+                            // check if there is already a record in classroom_activities_link_classroom
+                            $linkActivityToClassroomExists = $this->entityManager
+                                ->getRepository(ActivityLinkClassroom::class)
+                                ->findOneBy(array(
+                                    'classroom' => $classroom,
+                                    'activity' => $activity,
+                                    'reference' => $reference
+                                ));
+
+                            // the activity has to attributed to all future students joining the classroom
+                            if ($retroAttribution == 'true') {
                                 // a record was found, do nothing
                                 if ($linkActivityToClassroomExists) continue;
 
                                 // no record found, save a new entry in classroom_activities_link_classroom
                                 $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
                                 $this->entityManager->persist($linkActivityToClassroom);
+                            }
+
+                            // the attribution to all future students has to be removed
+                            if($retroAttribution == 'false'){
+                                if (!$linkActivityToClassroomExists) continue;
+
+                                $this->entityManager->remove($linkActivityToClassroomExists);
+                                
                             }
                         }
                     }
