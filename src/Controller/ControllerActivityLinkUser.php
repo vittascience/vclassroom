@@ -447,6 +447,34 @@ class ControllerActivityLinkUser extends Controller
                 }
                 $this->entityManager->flush();
                 return true;
+            },
+            "update_time_passed" => function() {
+                /**
+                 * This method is called to update the time passed on an ansctivity (activityLinkUser) by a student.
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "removeByReferenceNotRetrievedNotAuthenticated"];
+
+                $reference = !empty($_POST['reference']) ? intval($_POST['reference']) : 0;
+                if(empty($reference)) return array('errorType' => 'activityReferenceInvalid');
+
+                $timePassed = !empty($_POST['time_passed']) ? intval($_POST['time_passed']) : 0;
+                if(empty($timePassed)) return array('errorType' => 'activityTimePassedInvalid');
+
+                $user = $this->entityManager
+                ->getRepository(User::class)
+                ->find($_SESSION["id"]);
+
+                $classroomStudentActivity = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->findOneBy(array("reference" => $reference, "user" => $user));
+                
+                $previousTimePassed = $classroomStudentActivity->getTimePassed();
+                $classroomStudentActivity->setTimePassed($previousTimePassed + $timePassed);
+                $this->entityManager->flush();
             }
         );
     }
