@@ -142,7 +142,7 @@ class ControllerActivityLinkUser extends Controller
                     if (intval($incomingClassroomId) == 0) continue;
                     array_push($classroomIds, $incomingClassroomId);
                 }
-
+                
                 // get the current logged user and initiate an error flag to be false at the start
                 $loggedUser = $this->entityManager->getRepository(User::class)->find($userId);
                 $notTeacherErrorFlag = false;
@@ -186,7 +186,7 @@ class ControllerActivityLinkUser extends Controller
                 $introduction = !empty($_POST['introduction']) ? htmlspecialchars(strip_tags(trim($_POST['introduction']))) : '';
                 $retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
                 $reference = !empty($_POST['ref']) ? htmlspecialchars(strip_tags(trim($_POST['ref']))) : '';
-
+                
                 // a reference has been received, we are in an update context
                 if (!empty($reference)) {
                     $activity = $this->entityManager
@@ -206,7 +206,7 @@ class ControllerActivityLinkUser extends Controller
                                 'activity' => $activity->getId(),
                                 'reference' => $reference
                             ));
-
+                        
                         if (!$linkActivityToClassroomExists) {
                             $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
                             $this->entityManager->persist($linkActivityToUser);
@@ -304,7 +304,8 @@ class ControllerActivityLinkUser extends Controller
                                     ->getRepository(ActivityLinkClassroom::class)
                                     ->findOneBy(array(
                                         'classroom' => $classroom,
-                                        'activity' => $activity
+                                        'activity' => $activity,
+                                        'reference' => $reference
                                     ));
 
                                 // a record was found, do nothing
