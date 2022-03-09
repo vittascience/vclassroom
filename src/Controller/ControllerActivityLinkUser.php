@@ -336,7 +336,11 @@ class ControllerActivityLinkUser extends Controller
                 $commentary = !empty($_POST['commentary']) ? htmlspecialchars(strip_tags(trim($_POST['commentary']))) : '';
                 $note = !empty($_POST['note']) ? intval($_POST['note']) : 0;
                 $projectId = !empty($incomingProjectId) ? intval($incomingProjectId) : null;
-                $timePassed = !empty($_POST['timePassed']) ? intval($_POST['timePassed']) : 0;
+                /**
+                 * @ToBeRemoved duplicate behavior with Thomas's sendBeacon
+                 * $timePassed = !empty($_POST['timePassed']) ? intval($_POST['timePassed']) : 0;
+                 * March 2022
+                 */
 
                 // initiate an empty errors array 
                 $errors = [];
@@ -364,7 +368,11 @@ class ControllerActivityLinkUser extends Controller
                     $activity->setProject($project);
                     $activity->setTries($activity->getTries() + 1);
                     $activity->setDateSend(new \DateTime());
-                    $activity->setTimePassed(intval($activity->getTimePassed()) + $timePassed);
+                    /* 
+                    * @ToBeRemoved duplicate behavior with Thomas's sendBeacon
+                    * $activity->setTimePassed(intval($activity->getTimePassed()) + $timePassed); 
+                    * March 2022
+                    */
                 }
 
                 /*  $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
