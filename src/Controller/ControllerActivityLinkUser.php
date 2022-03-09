@@ -224,8 +224,7 @@ class ControllerActivityLinkUser extends Controller
                             $this->entityManager->remove($studentActivity);
                             $this->entityManager->flush();
                         }
-                    }
-
+                    }         
 
                     // get all retor attributions if any
                     $linkedActivityToClassrooms = $this->entityManager
@@ -408,38 +407,52 @@ class ControllerActivityLinkUser extends Controller
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "removeByReferenceNotRetrievedNotAuthenticated"];
 
+                // bind and sanitize incoming data
                 $reference = !empty($_POST['reference']) ? intval($_POST['reference']) : 0;
-                if(empty($reference)) return array('errorType' => 'activityRefenceInvalid');
+                $classroomId = !empty($_POST['classroomId']) ? intval($_POST['classroomId']) : 0;
 
-                // get all records in classroom_activities_link_classroom with the reference provided
+                // check for errors
+                $errors = [];
+                if(empty($reference)){
+                    array_push($errors, array('errorType'=> 'activityReferenceInvalid'));
+                } 
+                if(empty($classroomId)){
+                    array_push($errors, array('errorType'=> 'classroomIdInvalid'));
+                } 
+
+                // return errors if any
+                if(!empty($errors)) return array('errors' => $errors);
+
+                
+                // no errors, get all records in classroom_activities_link_classroom with the reference provided
+                $classroom = $this->entityManager->getRepository(Classroom::class)->find($classroomId);
                 $classroomActivitiesRetroAttributed = $this->entityManager
                     ->getRepository(ActivityLinkClassroom::class)
-                    ->findBy(array(
-                        'reference' => $reference
+                    ->findOneBy(array(
+                        'reference' => $reference,
+                        'classroom' => $classroom
                     ));
-                
-                // some records found, delete them
+
+                // the current activity has been retro attributed , delete the record from classroom_activities_link_classroom
                 if($classroomActivitiesRetroAttributed){
-                    foreach($classroomActivitiesRetroAttributed as $classroomActivityRetroAttributed){
-                        $this->entityManager->remove($classroomActivityRetroAttributed);
-                    }
+                    $this->entityManager->remove($classroomActivitiesRetroAttributed);
+                    $this->entityManager->flush();
+                }
+               
+                // get all students activity per classroom and activity ref
+                $classroomStudentsActivitiesByReference = $this->entityManager
+                    ->getRepository(ActivityLinkUser::class)
+                    ->getStudentsActivityByClassroomAndActivityRef($classroomId, $reference);
+
+                // no activity found, return an error
+                if(!$classroomStudentsActivitiesByReference) return array('errorType' => 'activityReferenceInvalid');
+
+                // delete each student activity from classroom_activities_link_classroom_users
+                foreach ($classroomStudentsActivitiesByReference as $classroomStudentsActivity) {
+                    $this->entityManager->remove($classroomStudentsActivity);
                     $this->entityManager->flush();
                 }
                 
-
-                // get the sudents activities
-                $classroomStudentsActivities = $this->entityManager
-                    ->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->findBy(array("reference" => $reference));
-
-                // no activity found, return an error
-                if(!$classroomStudentsActivities) return array('errorType' => 'activityRefenceInvalid');
-
-                // delete each activity
-                foreach ($classroomStudentsActivities as $classroomStudentsActivity) {
-                    $this->entityManager->remove($classroomStudentsActivity);
-                }
-                $this->entityManager->flush();
                 return true;
             },
             "update_time_passed" => function() {

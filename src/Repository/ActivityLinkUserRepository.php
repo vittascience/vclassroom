@@ -4,6 +4,7 @@ namespace Classroom\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Classroom\Entity\ActivityLinkUser;
+use Classroom\Entity\ClassroomLinkUser;
 use Learn\Entity\Activity;
 
 
@@ -128,5 +129,23 @@ class ActivityLinkUserRepository extends EntityRepository
             ->getQuery()
             ->getResult();
         return $query;
+    }
+    
+    public function getStudentsActivityByClassroomAndActivityRef($classroomId, $reference){
+        $studentsActivities = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('alu')
+            ->from(ActivityLinkUser::class,'alu')
+            ->leftJoin(ClassroomLinkUser::class,'clu','WITH','clu.user=alu.user')
+            ->andWhere('clu.classroom= :classroomId AND alu.reference= :reference')
+            ->setParameters(
+                array(
+                    'classroomId' => $classroomId,
+                    'reference' => $reference
+                )
+            )
+            ->getQuery()
+            ->getResult();
+        return $studentsActivities;
     }
 }
