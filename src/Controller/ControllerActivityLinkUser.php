@@ -208,7 +208,7 @@ class ControllerActivityLinkUser extends Controller
                             ));
                         
                         if (!$linkActivityToClassroomExists) {
-                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
+                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, "", $introduction, $reference);
                             $this->entityManager->persist($linkActivityToUser);
                             $this->entityManager->flush();
                         }
@@ -274,7 +274,7 @@ class ControllerActivityLinkUser extends Controller
                             ->findOneBy(array("id" => $studentId));
 
                         if ($user) {
-                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, null, $introduction, $reference);
+                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, "", $introduction, $reference);
                             $this->entityManager->persist($linkActivityToUser);
                         }
                     }
