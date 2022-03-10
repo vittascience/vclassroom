@@ -448,7 +448,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function getAutocorrection()
     {
-        $autocorrection = $autocorrection == 'true' ? true : false; 
+        
         return $this->autocorrection;
     }
 
@@ -457,6 +457,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setAutocorrection($autocorrection)
     {
+        $autocorrection = $autocorrection == 'true' ? true : false; 
         if(!is_bool($autocorrection)  ){
             throw new EntityDataIntegrityException("The auto correction field has to be a boolean value");
         }
