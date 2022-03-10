@@ -448,6 +448,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function getAutocorrection()
     {
+        $autocorrection = $autocorrection == 'true' ? true : false; 
         return $this->autocorrection;
     }
 
@@ -475,6 +476,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setEvaluation($evaluation)
     {
+        $evaluation = $evaluation == 'true' ? true : false; 
         if(!is_bool($evaluation)  ){
             throw new EntityDataIntegrityException("The evaluation field has to be a boolean value");
         }
