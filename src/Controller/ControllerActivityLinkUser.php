@@ -99,27 +99,8 @@ class ControllerActivityLinkUser extends Controller
                     ->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->getSavedActivities($userId);
                 
-                // convert doctrine object to php object in order to add a custom property
-                $dataToSend = json_decode(json_encode($arrayData));
-
-                // loop through activities type
-                foreach($dataToSend as $MainActivitiesType){
-                    // loop through single activity
-                    foreach($MainActivitiesType as $activityLinkUser){
-                        
-                        // get the activity restriction by type
-                        $activityRestriction = $this->entityManager
-                            ->getRepository(ActivityRestrictions::class)
-                            ->findOneBy(array(
-                                'activityType'=> $activityLinkUser->activity->type
-                            ));
-                        
-                        // bind isLti property to $dataToSend
-                        $activityLinkUser->activity->isLti = $activityRestriction->getApplication()->getIsLti();
-                        
-                    }
-                }
-                return $dataToSend;
+                return $arrayData;
+                
             },
             'add_users' => function () {
                 /**
