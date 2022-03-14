@@ -148,4 +148,40 @@ class ActivityLinkUserRepository extends EntityRepository
             ->getResult();
         return $studentsActivities;
     }
+
+    public function addRetroAttributedActivitiesToStudent($classroomRetroAttributedActivities,$user){
+        foreach($classroomRetroAttributedActivities as $classroomRetroAttributedActivity){
+            $activity = $classroomRetroAttributedActivity->getActivity();
+            $dateBegin = $classroomRetroAttributedActivity->getDateBegin();
+            $dateEnd = $classroomRetroAttributedActivity->getDateEnd();
+            $evaluation = $classroomRetroAttributedActivity->getEvaluation();
+            $autocorrection = $classroomRetroAttributedActivity->getAutocorrection();
+            $introduction = $classroomRetroAttributedActivity->getIntroduction();
+            $reference = $classroomRetroAttributedActivity->getReference();
+            $commentary = $classroomRetroAttributedActivity->getCommentary();
+
+            $course = $classroomRetroAttributedActivity->getCourse();
+            $coefficient = $classroomRetroAttributedActivity->getCoefficient();
+            $linkActivityToUser = new ActivityLinkUser(
+                $activity, 
+                $user, 
+                $dateBegin,  
+                $dateEnd, 
+                $evaluation, 
+                $autocorrection, 
+                "", 
+                $introduction, 
+                $reference,
+                $commentary
+            );
+            if($course){
+                $linkActivityToUser->setCourse($course);
+            }
+            $linkActivityToUser->setCoefficient($coefficient);
+
+            $this->getEntityManager()->persist($linkActivityToUser);
+            $this->getEntityManager()->flush();
+            
+        }
+    }
 }
