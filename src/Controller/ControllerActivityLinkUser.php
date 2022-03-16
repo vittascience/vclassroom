@@ -115,7 +115,9 @@ class ControllerActivityLinkUser extends Controller
                             ));
                         
                         // bind isLti property to $dataToSend
-                        $activityLinkUser->activity->isLti = $activityRestriction->getApplication()->getIsLti();
+                        $activityLinkUser->activity->isLti = $activityRestriction
+                            ? $activityRestriction->getApplication()->getIsLti()
+                            : false;
                         
                     }
                 }
