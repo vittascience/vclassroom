@@ -83,12 +83,13 @@ class ClassroomTest extends TestCase
         $this->assertSame($providedValue, $this->classroom->getGarCode());
     }
 
-    public function testLinkIsSet()
-    {
-        //$classroom = new Classroom();
-        $this->classroom->setLink(); // right argument
-        $this->assertEquals(preg_match('/[a-z0-9]{5}/', $this->classroom->getLink()), true);
-    }
+   /** @dataProvider provideAlphanumStrings */
+   public function testLinkIsSet($providedValue)
+   {
+       //$classroom = new Classroom();
+       $this->classroom->setLink($providedValue); // right argument
+       $this->assertEquals(preg_match('/[a-z0-9]{5}/', $this->classroom->getLink()), true);
+   }
 
     /** @dataProvider provideNonBooleanValues */
     public function testSetIsChangedRejectsNonBooleanValue($providedValue){
@@ -193,6 +194,16 @@ class ClassroomTest extends TestCase
             array('0180591V'),
             array('0180591B'),
             array('1250591C')
+        );
+    }
+
+    /** dataProvider for testLinkIsSet */
+    public function provideAlphanumStrings(){
+        return array(
+            array('gov1w'),
+            array('k2wv6'),
+            array('518xw'),
+            array('93i8q')
         );
     }
 }

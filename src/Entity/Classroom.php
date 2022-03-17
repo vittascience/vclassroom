@@ -63,7 +63,6 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
     {
         $this->setName($name);
         $this->setSchool($school);
-        $this->setLink();
         $this->setIsChanged(false);
         $this->setIsBlocked(false);
     }
@@ -151,16 +150,10 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * @param string $link
      */
-    public function setLink()
+    public function setLink($link)
     {
-        $link = "";
-        for ($i = 0; $i < 5; $i++) {
-            $link .= substr(self::ALPHANUMERIC, rand(0, 35), 1);
-        }
-        if (preg_match('/[0-9a-z]{5}/', $link)) {
-            $this->link = $link;
-        } else {
-            throw new EntityDataIntegrityException("link needs to be alphanumerical string with 5 characters");
+        if(!is_string($link) || !preg_match('/[0-9a-z]{5}/', $link)){
+            throw new EntityDataIntegrityException("The link needs to be alphanumerical string with 5 characters");
         }
         $this->link = $link;
     }

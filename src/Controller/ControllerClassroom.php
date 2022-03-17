@@ -153,12 +153,13 @@ class ControllerClassroom extends Controller
                  * End of learner number limiting
                  */
 
+                $uniqueLink = $this->generateUniqueClassroomLink();
 
                 $studyGroup = new Classroom();
                 $studyGroup->setName($classroomName);
                 $studyGroup->setSchool($school);
                 $studyGroup->setIsBlocked($isBlocked);
-                $studyGroup->setLink();
+                $studyGroup->setLink($uniqueLink);
                 $this->entityManager->persist($studyGroup);
 
                 //add the teacher to the classroom
@@ -451,6 +452,25 @@ class ControllerClassroom extends Controller
                 ];
             }, */
         );
+    }
+
+    private function generateUniqueClassroomLink(){
+        $alphaNums = "abcdefghijklmnopqrstuvwxyz0123456789";
+        do{
+            $link = "";
+            
+            for ($i = 0; $i < 5; $i++) {
+                $link .= substr($alphaNums, rand(0, 35), 1);
+            }
+
+            $classroomByLinkFound = $this->entityManager
+                ->getRepository(Classroom::class)
+                ->findOneByLink($link);
+        }
+        while($classroomByLinkFound);
+
+        return $link;
+        
     }
 }
 
