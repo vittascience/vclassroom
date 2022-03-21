@@ -334,7 +334,7 @@ class ControllerActivityLinkUser extends Controller
                 $incomingProjectId = $_POST['project']['id'] ?? $_POST['project'] ?? null;
                 // bind incoming data
                 $activityId = !empty($_POST['id']) ? intval($_POST['id']) : 0;
-                $correction = !empty($_POST['correction']) ? intval($_POST['correction']) : null;
+                $correction = isset($_POST['correction']) ? intval($_POST['correction']) : null;
                 $commentary = !empty($_POST['commentary']) ? htmlspecialchars(strip_tags(trim($_POST['commentary']))) : '';
                 $note = !empty($_POST['note']) ? intval($_POST['note']) : 0;
                 $projectId = !empty($incomingProjectId) ? intval($incomingProjectId) : null;
