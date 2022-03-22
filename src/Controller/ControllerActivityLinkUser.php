@@ -395,15 +395,31 @@ class ControllerActivityLinkUser extends Controller
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
                 // accept only connected user
-                if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotRetrievedNotAuthenticated"];
+                if (empty($_SESSION['id'])) return ["errorType" => "getOneNotRetrievedNotAuthenticated"];
 
                 // bind and sanitize incoming data to check if the logged user is the teacher
                 $activityId = !empty($_POST['id']) ? intval($_POST['id']) : 0;
 
                 if(empty($activityId)) return array('errorType' => 'activityIdInvalid');
 
-                return $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
+                $activity = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->findOneBy(array("id" => $activityId));
+
+                $activityToSend = json_decode(json_encode($activity));
+
+                // get the activity restriction by type
+                $activityRestriction = $this->entityManager
+                    ->getRepository(ActivityRestrictions::class)
+                    ->findOneBy(array(
+                        'activityType'=> $activityToSend->activity->type
+                    ));
+               
+                // bind isLti property to $dataToSend
+                $activityToSend->activity->isLti = $activityRestriction
+                    ? $activityRestriction->getApplication()->getIsLti()
+                    : false;
+
+                return $activityToSend;
             },
             "remove_by_reference" => function () {
                 /**
