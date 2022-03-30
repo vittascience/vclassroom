@@ -318,7 +318,7 @@ class ControllerActivityLinkUser extends Controller
                 // initiate an empty errors array 
                 $errors = [];
                 if (empty($activityId)) $errors['invalidActivityId'] = true;
-                if (empty($correction)) $errors['invalidCorrection'] = true;
+                if (!is_numeric($correction)) $errors['invalidCorrection'] = true;
                 if ($correction < 0 || $correction > 999) {
                     $errors['invalidCorrection'] = true;
                 }
