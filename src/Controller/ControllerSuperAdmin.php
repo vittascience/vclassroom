@@ -116,6 +116,8 @@ class ControllerSuperAdmin extends Controller
                         $application_id = htmlspecialchars($data['application_id']);
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
+                        $application_color = isset($data['application_color']) ? $data['application_color'] : null;
+
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
                         $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
@@ -123,6 +125,7 @@ class ControllerSuperAdmin extends Controller
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
+                        $app->setColor($application_color);
                         if ($lti_data['isLti']) {
                             $app->setIsLti($lti_data['isLti']);
                         } else {
@@ -234,12 +237,16 @@ class ControllerSuperAdmin extends Controller
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+                        $application_color = isset($data['application_color']) ? $data['application_color'] : null;
+                        
                         $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
                         $app = new Applications();
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
+                        $app->setColor($application_color);
+
                         if ($lti_data['isLti']) {
                             $app->setIsLti($lti_data['isLti']);
                         } else {

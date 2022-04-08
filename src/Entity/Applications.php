@@ -133,7 +133,7 @@ class Applications
         return $this->color;
     }
 
-    public function setColor(string $color): self
+    public function setColor(?string $color): self
     {
         $this->color = $color;
 
