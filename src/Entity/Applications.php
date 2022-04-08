@@ -44,6 +44,12 @@ class Applications
      */
     private $isLti;
 
+    /**
+     * @ORM\Column(name="color", type="string", length=10, nullable=true)
+     * @var string
+     */
+    private $color;
+
 
     /**
      * @return Integer
@@ -120,6 +126,20 @@ class Applications
         return $this;
     }
 
+
+    // color fields
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(string $color): self
+    {
+        $this->color = $color;
+
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
@@ -127,7 +147,8 @@ class Applications
             'name' => $this->getName(),
             'description' => $this->getDescription(),
             'image' => $this->getImage(),
-            'isLti' => $this->getIsLti()
+            'isLti' => $this->getIsLti(),
+            'color' => $this->getColor(),
         ];
     }
 
