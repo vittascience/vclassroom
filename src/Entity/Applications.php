@@ -50,6 +50,12 @@ class Applications
      */
     private $color;
 
+    /**
+     * @ORM\Column(name="max_per_teachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxPerTeachers;
+
 
     /**
      * @return Integer
@@ -140,6 +146,24 @@ class Applications
         return $this;
     }
 
+    /**
+     * @return Mixed
+     */
+    public function getMaxPerTeachers()
+    {
+        return $this->maxPerTeachers;
+    }
+
+    /**
+     * @param mixed $maximum
+     * @return Applications
+     */
+    public function setMaxPerTeachers($maximum): self
+    {
+        $this->maxPerTeachers = $maximum;
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
@@ -149,6 +173,7 @@ class Applications
             'image' => $this->getImage(),
             'isLti' => $this->getIsLti(),
             'color' => $this->getColor(),
+            'max_per_teachers' => $this->getMaxPerTeachers()
         ];
     }
 
