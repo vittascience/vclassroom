@@ -112,7 +112,7 @@ class ControllerActivityLinkUser extends Controller
                         $activityRestriction = $this->entityManager
                             ->getRepository(Applications::class)
                             ->findOneBy(array(
-                                'title' => $activityLinkUser->activity->type
+                                'name' => $activityLinkUser->activity->type
                             ));
 
                         // bind isLti property to $dataToSend
