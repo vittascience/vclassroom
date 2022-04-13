@@ -59,7 +59,7 @@ class LtiTool{
     private $deepLinkUrl; 
 
     /**
-     * @ORM\Column(name="private_key", type="string", length=255, nullable=false)
+     * @ORM\Column(name="private_key", type="text", length=5000, nullable=false)
      */
     private $privateKey; 
 
