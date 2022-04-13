@@ -13,7 +13,6 @@ use Classroom\Entity\Applications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ClassroomLinkUser;
-use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
@@ -134,7 +133,7 @@ class ControllerGroupAdmin extends Controller
                             $this->entityManager->persist($teacher);
                             $this->entityManager->flush();
 
-                                                    // Manage the group apps for user
+                            // Manage the group apps for user
                             $appsManager = $this->manageAppsFromGroups($user->getId(), $application, $groups, $group, $user);
                             if ($appsManager != true) {
                                 return $appsManager;
@@ -365,7 +364,7 @@ class ControllerGroupAdmin extends Controller
                                     Mailer::sendMail($value, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
                                 }
                             }
-                            
+
                             return ['message' => 'success'];
                         }
                     } else {
@@ -825,12 +824,7 @@ class ControllerGroupAdmin extends Controller
                                 'group' => $application->getGroup(),
                                 'application' => $application->getApplication()
                             ]);
-                        $appActivitiesLimit = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application->getApplication()]);
-                        if ($appActivitiesLimit) {
-                            $activityType = $appActivitiesLimit->getActivityType();
-                        } else {
-                            $activityType = null;
-                        }
+
                         $groupApplicationInfo = [
                             'outDated' => $application->getDateEnd() < $today,
                             'name' => $appDetails->getName(),
@@ -841,7 +835,7 @@ class ControllerGroupAdmin extends Controller
                             'maxStudentsPerTeacher' => $application->getmaxStudentsPerTeachers(),
                             'actualTeachers' => count($teachersFromGroupWithThisApp),
                             'maxTeachers' => $application->getmaxTeachersPerGroups(),
-                            'activityType' => $activityType,
+                            'activityType' => $appDetails->getName(),
                             'activityMaxPerTeacher' => $application->getmaxActivitiesPerTeachers(),
                             'activityLimit' => $application->getmaxActivitiesPerGroups()
                         ];
@@ -943,7 +937,7 @@ class ControllerGroupAdmin extends Controller
 
                     // the user was found
                     if ($regularFound) {
-                        
+
                         $emailReceiver = $_ENV['VS_REPLY_TO_MAIL'];
                         $replyToMail = $regularFound->getEmail();
 
