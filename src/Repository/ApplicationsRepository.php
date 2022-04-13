@@ -153,7 +153,7 @@ class ApplicationsRepository extends EntityRepository
 
         // if the teacher application limit is not reached we can add the student
         // $maxStudentsPerTeachers = 0 = unlimited
-        if ($maxStudentsPerTeachers >= $totalStudentsFromTeacher + $students_number || $maxStudentsPerTeachers == 0) {
+        if ($maxStudentsPerTeachers >= $totalStudentsFromTeacher + $students_number || $maxStudentsPerTeachers == -1) {
             return ['canAdd' => true];
         } else if ($maxStudentsPerTeachers < $totalStudentsFromTeacher + $students_number && !$ApplicationFromGroup) {
             return ['canAdd' => false, 'message' => 'personalLimit', 'teacherInfo' => $teacherInfo, 'groupInfo' => $groupInfo];
