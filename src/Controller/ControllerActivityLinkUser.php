@@ -406,14 +406,14 @@ class ControllerActivityLinkUser extends Controller
 
                 // get the activity restriction by type
                 $activityRestriction = $this->entityManager
-                    ->getRepository(ActivityRestrictions::class)
+                    ->getRepository(Applications::class)
                     ->findOneBy(array(
-                        'activityType'=> $activityToSend->activity->type
+                        'name'=> $activityToSend->activity->type
                     ));
                
                 // bind isLti property to $dataToSend
                 $activityToSend->activity->isLti = $activityRestriction
-                    ? $activityRestriction->getApplication()->getIsLti()
+                    ? $activityRestriction->getIsLti()
                     : false;
 
                 return $activityToSend;
