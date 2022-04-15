@@ -16,6 +16,7 @@ use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
+use Classroom\Entity\UsersRestrictions;
 
 class ControllerGroupAdmin extends Controller
 {
@@ -795,9 +796,16 @@ class ControllerGroupAdmin extends Controller
                 'is_teachers_applications_outdated'  => function () {
                     $user_id = htmlspecialchars($_SESSION['id']);
                     $today = new \DateTime('NOW');
-                    $outDatedApps = [];
                     $applications = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['user' => $user_id]);
-                    foreach ($applications as $application) {
+                    if ($applications) {
+                        $infoPremium = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(['user' => $user_id]);
+                        if ($infoPremium->getDateEnd() < $today) {
+                            return ['message' => true];
+                        }
+                    }
+                    return ['message' => false];
+
+/*                     foreach ($applications as $application) {
                         if ($application->getDateEnd() < $today) {
                             $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
                             $returnApp = $application->jsonSerialize();
@@ -809,7 +817,7 @@ class ControllerGroupAdmin extends Controller
                         return ['message' => false];
                     } else {
                         return ['message' => true, 'applications' => $outDatedApps];
-                    }
+                    } */
                 },
                 'group_monitoring'  => function ($data) {
                     $group_id = htmlspecialchars($data['group_id']);
@@ -817,7 +825,53 @@ class ControllerGroupAdmin extends Controller
                     $groupInfo = ['totalStudents' => 0, 'applications' => []];
                     $applications = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
 
+                    
+
+                    //get group info
+                    $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
                     foreach ($applications as $application) {
+                        $appDetails = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
+                        $teachersFromGroupWithThisApp = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
+                            ->findBy([
+                                'group' => $application->getGroup(),
+                                'application' => $application->getApplication()
+                            ]);
+
+                        $groupApplicationInfo = [
+                            'outDated' => $group->getDateEnd() < $today,
+                            'name' => $appDetails->getName(),
+                            'dateBegin' => $group->getDateBegin(),
+                            'dateEnd' => $group->getDateEnd(),
+                            'actualStudents' => 0,
+                            'maxStudents' => $group->getmaxStudents(),
+                            'maxStudentsPerTeacher' => $group->getmaxStudentsPerTeachers(),
+                            'actualTeachers' => count($teachersFromGroupWithThisApp),
+                            'maxTeachers' => $group->getmaxTeachers(),
+                            'activityType' => $appDetails->getName(),
+                            'activityMaxPerTeacher' => $application->getmaxActivitiesPerTeachers(),
+                            'activityLimit' => $application->getmaxActivitiesPerGroups()
+                        ];
+
+                        //get users restrictions
+                        $usersRestrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findBy(['user' => $group_id]);
+                        // count the students in the group
+                        foreach ($teachersFromGroupWithThisApp as $teacher) {
+                            $teacherPersonalMax = $usersRestrictions;
+                            if ($usersRestrictions->getDateEnd() > $today) {
+                                $teacherPersonalMax = $usersRestrictions->getmaxStudentsPerTeachers();
+                            }
+                            $teacherClassrooms = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['user' => $teacher->getUser(), 'rights' => 2]);
+                            foreach ($teacherClassrooms as $classroomObject) {
+                                // retrieve all student for the current classroom
+                                $studentsInClassroom = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['classroom' => $classroomObject->getClassroom()->getId(), 'rights' => 0]);
+
+                                if ($teacherPersonalMax < count($studentsInClassroom) - 1) {
+                                    $groupApplicationInfo['actualStudents'] += count($studentsInClassroom) - 1;
+                                }
+                            }
+                        }
+                        $groupInfo['applications'][] = $groupApplicationInfo;
+/*                     foreach ($applications as $application) {
                         $appDetails = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
                         $teachersFromGroupWithThisApp = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
                             ->findBy([
@@ -859,7 +913,7 @@ class ControllerGroupAdmin extends Controller
                                 }
                             }
                         }
-                        $groupInfo['applications'][] = $groupApplicationInfo;
+                        $groupInfo['applications'][] = $groupApplicationInfo; */
                     }
                     return $groupInfo;
                 },

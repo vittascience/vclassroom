@@ -8,13 +8,14 @@ use User\Entity\Regular;
 use User\Entity\Teacher;
 use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
+use Classroom\Entity\LtiTool;
 use Classroom\Entity\Applications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
+use Classroom\Entity\UsersRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
-use Classroom\Entity\LtiTool;
 
 class ControllerSuperAdmin extends Controller
 {
@@ -813,32 +814,34 @@ class ControllerSuperAdmin extends Controller
                             if ($user) {
                                 foreach ($user_app as $key => $value) {
                                     $AppExist = $this->entityManager->getRepository(UsersLinkApplications::class)->findOneBy(['user' => $user, 'application' => $value[0]]);
+                                    $UserRestrictions = $this->entityManager->getRepository(UserRestrictions::class)->findOneBy(['user' => $user]);
+
                                     // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
                                     $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
+
+                                    $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
+                                    $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
+
+                                    if (!$UserRestrictions) {
+                                        $UserRestrictions = new UsersRestrictions();
+                                    }
+                                    $UserRestrictions->setDateBegin($date_begin);
+                                    $UserRestrictions->setDateEnd($date_end);
+                                    $UserRestrictions->setmaxStudents($value[4]);
+                                    $this->entityManager->persist($UserRestrictions);
+
                                     if ($value[1] == true) {
                                         if (empty($value[2]) || empty($value[3])) {
                                             return ['message' => 'missing data date'];
                                         }
-                                        $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                                        $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
-                                        if ($AppExist) {
-                                            $AppExist->setApplication($application);
-                                            $AppExist->setUser($user);
-                                            $AppExist->setDateBegin($date_begin);
-                                            $AppExist->setDateEnd($date_end);
-                                            $AppExist->setmaxStudentsPerTeachers($value[4]);
-                                            $AppExist->setmaxActivitiesPerTeachers($value[5]);
-                                            $this->entityManager->persist($AppExist);
-                                        } else {
-                                            $Applications = new UsersLinkApplications();
-                                            $Applications->setApplication($application);
-                                            $Applications->setUser($user);
-                                            $Applications->setDateBegin($date_begin);
-                                            $Applications->setDateEnd($date_end);
-                                            $Applications->setmaxStudentsPerTeachers($value[4]);
-                                            $Applications->setmaxActivitiesPerTeachers($value[5]);
-                                            $this->entityManager->persist($Applications);
+                                        if (!$AppExist) {
+                                            $AppExist = new UsersLinkApplications();
                                         }
+                                        $AppExist->setApplication($application);
+                                        $AppExist->setUser($user);
+                                        $AppExist->setmaxActivitiesPerTeachers($value[5]);
+                                        $this->entityManager->persist($AppExist);
+                                        
                                     } else {
                                         if ($AppExist) {
                                             $this->entityManager->remove($AppExist);
@@ -1000,6 +1003,7 @@ class ControllerSuperAdmin extends Controller
         foreach ($applications as $key => $value) {
             $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
             // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
+            $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
             $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
             if ($value[1] == true) {
                 $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
@@ -1010,30 +1014,24 @@ class ControllerSuperAdmin extends Controller
                 $max_activities_per_groups = $value[7];
                 $max_activities_per_teachers = $value[8];
 
-                if ($AppExist) {
-                    $AppExist->setApplication($application);
-                    $AppExist->setGroup($group);
-                    $AppExist->setDateBegin($date_begin);
-                    $AppExist->setDateEnd($date_end);
-                    $AppExist->setmaxStudentsPerTeachers($max_students_per_teachers);
-                    $AppExist->setmaxStudentsPerGroups($max_students_per_groups);
-                    $AppExist->setmaxTeachersPerGroups($max_teachers_per_groups);
-                    $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
-                    $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
-                    $this->entityManager->persist($AppExist);
-                } else {
-                    $Applications = new GroupsLinkApplications();
-                    $Applications->setApplication($application);
-                    $Applications->setGroup($group);
-                    $Applications->setDateBegin($date_begin);
-                    $Applications->setDateEnd($date_end);
-                    $Applications->setmaxStudentsPerTeachers($max_students_per_teachers);
-                    $Applications->setmaxStudentsPerGroups($max_students_per_groups);
-                    $Applications->setmaxTeachersPerGroups($max_teachers_per_groups);
-                    $Applications->setmaxActivitiesPerGroups($max_activities_per_groups);
-                    $Applications->setmaxActivitiesPerTeachers($max_activities_per_teachers);
-                    $this->entityManager->persist($Applications);
+                if ($group) {
+                    $group->setDateBegin($date_begin);
+                    $group->setDateEnd($date_end);
+                    $group->setmaxStudentsPerTeachers($max_students_per_teachers);
+                    $group->setmaxStudentsPerGroups($max_students_per_groups);
+                    $group->setmaxTeachersPerGroups($max_teachers_per_groups);
+                    $this->entityManager->persist($group);
                 }
+
+                if (!$AppExist) {
+                    $AppExist = new GroupsLinkApplications();
+                }
+                $AppExist->setApplication($application);
+                $AppExist->setGroup($group);
+                $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
+                $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
+                $this->entityManager->persist($AppExist);
+
             } else {
                 if ($AppExist) {
                     $this->entityManager->remove($AppExist);
