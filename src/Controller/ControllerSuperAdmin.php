@@ -436,18 +436,39 @@ class ControllerSuperAdmin extends Controller
                         isset($data['id']) && $data['id'] != null &&
                         isset($data['name']) && $data['name'] != null &&
                         isset($data['description']) && $data['description'] != null &&
-                        isset($data['applications']) && $data['applications'] != null
+                        isset($data['applications']) && $data['applications'] != null &&
+                        isset($data['global_restriction']) && $data['global_restriction'] != null
+
                     ) {
                         $applications = json_decode($data['applications']);
+                        $global_restrictions = json_decode($data['global_restriction']);
 
                         $group_id = htmlspecialchars($data['id']);
                         $group_name = htmlspecialchars($data['name']);
                         $group_description = htmlspecialchars($data['description']);
 
+                        $date_begin = $global_restrictions[0] != null ? \DateTime::createFromFormat('Y-m-d', $global_restrictions[0]) : null;
+                        $date_end = $global_restrictions[1] != null ? \DateTime::createFromFormat('Y-m-d', $global_restrictions[1]) : null;
+
                         $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
-                        $group->setDescription($group_description);
-                        $group->setName($group_name);
-                        $this->entityManager->persist($group);
+        
+                        $max_students_per_teachers = $global_restrictions[2];
+                        $max_students_per_groups = $global_restrictions[3];
+                        $max_teachers_per_groups = $global_restrictions[4]; 
+
+                        if ($group) {
+                            if ($date_begin != null && $date_end != null) {
+                                $group->setDateBegin($date_begin);
+                                $group->setDateEnd($date_end);
+                            }              
+                            $group->setmaxStudentsPerTeachers($max_students_per_teachers);
+                            $group->setmaxStudents($max_students_per_groups);
+                            $group->setmaxTeachers($max_teachers_per_groups); 
+                            $group->setDescription($group_description);
+                            $group->setName($group_name);
+                            $this->entityManager->persist($group);
+                        }
+
                         $this->manageAppsForGroups($applications, $group_id, $group);
                         $this->entityManager->flush();
                         return ['message' => 'success'];
@@ -1003,25 +1024,11 @@ class ControllerSuperAdmin extends Controller
         foreach ($applications as $key => $value) {
             $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
             // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
-            $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
             $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
             if ($value[1] == true) {
-                $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
-                $max_students_per_teachers = $value[4];
-                $max_students_per_groups = $value[5];
-                $max_teachers_per_groups = $value[6];
-                $max_activities_per_groups = $value[7];
-                $max_activities_per_teachers = $value[8];
 
-                if ($group) {
-                    $group->setDateBegin($date_begin);
-                    $group->setDateEnd($date_end);
-                    $group->setmaxStudentsPerTeachers($max_students_per_teachers);
-                    $group->setmaxStudentsPerGroups($max_students_per_groups);
-                    $group->setmaxTeachersPerGroups($max_teachers_per_groups);
-                    $this->entityManager->persist($group);
-                }
+                $max_activities_per_groups = $value[2];
+                $max_activities_per_teachers = $value[3];
 
                 if (!$AppExist) {
                     $AppExist = new GroupsLinkApplications();
