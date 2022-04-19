@@ -348,25 +348,6 @@ class ControllerSuperAdmin extends Controller
                         return $this->entityManager->getRepository(UsersLinkApplications::class)->getAllMembersFromApplication($application_id);
                     }
                 },
-                'update_application_to_group' => function () {
-                    if (
-                        isset($data['group_id']) && $data['group_id'] != null &&
-                        isset($data['application_id']) && $data['application_id'] != null &&
-                        isset($data['date_begin']) && $data['date_begin'] != null  &&
-                        isset($data['date_end']) && $data['date_end'] != null
-                    ) {
-                        $group_id = htmlspecialchars($data['group_id']);
-                        $application_id = htmlspecialchars($data['application_id']);
-                        // TBD : Modifié le format au besoin
-                        $date_begin = \DateTime::createFromFormat('j-M-Y', $data['date_begin']);
-                        $date_end = \DateTime::createFromFormat('j-M-Y', $data['date_end']);
-                        $GroupLinkApplications = $this->entityManager->getRepository(GroupsLinkApplication::class)->findBy(['application' => $application_id, 'group' => $group_id]);
-                        $GroupLinkApplications->setDateBegin($date_begin);
-                        $GroupLinkApplications->setDateEnd($date_end);
-                        $this->entityManager->persist($GroupLinkApplications);
-                        $this->entityManager->flush();
-                    }
-                },
                 'create_group' => function ($data) {
                     if (
                         isset($data['name']) && $data['name'] != null &&
@@ -822,34 +803,39 @@ class ControllerSuperAdmin extends Controller
                 'update_user_app' => function ($data) {
                     if (
                         isset($data['user_id']) && $data['user_id'] != null &&
-                        isset($data['user_app']) && $data['user_app'] != null
+                        isset($data['user_app']) && $data['user_app'] != null &&
+                        isset($data['global_user_restriction']) && $data['global_user_restriction'] != null
                     ) {
 
                         $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                         $user_app = json_decode($data['user_app']);
+                        $global_user_restriction = json_decode($data['global_user_restriction']);
 
                         if ($user_id == null) {
                             return ['message' => 'missing data'];
                         } else {
                             $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                             if ($user) {
-                                foreach ($user_app as $key => $value) {
-                                    $AppExist = $this->entityManager->getRepository(UsersLinkApplications::class)->findOneBy(['user' => $user, 'application' => $value[0]]);
-                                    $UserRestrictions = $this->entityManager->getRepository(UserRestrictions::class)->findOneBy(['user' => $user]);
 
-                                    // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
-                                    $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
+                                $UserRestrictions = $this->entityManager->getRepository(UserRestrictions::class)->findOneBy(['user' => $user]);
+                                $date_begin = $global_user_restriction[0] != null ? \DateTime::createFromFormat('Y-m-d', $global_user_restriction[0]) : null;
+                                $date_end = $global_user_restriction[1] != null ? \DateTime::createFromFormat('Y-m-d', $global_user_restriction[1]) : null;
 
-                                    $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                                    $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
+                                if (!$UserRestrictions) {
+                                    $UserRestrictions = new UsersRestrictions();
+                                }
 
-                                    if (!$UserRestrictions) {
-                                        $UserRestrictions = new UsersRestrictions();
-                                    }
+                                if ($date_begin != null && $date_end != null) {
                                     $UserRestrictions->setDateBegin($date_begin);
                                     $UserRestrictions->setDateEnd($date_end);
-                                    $UserRestrictions->setmaxStudents($value[4]);
-                                    $this->entityManager->persist($UserRestrictions);
+                                }
+                                
+                                $UserRestrictions->setmaxStudents($global_user_restriction[2]);
+                                $this->entityManager->persist($UserRestrictions);
+
+                                foreach ($user_app as $key => $value) {
+                                    $AppExist = $this->entityManager->getRepository(UsersLinkApplications::class)->findOneBy(['user' => $user, 'application' => $value[0]]);
+                                    $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
 
                                     if ($value[1] == true) {
                                         if (empty($value[2]) || empty($value[3])) {
