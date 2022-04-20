@@ -453,11 +453,11 @@ class UsersLinkGroupsRepository extends EntityRepository
                                         a.name as application_name,
                                         a.image AS application_image, 
                                         g.id AS group_id, 
-                                        gla.dateBegin as application_date_begin, 
-                                        gla.dateEnd as application_date_end, 
-                                        gla.maxStudentsPerTeachers as max_students_per_teachers,
-                                        gla.maxStudentsPerGroups as max_students_per_groups,
-                                        gla.maxTeachersPerGroups as max_teachers_per_groups")
+                                        g.dateBegin as application_date_begin, 
+                                        g.dateEnd as application_date_end, 
+                                        g.maxStudentsPerTeachers as max_students_per_teachers,
+                                        g.maxStudents as max_students_per_groups,
+                                        g.maxTeachers as max_teachers_per_groups")
             ->from(Applications::class, 'a')
             ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
             ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')
