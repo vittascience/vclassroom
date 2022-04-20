@@ -97,7 +97,7 @@ class UsersLinkGroupsRepository extends EntityRepository
         // fetch applications of users
         $ApplicationsOfUsers = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("a.id AS application_id, a.image AS application_image, u.id AS user_id, ur.dateBegin as date_begin, ur.dateEnd as date_end")
+            ->select("a.id AS application_id, a.name AS application_name, a.image AS application_image, u.id AS user_id, ur.dateBegin as date_begin, ur.dateEnd as date_end")
             ->from(Applications::class, 'a')
             ->innerJoin(UsersLinkApplications::class, 'ula', Join::WITH, 'a.id = ula.application')
             ->innerJoin(User::class, 'u', Join::WITH, 'u.id = ula.user')
@@ -145,6 +145,7 @@ class UsersLinkGroupsRepository extends EntityRepository
                 if ((int)$value['id'] == (int)$value2['user_id']) {
                     $records[$key]['applications'][] = [
                         'id' => $value2['application_id'],
+                        'name' => $value2['application_name'],
                         'image' => $value2['application_image'],
                         'date_end' => $value2['date_end'],
                         'date_begin' => $value2['date_begin']
