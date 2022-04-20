@@ -17,6 +17,12 @@ use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
 
+// show php errors
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
 class ControllerSuperAdmin extends Controller
 {
     public function __construct($entityManager, $user)
@@ -490,7 +496,7 @@ class ControllerSuperAdmin extends Controller
                         isset($data['admin']) && $data['admin'] != null &&
                         isset($data['teacher']) && $data['teacher'] != null
                     ) {
-
+                        $apps =  json_decode($data['apps']);
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
@@ -550,6 +556,36 @@ class ControllerSuperAdmin extends Controller
                             if ($isTeacher) {
                                 $teacher = new Teacher($user, $subject, $school, $grade);
                                 $this->entityManager->persist($teacher);
+                            }
+
+                            if (!empty($apps)) {
+                                $date_begin = $apps[0] != null ? \DateTime::createFromFormat('Y-m-d', $apps[0]) : null;
+                                $date_end = $apps[1] != null ? \DateTime::createFromFormat('Y-m-d', $apps[1]) : null;
+                                $max_students = $apps[2] != null ? (int)$apps[2] : 0;
+
+                                if ($date_begin != null && $date_end != null) {
+                                    $UserRestrictions = new UsersRestrictions();
+                                    $UserRestrictions->setUser($user);
+                                    if ($date_begin != null && $date_end != null) {
+                                        $UserRestrictions->setDateBegin($date_begin);
+                                        $UserRestrictions->setDateEnd($date_end);
+                                    }
+                                    $UserRestrictions->setMaxStudents($max_students);
+                                    $this->entityManager->persist($UserRestrictions);
+                                }
+
+                                $apps = $apps[3];
+                                for ($i = 0; $i < count($apps); $i++) {
+                                    if ($apps[$i][1] == true) {
+                                        $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $apps[$i][0]]);
+                                        $max = $apps[$i][2] != null ? (int)$apps[$i][2] : 0;
+                                        $userLinkApp = new UsersLinkApplications();
+                                        $userLinkApp->setUser($user);
+                                        $userLinkApp->setApplication($app);
+                                        $userLinkApp->setmaxActivitiesPerTeachers($max);
+                                        $this->entityManager->persist($userLinkApp);
+                                    }
+                                }
                             }
 
                             $this->entityManager->flush();
@@ -817,19 +853,19 @@ class ControllerSuperAdmin extends Controller
                             $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                             if ($user) {
 
-                                $UserRestrictions = $this->entityManager->getRepository(UserRestrictions::class)->findOneBy(['user' => $user]);
+                                $UserRestrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(['user' => $user]);
                                 $date_begin = $global_user_restriction[0] != null ? \DateTime::createFromFormat('Y-m-d', $global_user_restriction[0]) : null;
                                 $date_end = $global_user_restriction[1] != null ? \DateTime::createFromFormat('Y-m-d', $global_user_restriction[1]) : null;
 
                                 if (!$UserRestrictions) {
                                     $UserRestrictions = new UsersRestrictions();
                                 }
-
+                                $UserRestrictions->setUser($user);
                                 if ($date_begin != null && $date_end != null) {
                                     $UserRestrictions->setDateBegin($date_begin);
                                     $UserRestrictions->setDateEnd($date_end);
                                 }
-                                
+
                                 $UserRestrictions->setmaxStudents($global_user_restriction[2]);
                                 $this->entityManager->persist($UserRestrictions);
 
@@ -838,15 +874,12 @@ class ControllerSuperAdmin extends Controller
                                     $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
 
                                     if ($value[1] == true) {
-                                        if (empty($value[2]) || empty($value[3])) {
-                                            return ['message' => 'missing data date'];
-                                        }
                                         if (!$AppExist) {
                                             $AppExist = new UsersLinkApplications();
                                         }
                                         $AppExist->setApplication($application);
                                         $AppExist->setUser($user);
-                                        $AppExist->setmaxActivitiesPerTeachers($value[5]);
+                                        $AppExist->setmaxActivitiesPerTeachers($value[2]);
                                         $this->entityManager->persist($AppExist);
                                         
                                     } else {

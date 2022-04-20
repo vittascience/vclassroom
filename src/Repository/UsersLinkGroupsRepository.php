@@ -226,14 +226,12 @@ class UsersLinkGroupsRepository extends EntityRepository
             ->createQueryBuilder()
             ->select("a.id AS application_id, 
                         a.image AS application_image, 
-                        u.id AS user_id, 
-                        ula.dateBegin as date_begin, 
-                        ula.dateEnd as date_end, 
-                        ula.maxStudentsPerTeachers as max_students,
+                        u.id AS user_id,
                         ula.maxActivitiesPerTeachers as max_activities")
             ->from(Applications::class, 'a')
             ->innerJoin(UsersLinkApplications::class, 'ula', Join::WITH, 'a.id = ula.application')
             ->innerJoin(User::class, 'u', Join::WITH, 'u.id = ula.user')
+            ->innerJoin(UsersRestrictions::class, 'ur', Join::WITH, 'ur.user = u.id')
             ->where('ula.user = :id')
             ->setParameter('id', $user_id)
             ->getQuery()
@@ -252,11 +250,26 @@ class UsersLinkGroupsRepository extends EntityRepository
             ->getQuery()
             ->getScalarResult();
 
+        $UsersRestrictions = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('  ur.id as id, 
+                        IDENTITY(ur.user) as user, 
+                        ur.dateBegin as date_begin, 
+                        ur.dateEnd as date_end, 
+                        ur.maxStudents as max_students')
+            ->from(UsersRestrictions::class, 'ur')
+            ->where('ur.user = :id')
+            ->setParameter('id', $user_id)
+            ->getQuery()
+            ->getScalarResult();
+
         foreach ($LinkUserAndGroups as $key_2 => $value_2) {
             if ((int)$User[0]['id'] == (int)$value_2['user']) {
                 $User[0]['groups'][] = ['id' => $value_2['group'], 'rights' => $value_2['rights']];
             }
         }
+
+        $User[0]['restrictions'] = $UsersRestrictions;
 
         // Set les applications aux groupes qui les possèdent dans le resultat initial
         foreach ($ApplicationsOfUsers as $key2 => $value2) {
@@ -264,9 +277,6 @@ class UsersLinkGroupsRepository extends EntityRepository
                 $User[0]['applications'][] = [
                     'id' => $value2['application_id'],
                     'image' => $value2['application_image'],
-                    'date_end' => $value2['date_end'],
-                    'date_begin' => $value2['date_begin'],
-                    'max_students' => $value2['max_students'],
                     'max_activities' => $value2['max_activities']
                 ];
             }
