@@ -812,12 +812,12 @@ class ControllerGroupAdmin extends Controller
 
                     $appInfo = "";
                     if (empty($group->getDateEnd())) {
-                        $appInfo = "None";
+                        $appInfo = 0;
                     } else {
                         if ($group->getDateEnd() < $today) {
-                            $appInfo = "Outdated";
+                            $appInfo = 2;
                         } else {
-                            $appInfo = "Running";
+                            $appInfo = 1;
                         }
                     }
                     $groupInfo['outDated'] = $appInfo;
