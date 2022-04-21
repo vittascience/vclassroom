@@ -1010,20 +1010,16 @@ class ControllerGroupAdmin extends Controller
     // Check restrictions via applications
     private function isGroupFull(Int $group_id): ?array
     {
-        $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
-        $applicationsOfGroup = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
-
         // Get the default user restrictions in the database
         $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findBy(['name' => "groupDefaultRestrictions"]);
         $groupRestriction = (array)json_decode($groupDefaultRestrictions[0]->getRestrictions());
+        $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
         $maxTeacher = $groupRestriction['maxTeachers'];
-
-        foreach ($applicationsOfGroup as $application) {
-            $app = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $application->getApplication()]);
-            if (!empty($app->getmaxTeachersPerGroups())) {
-                $maxTeacher = $app->getmaxTeachersPerGroups();
-            }
+        $group = $this->entityManager->getRepository(Groups::class)->find($group_id);
+        if ($group->getmaxTeachers() != null) {
+            $maxTeacher = $group->getmaxTeachers();
         }
+
         if ($maxTeacher != 0) {
             if (count($nbUsersInGroups) >= $maxTeacher) {
                 return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => false];

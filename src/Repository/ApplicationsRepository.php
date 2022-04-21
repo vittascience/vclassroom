@@ -8,6 +8,7 @@ use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
+use Classroom\Entity\UsersRestrictions;
 
 class ApplicationsRepository extends EntityRepository
 {
@@ -19,14 +20,16 @@ class ApplicationsRepository extends EntityRepository
      */
     public function isStudentsLimitReachedForTeacher(Int $teacher_id, Int $students_number): ?array
     {
-        //include_once(__DIR__ . "/../../../../../default-restrictions/constants.php");
-
         // Get the default user restrictions in the database
         $userDefaultRestrictions = $this->getEntityManager()->getRepository(Restrictions::class)->findOneBy(['name' => "userDefaultRestrictions"]);
         $userRestriction = (array)json_decode($userDefaultRestrictions->getRestrictions());
+        $usersRestrictions = $this->getEntityManager()->getRepository(UsersRestrictions::class)->findBy(['user' => $teacher_id]);
 
-        $Applications = $this->getEntityManager()->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher_id]);
+
+        //$Applications = $this->getEntityManager()->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher_id]);
         $ApplicationFromGroup = $this->getEntityManager()->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $teacher_id]);
+        
+
 
         $today = new \DateTime('NOW');
 
@@ -57,30 +60,13 @@ class ApplicationsRepository extends EntityRepository
         ];
 
         // Personnal apps management
-        if ($Applications) {
-            foreach ($Applications as $application) {
-                $userApplication = ['outDated' => false, 'maxStudents' => 0];
-                $teacherInfo['numbersOfApps']++;
-                if ($application->getDateEnd() > $today) {
-                    if ($application->getmaxStudentsPerTeachers() > $maxStudentsPerTeachers) {
-                        $maxStudentsPerTeachers = $application->getmaxStudentsPerTeachers();
-                        $teacherInfo['active'] = true;
-                    }
-                } else {
-                    $userApplication['outDated'] = true;
-                }
-                $userApplication['maxStudents'] = $application->getmaxStudentsPerTeachers();
-                $teacherInfo['applications'][] = $userApplication;
-            }
+
+        if (!empty($usersRestrictions->getMaxStudents())) {
+            $maxStudentsPerTeachers = $usersRestrictions->getMaxStudents();
         } else {
             $maxStudentsPerTeachers = $userRestriction['maxStudents'];
         }
-
-        if (!$teacherInfo['active']) {
-            $maxStudentsPerTeachers = $userRestriction['maxStudents'];
-        }
         $teacherInfo['maxStudents'] = $maxStudentsPerTeachers;
-
 
 
         // get the actuel count of students of the teacher
@@ -99,30 +85,24 @@ class ApplicationsRepository extends EntityRepository
         if ($ApplicationFromGroup) {
             // The group app exist
             $groupInfo['active'] = true;
-
-            // Get the link between the group and the app
-            $GroupLinkApplication = $this->getEntityManager()->getRepository(GroupsLinkApplications::class)
-                ->findOneBy([
-                    'application' => $ApplicationFromGroup->getApplication(),
-                    'group' => $ApplicationFromGroup->getGroup()
-                ]);
+            $group = $this->getEntityManager()->getRepository(Groups::class)->findOneBy(['id' => $ApplicationFromGroup->getGroup()]);
 
             // Check if the app if outdated or not
-            if ($GroupLinkApplication->getDateEnd() > $today) {
-                if ($GroupLinkApplication->getmaxStudentsPerTeachers() > $maxStudentsPerTeachers) {
-                    $maxStudentsPerTeachersGroup = $GroupLinkApplication->getmaxStudentsPerTeachers();
-                    $maxStudentsPerGroup = $GroupLinkApplication->getmaxStudentsPerGroups();
+            if ($group->getDateEnd() > $today) {
+                if ($group->getmaxStudentsPerTeachers() > $maxStudentsPerTeachers) {
+                    $maxStudentsPerTeachersGroup = $group->getmaxStudentsPerTeachers();
+                    $maxStudentsPerGroup = $group->getmaxStudents();
 
-                    $teachersFromGroupWithThisApp = $this->getEntityManager()->getRepository(UsersLinkApplicationsFromGroups::class)
-                        ->findBy([
-                            'group' => $ApplicationFromGroup->getGroup(),
-                            'application' => $ApplicationFromGroup->getApplication()
-                        ]);
+                    $teachersFromGroupWithThisApp = $this->getEntityManager()->getRepository(UsersLinkApplicationsFromGroups::class)->findBy([
+                        'group' => $ApplicationFromGroup->getGroup(),
+                        'application' => $ApplicationFromGroup->getApplication()
+                    ]);
 
+                    
                     // count the students in the group
                     foreach ($teachersFromGroupWithThisApp as $teacher) {
                         $teacherPersonalMax = 0;
-                        $teacherPersonalApps = $this->getEntityManager()->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher->getUser()]);
+                        $teacherPersonalApps = $this->getEntityManager()->getRepository(UsersRestrictions::class)->findBy(['user' => $teacher->getUser()]);
                         foreach ($teacherPersonalApps as $personalApp) {
                             if ($personalApp->getDateEnd() > $today) {
                                 $teacherPersonalMax = $personalApp->getmaxStudentsPerTeachers();
@@ -142,12 +122,11 @@ class ApplicationsRepository extends EntityRepository
                 }
             } else {
                 $groupInfo['outDated'] = true;
-                // Free groups restrictions to add
             }
 
             // Register log
-            $groupInfo['maxStudents'] = $GroupLinkApplication->getmaxStudentsPerGroups();
-            $groupInfo['maxStudentsPerTeacher'] = $GroupLinkApplication->getmaxStudentsPerTeachers();
+            $groupInfo['maxStudents'] = $group->getmaxStudents();
+            $groupInfo['maxStudentsPerTeacher'] = $group->getmaxStudentsPerTeachers();
         }
 
 
@@ -176,17 +155,17 @@ class ApplicationsRepository extends EntityRepository
     // Check if the application can be attributed to the teacher
     public function isApplicationFromGroupFull(Int $group_id, Int $app_id, int $user_id)
     {
-        $Application = $this->getEntityManager()->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $app_id]);
-        $endDate = $Application->getDateEnd();
+        $group = $this->getEntityManager()->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
+        $endDate = $group->getDateEnd();
         $today = new \DateTime('NOW');
 
         if (!$endDate || $endDate < $today) {
             return ['canAdd' => false, 'message' => 'outDated'];
         }
 
-        $maxTeachersPerGroup = $Application->getmaxTeachersPerGroups();
-        $maxStudentsPerGroup = $Application->getmaxStudentsPerGroups();
-        $maxStudentsPerTeachers = $Application->getmaxStudentsPerTeachers();
+        $maxTeachersPerGroup = $group->getmaxTeachers();
+        $maxStudentsPerGroup = $group->getmaxStudents();
+        $maxStudentsPerTeachers = $group->getmaxStudentsPerTeachers();
 
         $totalStudentsInTheGroup = 0;
         $totalStudentsFromTeacher = 0;
