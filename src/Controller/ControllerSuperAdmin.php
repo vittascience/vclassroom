@@ -17,12 +17,6 @@ use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
 
-// show php errors
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-
 class ControllerSuperAdmin extends Controller
 {
     public function __construct($entityManager, $user)
