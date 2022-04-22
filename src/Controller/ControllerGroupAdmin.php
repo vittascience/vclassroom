@@ -831,6 +831,9 @@ class ControllerGroupAdmin extends Controller
                     $userlinkgroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
                     $groupInfo['groupTotalTeachers'] = count($userlinkgroup);
 
+                    $userDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => "userDefaultRestrictions"]);
+                    $usersRestrictionAmount = (array)json_decode($userDefaultRestrictions->getRestrictions());
+
                     foreach ($applications as $application) {
                         $appDetails = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application->getApplication()]);
                         $teachersFromGroupWithThisApp = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy([
@@ -845,11 +848,12 @@ class ControllerGroupAdmin extends Controller
                             'activityLimit' => $application->getmaxActivitiesPerGroups()
                         ];
 
-                        //get users restrictions
-                        $usersRestrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findBy(['user' => $group_id]);
+
                         // count the students in the group
                         foreach ($teachersFromGroupWithThisApp as $teacher) {
-                            $teacherPersonalMax = $usersRestrictions;
+                            //get users restrictions
+                            $usersRestrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(['user' => $teacher->getUser()]);
+                            $teacherPersonalMax = $usersRestrictionAmount['maxStudents'];
                             if ($usersRestrictions->getDateEnd() > $today) {
                                 $teacherPersonalMax = $usersRestrictions->getmaxStudentsPerTeachers();
                             }
