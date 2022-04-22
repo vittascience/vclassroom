@@ -47,6 +47,16 @@ class GroupsRepository extends EntityRepository
 
         $records = $paginator->getQuery()->setFirstResult($groupspp * ($currentPage - 1))->setMaxResults($groupspp)->getScalarResult();
 
+        foreach ($records as $key => $Group) {
+            // users link group from this group
+            $userlinkgroup = $this->getEntityManager()->getRepository(UsersLinkGroups::class)->findBy(['group' => $Group['id']]);
+            if (count($userlinkgroup) > 0) {
+                $records[$key]['nbUsers'] = count($userlinkgroup);
+            } else {
+                $records[$key]['nbUsers'] = 0;
+            }
+        }
+
         // Récupère les applications liées à des groupes
         $ApplicationsOfGroups = $this->getEntityManager()
             ->createQueryBuilder()->select("a.id AS application_id, a.image AS application_image, a.name AS application_name, g.id AS group_id")
