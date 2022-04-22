@@ -24,7 +24,7 @@ class ApplicationsRepository extends EntityRepository
         // Get the default user restrictions in the database
         $userDefaultRestrictions = $this->getEntityManager()->getRepository(Restrictions::class)->findOneBy(['name' => "userDefaultRestrictions"]);
         $userRestriction = (array)json_decode($userDefaultRestrictions->getRestrictions());
-        $usersRestrictions = $this->getEntityManager()->getRepository(UsersRestrictions::class)->findBy(['user' => $teacher_id]);
+        $usersRestrictions = $this->getEntityManager()->getRepository(UsersRestrictions::class)->findOneBy(['user' => $teacher_id]);
 
 
         //$Applications = $this->getEntityManager()->getRepository(UsersLinkApplications::class)->findBy(['user' => $teacher_id]);
