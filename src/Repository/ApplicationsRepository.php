@@ -9,6 +9,7 @@ use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
 use Classroom\Entity\UsersRestrictions;
+use Classroom\Entity\Groups;
 
 class ApplicationsRepository extends EntityRepository
 {
