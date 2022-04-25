@@ -171,10 +171,10 @@ class ControllerSuperAdmin extends Controller
                                 return ['message' => 'missing data'];
                             }
 
-                            $lti = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                            $lti = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['application' => $application_id]);
                             if (!$lti) {
                                 $lti = new LtiTool();
-                                $lti->setApplicationId($application_id);
+                                $lti->setApplication($application_id);
                                 $uid = "";
                                 do {
                                     $uid = uniqid();
@@ -195,7 +195,7 @@ class ControllerSuperAdmin extends Controller
                             $this->entityManager->persist($lti);
                             $this->entityManager->flush();
                         } else {
-                            $ltiTool = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                            $ltiTool = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['application' => $application_id]);
                             if ($ltiTool) {
                                 $this->entityManager->remove($ltiTool);
                                 $this->entityManager->flush();
@@ -298,7 +298,7 @@ class ControllerSuperAdmin extends Controller
                             }
 
                             $ltiTool = new LtiTool();
-                            $ltiTool->setApplicationId($app);
+                            $ltiTool->setApplication($app);
                             $ltiTool->setClientId($lti_data['clientId']);
                             $ltiTool->setDeploymentId($lti_data['deploymentId']);
                             $ltiTool->setToolUrl($lti_data['toolUrl']);
