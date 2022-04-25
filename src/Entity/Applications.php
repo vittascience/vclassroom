@@ -44,6 +44,31 @@ class Applications
      */
     private $isLti;
 
+    /**
+     * @ORM\Column(name="color", type="string", length=10, nullable=true)
+     * @var string
+     */
+    private $color;
+
+    /**
+     * @ORM\Column(name="max_per_teachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxPerTeachers;
+
+
+    /**
+     * @ORM\Column(name="sort", type="integer", nullable=true)
+     * @var integer
+     */
+    private $sort;
+
+    /**
+     * @ORM\Column(name="background_image", type="string", length=255, nullable=true)
+     * @var string
+     */
+    private $backgroundImage;
+
 
     /**
      * @return Integer
@@ -120,6 +145,74 @@ class Applications
         return $this;
     }
 
+
+    // color fields
+    public function getColor(): ?string
+    {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): self
+    {
+        $this->color = $color;
+
+        return $this;
+    }
+
+    /**
+     * @return Mixed
+     */
+    public function getMaxPerTeachers()
+    {
+        return $this->maxPerTeachers;
+    }
+
+    /**
+     * @param mixed $maximum
+     * @return Applications
+     */
+    public function setMaxPerTeachers($maximum): self
+    {
+        $this->maxPerTeachers = $maximum;
+        return $this;
+    }
+
+    /**
+     * @return Mixed
+     */
+    public function getSort()
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @param mixed $sort
+     * @return Applications
+     */
+    public function setSort($sort): self
+    {
+        $this->sort = $sort;
+        return $this;
+    }
+
+    /**
+     * @return Mixed
+     */
+    public function getBackgroundImage()
+    {
+        return $this->backgroundImage;
+    }
+
+    /**
+     * @param mixed $backgroundImage
+     * @return Applications
+     */
+    public function setBackgroundImage($backgroundImage): self
+    {
+        $this->backgroundImage = $backgroundImage;
+        return $this;
+    }
+    
     public function jsonSerialize()
     {
         return [
@@ -127,7 +220,11 @@ class Applications
             'name' => $this->getName(),
             'description' => $this->getDescription(),
             'image' => $this->getImage(),
-            'isLti' => $this->getIsLti()
+            'isLti' => $this->getIsLti(),
+            'color' => $this->getColor(),
+            'max_per_teachers' => $this->getMaxPerTeachers(),
+            'sort' => $this->getSort(),
+            'background_image' => $this->getBackgroundImage()
         ];
     }
 

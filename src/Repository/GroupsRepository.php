@@ -28,7 +28,7 @@ class GroupsRepository extends EntityRepository
             $orderby = "g.description";
 
         $Groups = $this->getEntityManager()
-            ->createQueryBuilder()->select("g.id, g.name, g.link, g.description")
+            ->createQueryBuilder()->select("g.id, g.name, g.description, g.link, g.maxStudents, g.maxTeachers, g.maxStudentsPerTeachers, g.dateBegin, g.dateEnd")
             ->from(Groups::class, 'g')
             ->orderBy($orderby)
             ->getQuery();
@@ -46,6 +46,16 @@ class GroupsRepository extends EntityRepository
         $previousPage = (($currentPage > 1) ? $currentPage - 1 : 1);
 
         $records = $paginator->getQuery()->setFirstResult($groupspp * ($currentPage - 1))->setMaxResults($groupspp)->getScalarResult();
+
+        foreach ($records as $key => $Group) {
+            // users link group from this group
+            $userlinkgroup = $this->getEntityManager()->getRepository(UsersLinkGroups::class)->findBy(['group' => $Group['id']]);
+            if (count($userlinkgroup) > 0) {
+                $records[$key]['nbUsers'] = count($userlinkgroup);
+            } else {
+                $records[$key]['nbUsers'] = 0;
+            }
+        }
 
         // Récupère les applications liées à des groupes
         $ApplicationsOfGroups = $this->getEntityManager()
@@ -78,7 +88,7 @@ class GroupsRepository extends EntityRepository
     public function getGroupInfo($group_id)
     {
         $Group = $this->getEntityManager()
-            ->createQueryBuilder()->select("g.id, g.name, g.description, g.link")
+            ->createQueryBuilder()->select("g.id, g.name, g.description, g.link, g.maxStudents, g.maxTeachers, g.maxStudentsPerTeachers, g.dateBegin, g.dateEnd")
             ->from(Groups::class, 'g')
             ->where('g.id = :id ')
             ->setParameter('id', $group_id)
@@ -88,11 +98,6 @@ class GroupsRepository extends EntityRepository
         $GroupApplications = $this->getEntityManager()
             ->createQueryBuilder()
             ->select("IDENTITY(gla.application) as application_id, 
-                                    gla.dateBegin as date_begin, 
-                                    gla.dateEnd as date_end, 
-                                    gla.maxTeachersPerGroups as max_teachers_per_groups,
-                                    gla.maxStudentsPerGroups as max_students_per_groups,
-                                    gla.maxStudentsPerTeachers as max_students_per_teachers,
                                     gla.maxActivitiesPerGroups as max_activities_per_groups,
                                     gla.maxActivitiesPerTeachers as max_activities_per_teachers")
                                     
@@ -113,7 +118,7 @@ class GroupsRepository extends EntityRepository
 
         $Groups = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("g.id, g.name,g.description")
+            ->select("g.id, g.name, g.description, g.link, g.maxStudents, g.maxTeachers, g.maxStudentsPerTeachers, g.dateBegin, g.dateEnd")
             ->from(Groups::class, 'g')
             ->where('g.name LIKE :name OR g.description LIKE :name')
             ->setParameter('name', '%' . $string . '%')
@@ -166,7 +171,7 @@ class GroupsRepository extends EntityRepository
     {
         $Groups = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("g.id, g.name, g.description")
+            ->select("g.id, g.name, g.description, g.link, g.maxStudents, g.maxTeachers, g.maxStudentsPerTeachers, g.dateBegin, g.dateEnd")
             ->from(Groups::class, 'g')
             ->groupBy('g.id')
             ->getQuery()
@@ -178,11 +183,11 @@ class GroupsRepository extends EntityRepository
                                         a.name as application_name,
                                         a.image AS application_image, 
                                         g.id AS group_id, 
-                                        gla.dateBegin as application_date_begin, 
-                                        gla.dateEnd as application_date_end, 
-                                        gla.maxStudentsPerTeachers as max_students_per_teachers,
-                                        gla.maxStudentsPerGroups as max_students_per_groups,
-                                        gla.maxTeachersPerGroups as max_teachers_per_groups")
+                                        g.dateBegin as application_date_begin, 
+                                        g.dateEnd as application_date_end, 
+                                        g.maxStudentsPerTeachers as max_students_per_teachers,
+                                        g.maxStudents as max_students_per_groups,
+                                        g.maxTeachers as max_teachers_per_groups")
             ->from(Applications::class, 'a')
             ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
             ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')

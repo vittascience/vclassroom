@@ -8,10 +8,11 @@ use User\Entity\Regular;
 use User\Entity\Teacher;
 use Aiken\i18next\i18next;
 use Classroom\Entity\Groups;
+use Classroom\Entity\LtiTool;
 use Classroom\Entity\Applications;
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
-use Classroom\Entity\ActivityRestrictions;
+use Classroom\Entity\UsersRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
@@ -95,9 +96,13 @@ class ControllerSuperAdmin extends Controller
                 'get_application_by_id' => function ($data) {
                     if (isset($data['application_id']) && $data['application_id'] != null) {
                         $application_id = htmlspecialchars($data['application_id']);
-                        return $this->entityManager->getRepository(Applications::class)
-                            ->findOneBy(['id' => $application_id])
-                            ->jsonSerialize();
+
+                        $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id])->jsonSerialize();
+                        $ltiData = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                        if ($ltiData) {
+                            $app['lti'] = $ltiData->jsonSerialize();
+                        }
+                        return $app;
                     } else {
                         return ['message' => 'missing data'];
                     }
@@ -111,14 +116,91 @@ class ControllerSuperAdmin extends Controller
                         $application_id = htmlspecialchars($data['application_id']);
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
+                        $application_color = isset($data['application_color']) ? $data['application_color'] : null;
+                        $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
+
+
+                        $application_sort_index = isset($data['application_sort_index']) ? htmlspecialchars($data['application_sort_index']) : 0;
+                        $application_background_image = isset($data['application_background_image']) ? $data['application_background_image'] : null;
+
+
+
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+                        $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
                         $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
+                        $app->setColor($application_color);
+                        $app->setMaxPerTeachers($restriction_max);
+                        $app->setSort($application_sort_index);
+                        $app->setBackgroundImage($application_background_image);
+                        
+                        if ($lti_data['isLti']) {
+                            $app->setIsLti($lti_data['isLti']);
+                        } else {
+                            $app->setIsLti(false);
+                        }
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
+
+                        // Only for lti apps
+                        if ($lti_data['isLti']) {
+                            $lti_data['clientId'] = isset($lti_data['clientId']) ? htmlspecialchars($lti_data['clientId']) : null;
+                            $lti_data['deploymentId'] = isset($lti_data['deploymentId']) ? htmlspecialchars($lti_data['deploymentId']) : null;
+                            $lti_data['toolUrl'] = isset($lti_data['toolUrl']) ? htmlspecialchars($lti_data['toolUrl']) : null;
+                            $lti_data['publicKeySet'] = isset($lti_data['publicKeySet']) ? htmlspecialchars($lti_data['publicKeySet']) : null;
+                            $lti_data['loginUrl'] = isset($lti_data['loginUrl']) ? htmlspecialchars($lti_data['loginUrl']) : null;
+                            $lti_data['redirectionUrl'] = isset($lti_data['redirectionUrl']) ? htmlspecialchars($lti_data['redirectionUrl']) : null;
+                            $lti_data['deepLinkUrl'] = isset($lti_data['deepLinkUrl']) ? htmlspecialchars($lti_data['deepLinkUrl']) : null;
+                            $lti_data['privateKey'] = isset($lti_data['privateKey']) ? htmlspecialchars($lti_data['privateKey']) : null;
+
+                            // Check if data are not null
+                            if (
+                                $lti_data['clientId'] == null ||
+                                $lti_data['deploymentId'] == null ||
+                                $lti_data['toolUrl'] == null ||
+                                $lti_data['publicKeySet'] == null ||
+                                $lti_data['loginUrl'] == null ||
+
+                                $lti_data['redirectionUrl'] == null ||
+                                $lti_data['deepLinkUrl'] == null ||
+                                $lti_data['privateKey'] == null
+                            ) {
+                                return ['message' => 'missing data'];
+                            }
+
+                            $lti = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                            if (!$lti) {
+                                $lti = new LtiTool();
+                                $lti->setApplicationId($application_id);
+                                $uid = "";
+                                do {
+                                    $uid = uniqid();
+                                    $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['kid' => $uid]);
+                                } while ($isUnique);
+                                $lti->setKid($uid);
+                            }
+
+                            $lti->setClientId($lti_data['clientId']);
+                            $lti->setDeploymentId($lti_data['deploymentId']);
+                            $lti->setToolUrl($lti_data['toolUrl']);
+                            $lti->setPublicKeySet($lti_data['publicKeySet']);
+                            $lti->setLoginUrl($lti_data['loginUrl']);
+                            $lti->setRedirectionUrl($lti_data['redirectionUrl']);
+                            $lti->setDeepLinkUrl($lti_data['deepLinkUrl']);
+                            $lti->setPrivateKey($lti_data['privateKey']);
+
+                            $this->entityManager->persist($lti);
+                            $this->entityManager->flush();
+                        } else {
+                            $ltiTool = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                            if ($ltiTool) {
+                                $this->entityManager->remove($ltiTool);
+                                $this->entityManager->flush();
+                            }
+                        }
 
                         return ['message' => 'success'];
                     } else {
@@ -134,7 +216,7 @@ class ControllerSuperAdmin extends Controller
                         $groupLinkApp = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['application' => $application_id]);
                         $userLinkApp = $this->entityManager->getRepository(UsersLinkApplications::class)->findBy(['application' => $application_id]);
                         $userLinkApplicationFromGroup = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['application' => $application_id]);
-                        $restrictionsApp = $this->entityManager->getRepository(ActivityRestrictions::class)->findBy(['application' => $application_id]);
+
 
                         foreach ($groupLinkApp as $groupApp) {
                             $this->entityManager->remove($groupApp);
@@ -144,9 +226,6 @@ class ControllerSuperAdmin extends Controller
                         }
                         foreach ($userLinkApplicationFromGroup as $userAppFromGroup) {
                             $this->entityManager->remove($userAppFromGroup);
-                        }
-                        foreach ($restrictionsApp as $restriction) {
-                            $this->entityManager->remove($restriction);
                         }
 
                         $this->entityManager->remove($app);
@@ -165,13 +244,80 @@ class ControllerSuperAdmin extends Controller
                         $application_name = htmlspecialchars($data['application_name']);
                         $application_description = htmlspecialchars($data['application_description']);
                         $application_image = isset($data['application_image']) ? htmlspecialchars($data['application_image']) : null;
+                        $application_color = isset($data['application_color']) ? $data['application_color'] : null;
+                        $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
+
+                        $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
+
+                        $application_sort_index = isset($data['application_sort_index']) ? htmlspecialchars($data['application_sort_index']) : 0;
+                        $application_background_image = isset($data['application_background_image']) ? $data['application_background_image'] : null;
 
                         $app = new Applications();
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
+                        $app->setColor($application_color);
+                        $app->setMaxPerTeachers($restriction_max);
+                        $app->setSort($application_sort_index);
+                        $app->setBackgroundImage($application_background_image);
+
+                        if ($lti_data['isLti']) {
+                            $app->setIsLti($lti_data['isLti']);
+                        } else {
+                            $app->setIsLti(false);
+                        }
                         $this->entityManager->persist($app);
                         $this->entityManager->flush();
+
+                        // Only for lti apps
+
+                        // Only for lti apps
+                        if ($lti_data['isLti']) {
+                            $lti_data['clientId'] = isset($lti_data['clientId']) ? htmlspecialchars($lti_data['clientId']) : null;
+                            $lti_data['deploymentId'] = isset($lti_data['deploymentId']) ? htmlspecialchars($lti_data['deploymentId']) : null;
+                            $lti_data['toolUrl'] = isset($lti_data['toolUrl']) ? htmlspecialchars($lti_data['toolUrl']) : null;
+                            $lti_data['publicKeySet'] = isset($lti_data['publicKeySet']) ? htmlspecialchars($lti_data['publicKeySet']) : null;
+                            $lti_data['loginUrl'] = isset($lti_data['loginUrl']) ? htmlspecialchars($lti_data['loginUrl']) : null;
+                            $lti_data['redirectionUrl'] = isset($lti_data['redirectionUrl']) ? htmlspecialchars($lti_data['redirectionUrl']) : null;
+                            $lti_data['deepLinkUrl'] = isset($lti_data['deepLinkUrl']) ? htmlspecialchars($lti_data['deepLinkUrl']) : null;
+                            $lti_data['privateKey'] = isset($lti_data['privateKey']) ? htmlspecialchars($lti_data['privateKey']) : null;
+
+                            // Check if data are not null
+                            if (
+                                $lti_data['clientId'] == null ||
+                                $lti_data['deploymentId'] == null ||
+                                $lti_data['toolUrl'] == null ||
+                                $lti_data['publicKeySet'] == null ||
+                                $lti_data['loginUrl'] == null ||
+
+                                $lti_data['redirectionUrl'] == null ||
+                                $lti_data['deepLinkUrl'] == null ||
+                                $lti_data['privateKey'] == null
+                            ) {
+                                return ['message' => 'missing data'];
+                            }
+
+                            $ltiTool = new LtiTool();
+                            $ltiTool->setApplicationId($app);
+                            $ltiTool->setClientId($lti_data['clientId']);
+                            $ltiTool->setDeploymentId($lti_data['deploymentId']);
+                            $ltiTool->setToolUrl($lti_data['toolUrl']);
+                            $ltiTool->setPublicKeySet($lti_data['publicKeySet']);
+                            $ltiTool->setLoginUrl($lti_data['loginUrl']);
+                            $ltiTool->setRedirectionUrl($lti_data['redirectionUrl']);
+                            $ltiTool->setDeepLinkUrl($lti_data['deepLinkUrl']);
+                            $ltiTool->setPrivateKey($lti_data['privateKey']);
+
+                            $uid = "";
+                            do {
+                                $uid = uniqid();
+                                $isUnique = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['kid' => $uid]);
+                            } while ($isUnique);
+                            $ltiTool->setKid($uid);
+
+                            $this->entityManager->persist($ltiTool);
+                            $this->entityManager->flush();
+                        }
 
                         return ['message' => 'success', 'application_id' => $app->getId()];
                     } else {
@@ -200,25 +346,6 @@ class ControllerSuperAdmin extends Controller
                     if (isset($data['id']) && $data['id'] != null) {
                         $application_id = htmlspecialchars($data['id']);
                         return $this->entityManager->getRepository(UsersLinkApplications::class)->getAllMembersFromApplication($application_id);
-                    }
-                },
-                'update_application_to_group' => function () {
-                    if (
-                        isset($data['group_id']) && $data['group_id'] != null &&
-                        isset($data['application_id']) && $data['application_id'] != null &&
-                        isset($data['date_begin']) && $data['date_begin'] != null  &&
-                        isset($data['date_end']) && $data['date_end'] != null
-                    ) {
-                        $group_id = htmlspecialchars($data['group_id']);
-                        $application_id = htmlspecialchars($data['application_id']);
-                        // TBD : Modifié le format au besoin
-                        $date_begin = \DateTime::createFromFormat('j-M-Y', $data['date_begin']);
-                        $date_end = \DateTime::createFromFormat('j-M-Y', $data['date_end']);
-                        $GroupLinkApplications = $this->entityManager->getRepository(GroupsLinkApplication::class)->findBy(['application' => $application_id, 'group' => $group_id]);
-                        $GroupLinkApplications->setDateBegin($date_begin);
-                        $GroupLinkApplications->setDateEnd($date_end);
-                        $this->entityManager->persist($GroupLinkApplications);
-                        $this->entityManager->flush();
                     }
                 },
                 'create_group' => function ($data) {
@@ -290,18 +417,39 @@ class ControllerSuperAdmin extends Controller
                         isset($data['id']) && $data['id'] != null &&
                         isset($data['name']) && $data['name'] != null &&
                         isset($data['description']) && $data['description'] != null &&
-                        isset($data['applications']) && $data['applications'] != null
+                        isset($data['applications']) && $data['applications'] != null &&
+                        isset($data['global_restriction']) && $data['global_restriction'] != null
+
                     ) {
                         $applications = json_decode($data['applications']);
+                        $global_restrictions = json_decode($data['global_restriction']);
 
                         $group_id = htmlspecialchars($data['id']);
                         $group_name = htmlspecialchars($data['name']);
                         $group_description = htmlspecialchars($data['description']);
 
+                        $date_begin = $global_restrictions[0] != null ? \DateTime::createFromFormat('Y-m-d', $global_restrictions[0]) : null;
+                        $date_end = $global_restrictions[1] != null ? \DateTime::createFromFormat('Y-m-d', $global_restrictions[1]) : null;
+
                         $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
-                        $group->setDescription($group_description);
-                        $group->setName($group_name);
-                        $this->entityManager->persist($group);
+        
+                        $max_students_per_teachers = $global_restrictions[2];
+                        $max_students_per_groups = $global_restrictions[3];
+                        $max_teachers_per_groups = $global_restrictions[4]; 
+
+                        if ($group) {
+                            if ($date_begin != null && $date_end != null) {
+                                $group->setDateBegin($date_begin);
+                                $group->setDateEnd($date_end);
+                            }              
+                            $group->setmaxStudentsPerTeachers($max_students_per_teachers);
+                            $group->setmaxStudents($max_students_per_groups);
+                            $group->setmaxTeachers($max_teachers_per_groups); 
+                            $group->setDescription($group_description);
+                            $group->setName($group_name);
+                            $this->entityManager->persist($group);
+                        }
+
                         $this->manageAppsForGroups($applications, $group_id, $group);
                         $this->entityManager->flush();
                         return ['message' => 'success'];
@@ -342,7 +490,7 @@ class ControllerSuperAdmin extends Controller
                         isset($data['admin']) && $data['admin'] != null &&
                         isset($data['teacher']) && $data['teacher'] != null
                     ) {
-
+                        $apps =  json_decode($data['apps']);
                         $groups =  json_decode($data['groups']);
                         $surname = htmlspecialchars($data['surname']);
                         $firstname = htmlspecialchars($data['firstname']);
@@ -402,6 +550,36 @@ class ControllerSuperAdmin extends Controller
                             if ($isTeacher) {
                                 $teacher = new Teacher($user, $subject, $school, $grade);
                                 $this->entityManager->persist($teacher);
+                            }
+
+                            if (!empty($apps)) {
+                                $date_begin = $apps[0] != null ? \DateTime::createFromFormat('Y-m-d', $apps[0]) : null;
+                                $date_end = $apps[1] != null ? \DateTime::createFromFormat('Y-m-d', $apps[1]) : null;
+                                $max_students = $apps[2] != null ? (int)$apps[2] : 0;
+
+                                if ($date_begin != null && $date_end != null) {
+                                    $UserRestrictions = new UsersRestrictions();
+                                    $UserRestrictions->setUser($user);
+                                    if ($date_begin != null && $date_end != null) {
+                                        $UserRestrictions->setDateBegin($date_begin);
+                                        $UserRestrictions->setDateEnd($date_end);
+                                    }
+                                    $UserRestrictions->setMaxStudents($max_students);
+                                    $this->entityManager->persist($UserRestrictions);
+                                }
+
+                                $apps = $apps[3];
+                                for ($i = 0; $i < count($apps); $i++) {
+                                    if ($apps[$i][1] == true) {
+                                        $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $apps[$i][0]]);
+                                        $max = $apps[$i][2] != null ? (int)$apps[$i][2] : 0;
+                                        $userLinkApp = new UsersLinkApplications();
+                                        $userLinkApp->setUser($user);
+                                        $userLinkApp->setApplication($app);
+                                        $userLinkApp->setmaxActivitiesPerTeachers($max);
+                                        $this->entityManager->persist($userLinkApp);
+                                    }
+                                }
                             }
 
                             $this->entityManager->flush();
@@ -655,45 +833,49 @@ class ControllerSuperAdmin extends Controller
                 'update_user_app' => function ($data) {
                     if (
                         isset($data['user_id']) && $data['user_id'] != null &&
-                        isset($data['user_app']) && $data['user_app'] != null
+                        isset($data['user_app']) && $data['user_app'] != null &&
+                        isset($data['global_user_restriction']) && $data['global_user_restriction'] != null
                     ) {
 
                         $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
                         $user_app = json_decode($data['user_app']);
+                        $global_user_restriction = json_decode($data['global_user_restriction']);
 
                         if ($user_id == null) {
                             return ['message' => 'missing data'];
                         } else {
                             $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                             if ($user) {
+
+                                $UserRestrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(['user' => $user]);
+                                $date_begin = $global_user_restriction[0] != null ? \DateTime::createFromFormat('Y-m-d', $global_user_restriction[0]) : null;
+                                $date_end = $global_user_restriction[1] != null ? \DateTime::createFromFormat('Y-m-d', $global_user_restriction[1]) : null;
+
+                                if (!$UserRestrictions) {
+                                    $UserRestrictions = new UsersRestrictions();
+                                }
+                                $UserRestrictions->setUser($user);
+                                if ($date_begin != null && $date_end != null) {
+                                    $UserRestrictions->setDateBegin($date_begin);
+                                    $UserRestrictions->setDateEnd($date_end);
+                                }
+
+                                $UserRestrictions->setmaxStudents($global_user_restriction[2]);
+                                $this->entityManager->persist($UserRestrictions);
+
                                 foreach ($user_app as $key => $value) {
                                     $AppExist = $this->entityManager->getRepository(UsersLinkApplications::class)->findOneBy(['user' => $user, 'application' => $value[0]]);
-                                    // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
                                     $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
+
                                     if ($value[1] == true) {
-                                        if (empty($value[2]) || empty($value[3])) {
-                                            return ['message' => 'missing data date'];
+                                        if (!$AppExist) {
+                                            $AppExist = new UsersLinkApplications();
                                         }
-                                        $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                                        $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
-                                        if ($AppExist) {
-                                            $AppExist->setApplication($application);
-                                            $AppExist->setUser($user);
-                                            $AppExist->setDateBegin($date_begin);
-                                            $AppExist->setDateEnd($date_end);
-                                            $AppExist->setmaxStudentsPerTeachers($value[4]);
-                                            $AppExist->setmaxActivitiesPerTeachers($value[5]);
-                                            $this->entityManager->persist($AppExist);
-                                        } else {
-                                            $Applications = new UsersLinkApplications();
-                                            $Applications->setApplication($application);
-                                            $Applications->setUser($user);
-                                            $Applications->setDateBegin($date_begin);
-                                            $Applications->setDateEnd($date_end);
-                                            $Applications->setmaxStudentsPerTeachers($value[4]);
-                                            $Applications->setmaxActivitiesPerTeachers($value[5]);
-                                            $this->entityManager->persist($Applications);
-                                        }
+                                        $AppExist->setApplication($application);
+                                        $AppExist->setUser($user);
+                                        $AppExist->setmaxActivitiesPerTeachers($value[2]);
+                                        $this->entityManager->persist($AppExist);
+                                        
                                     } else {
                                         if ($AppExist) {
                                             $this->entityManager->remove($AppExist);
@@ -721,37 +903,7 @@ class ControllerSuperAdmin extends Controller
                 'get_restriction_activity_applications' => function ($data) {
                     if (!empty($data['application_id'])) {
                         $application_id = htmlspecialchars($data['application_id']);
-                        return $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
-                    }
-                },
-                'update_one_restriction_activity' => function ($data) {
-                    if (!empty($data['application_id'])) {
-
-                        $application_id = htmlspecialchars($data['application_id']);
-                        $restriction_type = htmlspecialchars($data['restriction_type']);
-                        $restriction_max = isset($data['restriction_max']) ? htmlspecialchars($data['restriction_max']) : 0;
-
-                        $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
-                        $restriction = $this->entityManager->getRepository(ActivityRestrictions::class)->findOneBy(['application' => $application_id]);
-
-                        if ($restriction && !empty($restriction_type)) {
-                            $restriction->setActivityType($restriction_type);
-                            $restriction->setMaxPerTeachers($restriction_max);
-                            $this->entityManager->persist($restriction);
-                        } else if (!$restriction && !empty($restriction_type)) {
-                            $restriction = new ActivityRestrictions();
-                            $restriction->setApplication($application);
-                            $restriction->setActivityType($restriction_type);
-                            $restriction->setMaxPerTeachers($restriction_max);
-                            $this->entityManager->persist($restriction);
-                        } else if ($restriction && empty($restriction_type)) {
-                            $this->entityManager->remove($restriction);
-                        }
-                        $this->entityManager->flush();
-
-                        return ['success' => true, 'message' => $restriction_type];
-                    } else {
-                        return ['success' => false, 'message' => 'missingData', 'data' => ['application_id' => !empty($data['application_id'])]];
+                        return $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
                     }
                 },
                 'get_default_restrictions' => function () {
@@ -806,69 +958,6 @@ class ControllerSuperAdmin extends Controller
                         return ['message' => "missing data"];
                     }
                 },
-                /* 'update_default_activities_restrictions' => function ($data) {
-                    if (isset($data['restrictions'])) {
-
-                        $restrictionsData = json_decode($data['restrictions']);
-                        $restrictionsFormatted = [];
-
-                        foreach ($restrictionsData as $restriction) {
-                            $restrictionsFormatted[$restriction[0]] = (int)$restriction[1];
-                        }
-
-                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-                        $arrayRestriction = json_encode($restrictionsFormatted);
-                        $restrictions->setRestrictions($arrayRestriction);
-                        $this->entityManager->persist($restrictions);
-                        $this->entityManager->flush();
-
-                        return ['message' => "success"];
-                    } else {
-                        return ['message' => "missing data"];
-                    }
-                },
-                'add_default_activities_restrictions' => function ($data) {
-                    if (isset($data['restrictions'])) {
-
-                        $restrictionsData = json_decode($data['restrictions']);
-                        $restrictionsFormatted = [];
-
-                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-
-                        $restrictionsFormatted = (array)json_decode($restrictions->getRestrictions());
-                        if (!array_key_exists($restrictionsData[0], $restrictionsFormatted)) {
-                            $restrictionsFormatted[$restrictionsData[0]] = (int)$restrictionsData[1];
-
-                            $arrayRestriction = json_encode($restrictionsFormatted);
-                            $restrictions->setRestrictions($arrayRestriction);
-                            $this->entityManager->persist($restrictions);
-                            $this->entityManager->flush();
-
-                            return ['message' => "success"];
-                        } else {
-                            return ['message' => "alreadyexist"];
-                        }
-                    } else {
-                        return ['message' => "missing data"];
-                    }
-                },
-                'delete_default_activities_restrictions' => function ($data) {
-                    if (isset($data['restrictions'])) {
-
-                        $restrictionsData = htmlspecialchars($data['restrictions']);
-                        $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'activitiesDefaultRestrictions']);
-                        $restrictionsFormatted = (array)json_decode($restrictions->getRestrictions());
-                        unset($restrictionsFormatted[$restrictionsData]);
-                        $arrayRestriction = json_encode($restrictionsFormatted);
-                        $restrictions->setRestrictions($arrayRestriction);
-                        $this->entityManager->persist($restrictions);
-                        $this->entityManager->flush();
-
-                        return ['message' => "success"];
-                    } else {
-                        return ['message' => "missing data"];
-                    }
-                } */
             );
         }
     }
@@ -943,44 +1032,26 @@ class ControllerSuperAdmin extends Controller
         return true;
     }
 
-    private function manageAppsForGroups($applications, $group_id, $group) {
+    private function manageAppsForGroups($applications, $group_id, $group)
+    {
         foreach ($applications as $key => $value) {
             $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
             // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
             $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
             if ($value[1] == true) {
-                $date_begin = \DateTime::createFromFormat('Y-m-d', $value[2]);
-                $date_end = \DateTime::createFromFormat('Y-m-d', $value[3]);
-                $max_students_per_teachers = $value[4];
-                $max_students_per_groups = $value[5];
-                $max_teachers_per_groups = $value[6];
-                $max_activities_per_groups = $value[7];
-                $max_activities_per_teachers = $value[8];
 
-                if ($AppExist) {
-                    $AppExist->setApplication($application);
-                    $AppExist->setGroup($group);
-                    $AppExist->setDateBegin($date_begin);
-                    $AppExist->setDateEnd($date_end);
-                    $AppExist->setmaxStudentsPerTeachers($max_students_per_teachers);
-                    $AppExist->setmaxStudentsPerGroups($max_students_per_groups);
-                    $AppExist->setmaxTeachersPerGroups($max_teachers_per_groups);
-                    $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
-                    $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
-                    $this->entityManager->persist($AppExist);
-                } else {
-                    $Applications = new GroupsLinkApplications();
-                    $Applications->setApplication($application);
-                    $Applications->setGroup($group);
-                    $Applications->setDateBegin($date_begin);
-                    $Applications->setDateEnd($date_end);
-                    $Applications->setmaxStudentsPerTeachers($max_students_per_teachers);
-                    $Applications->setmaxStudentsPerGroups($max_students_per_groups);
-                    $Applications->setmaxTeachersPerGroups($max_teachers_per_groups);
-                    $Applications->setmaxActivitiesPerGroups($max_activities_per_groups);
-                    $Applications->setmaxActivitiesPerTeachers($max_activities_per_teachers);
-                    $this->entityManager->persist($Applications);
+                $max_activities_per_groups = $value[2];
+                $max_activities_per_teachers = $value[3];
+
+                if (!$AppExist) {
+                    $AppExist = new GroupsLinkApplications();
                 }
+                $AppExist->setApplication($application);
+                $AppExist->setGroup($group);
+                $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
+                $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
+                $this->entityManager->persist($AppExist);
+
             } else {
                 if ($AppExist) {
                     $this->entityManager->remove($AppExist);

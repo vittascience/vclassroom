@@ -5,7 +5,6 @@ namespace Classroom\Repository;
 use Doctrine\ORM\EntityRepository;
 
 
-
-class ActivityRestrictionsRepository extends EntityRepository
+class UsersRestrictionsRepository extends EntityRepository
 {
 }

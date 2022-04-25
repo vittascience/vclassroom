@@ -381,76 +381,7 @@ class ControllerClassroom extends Controller
                         return $_SESSION['id'];
                     }
                 }
-
-                /**
-                 * @ToBeRemoved
-                 * Create a demoStudent account and link it to the classroom but demoStudent account is always created along a classroom
-                 * last check september 2021
-                 */
-                /* $user = new User();
-               $user->setFirstName("élève");
-               $user->setSurname("modèl");
-               $user->setPseudo($demoStudent);
-               $password = passwordGenerator();
-               $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
-               $lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-               $user->setId($lastQuestion->getId() + 1);
-               $this->entityManager->persist($user);
-               $this->entityManager->flush();
-
-               $classroomUser = new ClassroomUser($user);
-               $classroomUser->setGarId(null);
-               $classroomUser->setSchoolId(null);
-               $classroomUser->setIsTeacher(false);
-               $classroomUser->setMailTeacher(NULL);
-               $this->entityManager->persist($classroomUser);
-               $linkteacherToGroup = new ClassroomLinkUser($user, $classroom);
-               $linkteacherToGroup->setRights(0);
-               $this->entityManager->persist($linkteacherToGroup);
-               $_SESSION['idProf'] = $_SESSION['id'];
-               $_SESSION['id'] = $lastQuestion->getId() + 1;
-               return $_SESSION['id']; */
             },
-
-            /* 'get_all' => function () {
-                *
-                 * @Naser
-                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_all in the search
-                 * last check => September 2021
-                 
-                return $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                    ->findAll();
-            }, */
-            /*  'get_users_and_activities' => function ($data) {
-                *
-                 * @Naser
-                 * @NoApiCallFound NO RECORD FOUND FOR /routing/Routing.php?controller=classroom&action=get_users_and_activities in the search
-                 * last check => September 2021
-                 
-                $students = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                    ->getAllStudentsInClassroom($data['classroom'], 0);
-
-                return $students;
-            }, */
-            /* 'get_my_sandbox_projects' => function () {
-                *
-                 * @Naser
-                 * this method has been transferred into the plugin named plugin-vittascience-sandbox
-                 * @ToBeDeleted 
-                 * last check => September 2021
-                 
-                $arrayResults = [];
-                $sharedProjects = $this->entityManager->getRepository('Interfaces\Entity\ProjectLinkUser')
-                    ->findBy(array("user" => $this->user));
-                foreach ($sharedProjects as $s) {
-                    $arrayResults[] = $s->getProject();
-                }
-                return [
-                    "mine" => $this->entityManager->getRepository('Interfaces\Entity\Project')
-                        ->findBy(array("user" => $this->user['id'], "deleted" => false, "activitySolve" => false)),
-                    "shared" => $arrayResults
-                ];
-            }, */
         );
     }
 
