@@ -98,7 +98,7 @@ class ControllerSuperAdmin extends Controller
                         $application_id = htmlspecialchars($data['application_id']);
 
                         $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id])->jsonSerialize();
-                        $ltiData = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['applicationId' => $application_id]);
+                        $ltiData = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['application' => $application_id]);
                         if ($ltiData) {
                             $app['lti'] = $ltiData->jsonSerialize();
                         }
