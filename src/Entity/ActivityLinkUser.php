@@ -544,6 +544,15 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         } else {
             $project = null;
         }
+
+        $unserialized = @unserialize($this->getResponse());
+        // Handle the previous format
+        if ($unserialized) {
+            $response = json_encode($unserialized);
+        } else {
+            $response = $this->getResponse();
+        }
+
         return [
             'id' => $this->getId(),
             'user' => $this->getUser()->jsonSerialize(),
@@ -564,7 +573,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'project' => $project,
             'reference' => $this->getReference(),
             'url'=> $this->getUrl(),
-            'response' => $this->getResponse()
+            'response' => $response
         ];
     }
 
