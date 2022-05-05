@@ -127,7 +127,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @ORM\Column(name="response", type="text", nullable=true)
      * @var String
      */
-    private $response = "";
+    private $response = null;
 
     public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = "")
     {
