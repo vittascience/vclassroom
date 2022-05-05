@@ -2,23 +2,15 @@
 
 namespace Classroom\Controller;
 
-use Classroom\Entity\Applications;
-use Classroom\Entity\ClassroomLinkUser;
-use User\Entity\User;
-
-/**
- * @ THOMAS MODIF 2 lines just below
- */
-
 use DAO\RegularDAO;
 use models\Regular;
-use User\Entity\ClassroomUser;
-
-/**
- * @ Rémi added 1 line just below
- */
-
+use User\Entity\User;
 use Classroom\Entity\Groups;
+use User\Entity\ClassroomUser;
+use Classroom\Entity\Applications;
+use Classroom\Entity\ActivityLinkUser;
+use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\ActivityLinkClassroom;
 
 
 class ControllerClassroomLinkUser extends Controller
@@ -159,8 +151,7 @@ class ControllerClassroomLinkUser extends Controller
                     $password = passwordGenerator();
                     $passwords[] = $password;
                     $user->setPassword($password);
-                    //$lastQuestion = $this->entityManager->getRepository('User\Entity\User')->findOneBy([], ['id' => 'desc']);
-                    //$user->setId($lastQuestion->getId() + 1);
+
                     $this->entityManager->persist($user);
                     $this->entityManager->flush();
 
@@ -171,9 +162,22 @@ class ControllerClassroomLinkUser extends Controller
                     $classroomUser->setMailTeacher(NULL);
                     $this->entityManager->persist($classroomUser);
 
-                    $studyGroup = $this->entityManager->getRepository('Classroom\Entity\Classroom')
+                    $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
                         ->findOneBy(array('link' => $classroomLink));
-                    $linkClassroomUserToGroup = new ClassroomLinkUser($user, $studyGroup);
+                    
+                    // get retro attributed activities if any
+                    $classroomRetroAttributedActivities = $this->entityManager
+                        ->getRepository(ActivityLinkClassroom::class)
+                        ->getRetroAttributedActivitiesByClassroom($classroom);
+                
+                    // some retro attributed activities found, add them to the student
+                    if($classroomRetroAttributedActivities){
+                        $this->entityManager->getRepository(ActivityLinkUser::class)
+                            ->addRetroAttributedActivitiesToStudent($classroomRetroAttributedActivities,$user);
+                    }
+
+                    
+                    $linkClassroomUserToGroup = new ClassroomLinkUser($user, $classroom);
                     $linkClassroomUserToGroup->setRights(0);
                     $this->entityManager->persist($linkClassroomUserToGroup);
                 }
@@ -366,6 +370,17 @@ class ControllerClassroomLinkUser extends Controller
                         ->getRepository('Classroom\Entity\Classroom')
                         ->findOneBy(array('link' => $classroomLink));
 
+                    // get retro attributed activities if any
+                    $classroomRetroAttributedActivities = $this->entityManager
+                        ->getRepository(ActivityLinkClassroom::class)
+                        ->getRetroAttributedActivitiesByClassroom($classroom);
+                
+                    // some retro attributed activities found, add them to the student
+                    if($classroomRetroAttributedActivities){
+                        $this->entityManager->getRepository(ActivityLinkUser::class)
+                            ->addRetroAttributedActivitiesToStudent($classroomRetroAttributedActivities,$user);
+                    }
+
                     // create the link between the user and its classroom to be stored in classroom_activities_link_classroom_users
                     $classroomLinkUser = new ClassroomLinkUser($user, $classroom);
                     $classroomLinkUser->setRights(0);
@@ -501,6 +516,49 @@ class ControllerClassroomLinkUser extends Controller
              },  */
         );
     }
+
+    /* private function addRetroAttributedActivitiesToStudentIfAny($classroom,$user){
+        $classroomRetroAttributedActivities = $this->entityManager
+            ->getRepository(ActivityLinkClassroom::class)
+            ->getRetroAttributedActivitiesByClassroom($classroom);
+        
+        if($classroomRetroAttributedActivities){
+            foreach($classroomRetroAttributedActivities as $classroomRetroAttributedActivity){
+                $activity = $classroomRetroAttributedActivity->getActivity();
+                $dateBegin = $classroomRetroAttributedActivity->getDateBegin();
+                $dateEnd = $classroomRetroAttributedActivity->getDateEnd();
+                $evaluation = $classroomRetroAttributedActivity->getEvaluation();
+                $autocorrection = $classroomRetroAttributedActivity->getAutocorrection();
+                $introduction = $classroomRetroAttributedActivity->getIntroduction();
+                $reference = $classroomRetroAttributedActivity->getReference();
+                $commentary = $classroomRetroAttributedActivity->getCommentary();
+
+                $course = $classroomRetroAttributedActivity->getCourse();
+                $coefficient = $classroomRetroAttributedActivity->getCoefficient();
+                $linkActivityToUser = new ActivityLinkUser(
+                    $activity, 
+                    $user, 
+                    $dateBegin,  
+                    $dateEnd, 
+                    $evaluation, 
+                    $autocorrection, 
+                    "", 
+                    $introduction, 
+                    $reference,
+                    $commentary
+                );
+                if($course){
+                    $linkActivityToUser->setCourse($course);
+                }
+                $linkActivityToUser->setCoefficient($coefficient);
+
+                $this->entityManager->persist($linkActivityToUser);
+                $this->entityManager->flush();
+                
+            }
+        }
+            
+    } */
 }
 
 function passwordGenerator()

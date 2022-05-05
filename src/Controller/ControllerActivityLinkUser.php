@@ -9,6 +9,7 @@ use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\ActivityLinkClassroom;
+use Classroom\Entity\Applications;
 
 class ControllerActivityLinkUser extends Controller
 {
@@ -69,7 +70,6 @@ class ControllerActivityLinkUser extends Controller
                 return $arrayData;
             },
             'get_student_activities' => function () {
-               
                 /**
                  * This method is used on the student activity panel 
                  */
@@ -98,9 +98,28 @@ class ControllerActivityLinkUser extends Controller
                 $arrayData['savedActivities'] = $this->entityManager
                     ->getRepository(ActivityLinkUser::class)
                     ->getSavedActivities($userId);
-                
-                return $arrayData;
-                
+
+                // convert doctrine object to php object in order to add a custom property
+                $dataToSend = json_decode(json_encode($arrayData));
+
+                // loop through activities type
+                foreach ($dataToSend as $MainActivitiesType) {
+                    // loop through single activity
+                    foreach ($MainActivitiesType as $activityLinkUser) {
+
+                        // get the activity restriction by type
+
+                        $activityRestriction = $this->entityManager
+                            ->getRepository(Applications::class)
+                            ->findOneBy(array(
+                                'name' => $activityLinkUser->activity->type
+                            ));
+
+                        // bind isLti property to $dataToSend
+                        $activityLinkUser->activity->isLti = $activityRestriction->getIsLti();
+                    }
+                }
+                return $dataToSend;
             },
             'add_users' => function () {
                 /**
@@ -207,34 +226,36 @@ class ControllerActivityLinkUser extends Controller
                         }
                     }
 
+                    // get all retor attributions if any
+                    $linkedActivityToClassrooms = $this->entityManager
+                        ->getRepository(ActivityLinkClassroom::class)
+                        ->findBy(array(
+                            'activity' => $activity,
+                            'reference' => $reference
+                        ));
 
-                    // step 3 => loop through the classrooms ids and get the classrooms
-                    foreach ($classroomIds as $classroomId) {
-                        $classroom = $this->entityManager
-                            ->getRepository('Classroom\Entity\Classroom')
-                            ->findOneBy(array("id" => $classroomId));
-                        if ($classroom) {
-                            if ($retroAttribution == 'true') {
-                                // the classroom was found 
-                                // and the activity has to attributed to all future students joining the classroom
-                                // check if there is already a record in classroom_activities_link_classroom
-                                $linkActivityToClassroomExists = $this->entityManager
-                                    ->getRepository(ActivityLinkClassroom::class)
-                                    ->findOneBy(array(
-                                        'classroom' => $classroom,
-                                        'activity' => $activity
-                                    ));
+                    // step 1 remove them all by default to handle the case when retro attribution is set to false
+                    if ($linkedActivityToClassrooms) {
+                        foreach ($linkedActivityToClassrooms as $linkedActivityToClassroom) {
+                            $this->entityManager->remove($linkedActivityToClassroom);
+                            $this->entityManager->flush();
+                        }
+                    }
 
-                                // a record was found, do nothing
-                                if ($linkActivityToClassroomExists) continue;
-
-                                // no record found, save a new entry in classroom_activities_link_classroom
+                    // step 2 create the record and save them to handle the case when retro attribution to true, 
+                    if ($retroAttribution == 'true') {
+                        foreach ($classroomIds as $classroomId) {
+                            $classroom = $this->entityManager
+                                ->getRepository('Classroom\Entity\Classroom')
+                                ->findOneBy(array("id" => $classroomId));
+                            if ($classroom) {
                                 $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
                                 $this->entityManager->persist($linkActivityToClassroom);
+                                $this->entityManager->flush();
                             }
                         }
                     }
-                    $this->entityManager->flush();
+
                     return true;
                 } else {
                     // no reference provided, we are in a create context
@@ -275,7 +296,8 @@ class ControllerActivityLinkUser extends Controller
                                     ->getRepository(ActivityLinkClassroom::class)
                                     ->findOneBy(array(
                                         'classroom' => $classroom,
-                                        'activity' => $activity
+                                        'activity' => $activity,
+                                        'reference' => $reference
                                     ));
 
                                 // a record was found, do nothing
@@ -313,7 +335,11 @@ class ControllerActivityLinkUser extends Controller
                 $commentary = !empty($_POST['commentary']) ? htmlspecialchars(strip_tags(trim($_POST['commentary']))) : '';
                 $note = !empty($_POST['note']) ? intval($_POST['note']) : 0;
                 $projectId = !empty($incomingProjectId) ? intval($incomingProjectId) : null;
-                $timePassed = !empty($_POST['timePassed']) ? intval($_POST['timePassed']) : 0;
+                /**
+                 * @ToBeRemoved duplicate behavior with Thomas's sendBeacon
+                 * $timePassed = !empty($_POST['timePassed']) ? intval($_POST['timePassed']) : 0;
+                 * March 2022
+                 */
 
                 // initiate an empty errors array 
                 $errors = [];
@@ -341,7 +367,11 @@ class ControllerActivityLinkUser extends Controller
                     $activity->setProject($project);
                     $activity->setTries($activity->getTries() + 1);
                     $activity->setDateSend(new \DateTime());
-                    $activity->setTimePassed(intval($activity->getTimePassed()) + $timePassed);
+                    /* 
+                    * @ToBeRemoved duplicate behavior with Thomas's sendBeacon
+                    * $activity->setTimePassed(intval($activity->getTimePassed()) + $timePassed); 
+                    * March 2022
+                    */
                 }
 
                 /*  $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
@@ -362,15 +392,31 @@ class ControllerActivityLinkUser extends Controller
                 if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
                 // accept only connected user
-                if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotRetrievedNotAuthenticated"];
+                if (empty($_SESSION['id'])) return ["errorType" => "getOneNotRetrievedNotAuthenticated"];
 
                 // bind and sanitize incoming data to check if the logged user is the teacher
                 $activityId = !empty($_POST['id']) ? intval($_POST['id']) : 0;
 
-                if(empty($activityId)) return array('errorType' => 'activityIdInvalid');
+                if (empty($activityId)) return array('errorType' => 'activityIdInvalid');
 
-                return $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
+                $activity = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->findOneBy(array("id" => $activityId));
+
+                $activityToSend = json_decode(json_encode($activity));
+
+                // get the activity restriction by type
+                $activityRestriction = $this->entityManager
+                    ->getRepository(Applications::class)
+                    ->findOneBy(array(
+                        'name'=> $activityToSend->activity->type
+                    ));
+               
+                // bind isLti property to $dataToSend
+                $activityToSend->activity->isLti = $activityRestriction
+                    ? $activityRestriction->getIsLti()
+                    : false;
+
+                return $activityToSend;
             },
             "remove_by_reference" => function () {
                 /**
@@ -384,39 +430,81 @@ class ControllerActivityLinkUser extends Controller
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "removeByReferenceNotRetrievedNotAuthenticated"];
 
+                // bind and sanitize incoming data
                 $reference = !empty($_POST['reference']) ? intval($_POST['reference']) : 0;
-                if(empty($reference)) return array('errorType' => 'activityRefenceInvalid');
+                $classroomId = !empty($_POST['classroomId']) ? intval($_POST['classroomId']) : 0;
 
-                // get all records in classroom_activities_link_classroom with the reference provided
+                // check for errors
+                $errors = [];
+                if (empty($reference)) {
+                    array_push($errors, array('errorType' => 'activityReferenceInvalid'));
+                }
+                if (empty($classroomId)) {
+                    array_push($errors, array('errorType' => 'classroomIdInvalid'));
+                }
+
+                // return errors if any
+                if (!empty($errors)) return array('errors' => $errors);
+
+
+                // no errors, get all records in classroom_activities_link_classroom with the reference provided
+                $classroom = $this->entityManager->getRepository(Classroom::class)->find($classroomId);
                 $classroomActivitiesRetroAttributed = $this->entityManager
                     ->getRepository(ActivityLinkClassroom::class)
-                    ->findBy(array(
-                        'reference' => $reference
+                    ->findOneBy(array(
+                        'reference' => $reference,
+                        'classroom' => $classroom
                     ));
-                
-                // some records found, delete them
-                if($classroomActivitiesRetroAttributed){
-                    foreach($classroomActivitiesRetroAttributed as $classroomActivityRetroAttributed){
-                        $this->entityManager->remove($classroomActivityRetroAttributed);
-                    }
+
+                // the current activity has been retro attributed , delete the record from classroom_activities_link_classroom
+                if ($classroomActivitiesRetroAttributed) {
+                    $this->entityManager->remove($classroomActivitiesRetroAttributed);
                     $this->entityManager->flush();
                 }
-                
 
-                // get the sudents activities
-                $classroomStudentsActivities = $this->entityManager
-                    ->getRepository('Classroom\Entity\ActivityLinkUser')
-                    ->findBy(array("reference" => $reference));
+                // get all students activity per classroom and activity ref
+                $classroomStudentsActivitiesByReference = $this->entityManager
+                    ->getRepository(ActivityLinkUser::class)
+                    ->getStudentsActivityByClassroomAndActivityRef($classroomId, $reference);
 
                 // no activity found, return an error
-                if(!$classroomStudentsActivities) return array('errorType' => 'activityRefenceInvalid');
+                if (!$classroomStudentsActivitiesByReference) return array('errorType' => 'activityReferenceInvalid');
 
-                // delete each activity
-                foreach ($classroomStudentsActivities as $classroomStudentsActivity) {
+                // delete each student activity from classroom_activities_link_classroom_users
+                foreach ($classroomStudentsActivitiesByReference as $classroomStudentsActivity) {
                     $this->entityManager->remove($classroomStudentsActivity);
+                    $this->entityManager->flush();
                 }
-                $this->entityManager->flush();
+
                 return true;
+            },
+            "update_time_passed" => function () {
+                /**
+                 * This method is called to update the time passed on an ansctivity (activityLinkUser) by a student.
+                 */
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "removeByReferenceNotRetrievedNotAuthenticated"];
+
+                $reference = !empty($_POST['reference']) ? intval($_POST['reference']) : 0;
+                if (empty($reference)) return array('errorType' => 'activityReferenceInvalid');
+
+                $timePassed = !empty($_POST['time_passed']) ? intval($_POST['time_passed']) : 0;
+                if (empty($timePassed)) return array('errorType' => 'activityTimePassedInvalid');
+
+                $user = $this->entityManager
+                    ->getRepository(User::class)
+                    ->find($_SESSION["id"]);
+
+                $classroomStudentActivity = $this->entityManager
+                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->findOneBy(array("reference" => $reference, "user" => $user));
+
+                $previousTimePassed = $classroomStudentActivity->getTimePassed();
+                $classroomStudentActivity->setTimePassed($previousTimePassed + $timePassed);
+                $this->entityManager->flush();
             }
         );
     }

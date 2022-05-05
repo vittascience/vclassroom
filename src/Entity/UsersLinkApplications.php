@@ -33,25 +33,6 @@ class UsersLinkApplications
     private $application;
 
     /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
-     * @var \DateTime
-     */
-    private $dateBegin = null;
-
-    /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
-     * @var \DateTime
-     */
-    private $dateEnd = null;
-
-
-    /**
-     * @ORM\Column(name="max_students_per_teachers", type="integer", nullable=true)
-     * @var integer
-     */
-    private $maxStudentsPerTeachers;
-
-    /**
      * @ORM\Column(name="max_activities_per_teachers", type="integer", nullable=true)
      * @var integer
      */
@@ -102,60 +83,6 @@ class UsersLinkApplications
     }
 
     /**
-     * @return \DateTime
-     */
-    public function getDateBegin(): \DateTime
-    {
-        return $this->dateBegin;
-    }
-
-    /**
-     * @param \DateTime $dateBegin
-     * @return UsersLinkApplications
-     */
-    public function setDateBegin(\DateTime $dateBegin): self
-    {
-        $this->dateBegin = $dateBegin;
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getDateEnd(): \DateTime
-    {
-        return $this->dateEnd;
-    }
-
-    /**
-     * @param \DateTime $dateEnd
-     * @return UsersLinkApplications
-     */
-    public function setDateEnd(\DateTime $dateEnd)
-    {
-        $this->dateEnd = $dateEnd;
-        return $this;
-    }
-
-    /**
-     * @return Integer
-     */
-    public function getmaxStudentsPerTeachers()
-    {
-        return $this->maxStudentsPerTeachers;
-    }
-
-    /**
-     * @param Integer $maximum
-     * @return Applications
-     */
-    public function setmaxStudentsPerTeachers(Int $maximum): self
-    {
-        $this->maxStudentsPerTeachers = $maximum;
-        return $this;
-    }
-
-    /**
      * @return Integer
      */
     public function getmaxActivitiesPerTeachers()
@@ -180,9 +107,6 @@ class UsersLinkApplications
             'id' => $this->getId(),
             'application' => $this->getApplication(),
             'user_id' => $this->getUser(),
-            'date_begin' => $this->getDateBegin(),
-            'date_end' => $this->getDateEnd(),
-            'max_students_per_teachers' => $this->getmaxStudentsPerTeachers(),
             'max_activities_per_teachers' => $this->getmaxActivitiesPerTeachers()
         ];
     }
