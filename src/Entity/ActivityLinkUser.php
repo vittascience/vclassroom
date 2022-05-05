@@ -516,7 +516,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * Get the value of dateSend
      */
-    public function getResponse()
+    public function getResponse(): ?string
     {
         return $this->response;
     }
@@ -526,11 +526,8 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @param  string  $response
      * @return  self
      */
-    public function setResponse($response)
+    public function setResponse(?String $response)
     {
-        if(!is_string($response)){
-            throw new EntityDataIntegrityException("The response has to be a string");
-        }
         $this->response = $response;
         return $this;
     }
