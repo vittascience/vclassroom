@@ -84,7 +84,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->createQueryBuilder()
             ->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NULL)')
+            ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NULL AND t.response IS NULL)')
             ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
@@ -123,7 +123,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->createQueryBuilder()
             ->select('t')
             ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND t.project IS NOT NULL OR t.response IS NOT NULL)')
+            ->where('(t.user = :id AND (t.correction IS NULL OR t.correction = 0) AND (t.project IS NOT NULL OR t.response IS NOT NULL))')
             ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
