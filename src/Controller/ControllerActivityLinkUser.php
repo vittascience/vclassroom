@@ -84,19 +84,19 @@ class ControllerActivityLinkUser extends Controller
                 $arrayData = array();
                
                 $arrayData['newActivities'] = $this->entityManager
-                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getRepository(ActivityLinkUser::class)
                     ->getNewActivities($userId);
               
                 $arrayData['currentActivities'] = $this->entityManager
-                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getRepository(ActivityLinkUser::class)
                     ->getCurrentActivities($userId);
 
                 $arrayData['doneActivities'] = $this->entityManager
-                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getRepository(ActivityLinkUser::class)
                     ->getDoneActivities($userId);
 
                 $arrayData['savedActivities'] = $this->entityManager
-                    ->getRepository('Classroom\Entity\ActivityLinkUser')
+                    ->getRepository(ActivityLinkUser::class)
                     ->getSavedActivities($userId);
                 
                 return $arrayData;
