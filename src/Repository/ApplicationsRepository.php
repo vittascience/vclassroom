@@ -61,12 +61,16 @@ class ApplicationsRepository extends EntityRepository
         ];
 
         // Personnal apps management
-
-        if (!empty($usersRestrictions->getMaxStudents())) {
-            $maxStudentsPerTeachers = $usersRestrictions->getMaxStudents();
+        if (!empty($usersRestrictions)) {
+            if (!empty($usersRestrictions->getMaxStudents())) {
+                $maxStudentsPerTeachers = $usersRestrictions->getMaxStudents();
+            } else {
+                $maxStudentsPerTeachers = $userRestriction['maxStudents'];
+            }
         } else {
             $maxStudentsPerTeachers = $userRestriction['maxStudents'];
         }
+
         $teacherInfo['maxStudents'] = $maxStudentsPerTeachers;
 
 
