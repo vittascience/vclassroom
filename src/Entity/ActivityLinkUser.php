@@ -436,10 +436,10 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setNote($note)
     {
-        if (is_int($note) && $note >= 0 && $note < 4) {
+        if (is_int($note) && $note >= 0 && $note < 5) {
             $this->note = $note;
         } else {
-            throw new EntityDataIntegrityException("note needs to be int, between 0 and 3 included");
+            throw new EntityDataIntegrityException("note needs to be int, between 0 and 4 included");
         }
     }
 
