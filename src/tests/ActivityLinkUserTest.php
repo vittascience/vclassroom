@@ -562,13 +562,13 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider for testSetResponseRejectsInvalidValue */
-    // public function provideStringValues(){
-    //     return array(
-    //         array('response1'),
-    //         array('string1'),
-    //         array('some more string example')
-    //     );
-    // }
+    public function provideStringValues(){
+        return array(
+            array('response1'),
+            array('string1'),
+            array('some more string example')
+        );
+    }
 
 /*     public function testjsonSerialize()
     {
