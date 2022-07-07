@@ -36,6 +36,9 @@ class UsersLinkGroupsRepository extends EntityRepository
             $orderby = "u.firstname";
         }
 
+        if ($group_id == 0)
+            return false;
+
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
 
         if ($group_id >= 1) {
@@ -92,8 +95,6 @@ class UsersLinkGroupsRepository extends EntityRepository
                 ->getQuery();
         }
 
-        $paginator = new Paginator($result);
-
         // fetch applications of users
         $ApplicationsOfUsers = $this->getEntityManager()
             ->createQueryBuilder()
@@ -125,7 +126,8 @@ class UsersLinkGroupsRepository extends EntityRepository
             ->getQuery()
             ->getScalarResult();
 
-
+        
+        $paginator = new Paginator($result);
         $paginator->setUseOutputWalkers(false);
         $totalItems = count($paginator);
         $currentPage = $page;

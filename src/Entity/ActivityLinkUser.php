@@ -127,9 +127,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @ORM\Column(name="response", type="text", nullable=true)
      * @var String
      */
-    private $response = "";
+    private $response = null;
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = "")
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = null)
     {
         $this->setUser($user);
         $this->setActivity($activity);
@@ -436,10 +436,10 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setNote($note)
     {
-        if (is_int($note) && $note >= 0 && $note < 4) {
+        if (is_int($note) && $note >= 0 && $note < 5) {
             $this->note = $note;
         } else {
-            throw new EntityDataIntegrityException("note needs to be int, between 0 and 3 included");
+            throw new EntityDataIntegrityException("note needs to be int, between 0 and 4 included");
         }
     }
 
@@ -515,7 +515,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * Get the value of dateSend
      */
-    public function getResponse()
+    public function getResponse(): ?string
     {
         return $this->response;
     }
@@ -525,11 +525,8 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @param  string  $response
      * @return  self
      */
-    public function setResponse($response)
+    public function setResponse(?String $response)
     {
-        if(!is_string($response)){
-            throw new EntityDataIntegrityException("The response has to be a string");
-        }
         $this->response = $response;
         return $this;
     }
@@ -548,6 +545,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         }
 
         $unserialized = @unserialize($this->getResponse());
+        // Handle the previous format
         if ($unserialized) {
             $response = json_encode($unserialized);
         } else {
