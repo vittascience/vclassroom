@@ -174,7 +174,7 @@ class ControllerSuperAdmin extends Controller
                             $lti = $this->entityManager->getRepository(LtiTool::class)->findOneBy(['application' => $application_id]);
                             if (!$lti) {
                                 $lti = new LtiTool();
-                                $lti->setApplication($application_id);
+                                $lti->setApplication($app);
                                 $uid = "";
                                 do {
                                     $uid = uniqid();
