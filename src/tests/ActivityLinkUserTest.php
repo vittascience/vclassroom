@@ -418,10 +418,10 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** @dataProvider provideNonStringValues */
-    public function testSetResponseRejectsInvalidValue($providedValue){
-        $this->expectException(EntityDataIntegrityException::class);
-        $this->activityLinkUser->setResponse($providedValue);
-    }
+    // public function testSetResponseRejectsInvalidValue($providedValue){
+    //     $this->expectException(EntityDataIntegrityException::class);
+    //     $this->activityLinkUser->setResponse($providedValue);
+    // }
 
     /** dataProvider for testGetIdReturnValue */
     public function provideIds(){
@@ -562,13 +562,13 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider for testSetResponseRejectsInvalidValue */
-    public function provideStringValues(){
-        return array(
-            array('response1'),
-            array('string1'),
-            array('some more string example')
-        );
-    }
+    // public function provideStringValues(){
+    //     return array(
+    //         array('response1'),
+    //         array('string1'),
+    //         array('some more string example')
+    //     );
+    // }
 
 /*     public function testjsonSerialize()
     {
