@@ -1058,8 +1058,8 @@ class ControllerSuperAdmin extends Controller
             $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
             if ($value[1] == true) {
 
-                $max_activities_per_groups = $value[2];
-                $max_activities_per_teachers = $value[3];
+                $max_activities_per_groups = $value[2] != null ? $value[2] : 0;
+                $max_activities_per_teachers = $value[3] != null ? $value[2] : 0;
 
                 if (!$AppExist) {
                     $AppExist = new GroupsLinkApplications();
