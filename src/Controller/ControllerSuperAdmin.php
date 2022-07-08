@@ -1059,7 +1059,7 @@ class ControllerSuperAdmin extends Controller
             if ($value[1] == true) {
 
                 $max_activities_per_groups = $value[2] != null ? $value[2] : 0;
-                $max_activities_per_teachers = $value[3] != null ? $value[2] : 0;
+                $max_activities_per_teachers = $value[3] != null ? $value[3] : 0;
 
                 if (!$AppExist) {
                     $AppExist = new GroupsLinkApplications();
