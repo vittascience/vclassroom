@@ -352,16 +352,35 @@ class ControllerSuperAdmin extends Controller
                     if (
                         isset($data['name']) && $data['name'] != null &&
                         isset($data['description']) && $data['description'] != null &&
-                        isset($data['applications']) && $data['applications'] != null
+                        isset($data['applications']) && $data['applications'] != null && 
+                        isset($data['global_restriction']) && $data['global_restriction'] != null
                     ) {
                         $applications = json_decode($data['applications']);
                         $group_name = htmlspecialchars($data['name']);
                         $group_desc = htmlspecialchars($data['description']);
+                        $global_restrictions = json_decode($data['global_restriction']);
+
+                        // group restrictions 
+                        $date_begin = $global_restrictions[0] != null ? \DateTime::createFromFormat('Y-m-d', $global_restrictions[0]) : null;
+                        $date_end = $global_restrictions[1] != null ? \DateTime::createFromFormat('Y-m-d', $global_restrictions[1]) : null;
+                        $max_students_per_teachers = $global_restrictions[2];
+                        $max_students_per_groups = $global_restrictions[3];
+                        $max_teachers_per_groups = $global_restrictions[4]; 
+
 
                         $group = new Groups;
                         $group->setName($group_name);
                         $group->setDescription($group_desc);
                         $group->setLink();
+
+                        if ($date_begin != null && $date_end != null) {
+                            $group->setDateBegin($date_begin);
+                            $group->setDateEnd($date_end);
+                        }              
+                        $group->setmaxStudentsPerTeachers($max_students_per_teachers);
+                        $group->setmaxStudents($max_students_per_groups);
+                        $group->setmaxTeachers($max_teachers_per_groups);
+
                         // Vérifie si il n'y a pas déjà de groupe avec ce lien, si il y en a un alors on re-set le link et on recommence
                         $linkExist = $this->entityManager->getRepository(Groups::class)->findOneBy(['link' => $group->getLink()]);
                         while ($linkExist) {
@@ -419,7 +438,6 @@ class ControllerSuperAdmin extends Controller
                         isset($data['description']) && $data['description'] != null &&
                         isset($data['applications']) && $data['applications'] != null &&
                         isset($data['global_restriction']) && $data['global_restriction'] != null
-
                     ) {
                         $applications = json_decode($data['applications']);
                         $global_restrictions = json_decode($data['global_restriction']);
