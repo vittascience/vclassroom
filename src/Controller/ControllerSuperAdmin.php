@@ -121,7 +121,6 @@ class ControllerSuperAdmin extends Controller
 
 
                         $application_sort_index = isset($data['application_sort_index']) ? htmlspecialchars($data['application_sort_index']) : 0;
-                        $application_background_image = isset($data['application_background_image']) ? $data['application_background_image'] : null;
 
 
 
@@ -135,7 +134,6 @@ class ControllerSuperAdmin extends Controller
                         $app->setColor($application_color);
                         $app->setMaxPerTeachers($restriction_max);
                         $app->setSort($application_sort_index);
-                        $app->setBackgroundImage($application_background_image);
                         
                         if ($lti_data['isLti']) {
                             $app->setIsLti($lti_data['isLti']);
@@ -250,7 +248,6 @@ class ControllerSuperAdmin extends Controller
                         $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
                         $application_sort_index = isset($data['application_sort_index']) ? htmlspecialchars($data['application_sort_index']) : 0;
-                        $application_background_image = isset($data['application_background_image']) ? $data['application_background_image'] : null;
 
                         $app = new Applications();
                         $app->setName($application_name);
@@ -259,7 +256,6 @@ class ControllerSuperAdmin extends Controller
                         $app->setColor($application_color);
                         $app->setMaxPerTeachers($restriction_max);
                         $app->setSort($application_sort_index);
-                        $app->setBackgroundImage($application_background_image);
 
                         if ($lti_data['isLti']) {
                             $app->setIsLti($lti_data['isLti']);
