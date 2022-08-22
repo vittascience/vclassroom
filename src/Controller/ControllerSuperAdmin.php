@@ -1052,6 +1052,9 @@ class ControllerSuperAdmin extends Controller
             $AppExist = $this->entityManager->getRepository(GroupsLinkApplications::class)->findOneBy(['group' => $group_id, 'application' => $value[0]]);
             // Récupère l'entité application liée à l'id de celle-ci (permet de la set ensuite en tant qu'entité dans le lien entre groupe et application)
             $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $value[0]]);
+
+            $groupsMember = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
+
             if ($value[1] == true) {
 
                 $max_activities_per_groups = $value[2] != null ? $value[2] : 0;
@@ -1064,7 +1067,17 @@ class ControllerSuperAdmin extends Controller
                 $AppExist->setGroup($group);
                 $AppExist->setmaxActivitiesPerGroups($max_activities_per_groups);
                 $AppExist->setmaxActivitiesPerTeachers($max_activities_per_teachers);
+
                 $this->entityManager->persist($AppExist);
+
+                foreach ($groupsMember as $member) {
+                    $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $member->getUser()]);
+                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                    $newAppFromGroup->setApplication($application);
+                    $newAppFromGroup->setGroup($group);
+                    $newAppFromGroup->setUser($memberAppExist);
+                    $this->entityManager->persist($newAppFromGroup);
+                }
 
             } else {
                 if ($AppExist) {
