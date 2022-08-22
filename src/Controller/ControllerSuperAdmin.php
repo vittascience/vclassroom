@@ -1071,22 +1071,25 @@ class ControllerSuperAdmin extends Controller
                 $this->entityManager->persist($AppExist);
 
                 foreach ($groupsMember as $member) {
-                    $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $member->getUser()]);
-                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
-                    $newAppFromGroup->setApplication($application);
-                    $newAppFromGroup->setGroup($group);
-                    $newAppFromGroup->setUser($memberAppExist);
-                    $this->entityManager->persist($newAppFromGroup);
+                    // check if the UsersLinkApplicationsFromGroups already exist
+                    $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $member->getUser(), 'application' => $value[0]]);
+                    if (!$appFromGroupExist) {
+                        $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $member->getUser()]);
+                        $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                        $newAppFromGroup->setApplication($application);
+                        $newAppFromGroup->setGroup($group);
+                        $newAppFromGroup->setUser($memberAppExist);
+                        $this->entityManager->persist($newAppFromGroup);
+                    }
                 }
 
             } else {
+                $appsGivenToTeachers = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['group' => $group_id, 'application' => $value[0]]);
+                foreach ($appsGivenToTeachers as $appT) {
+                    $this->entityManager->remove($appT);
+                }
                 if ($AppExist) {
                     $this->entityManager->remove($AppExist);
-                    $appsGivenToTeachers = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)
-                        ->findBy(['group' => $group_id, 'application' => $value[0]]);
-                    foreach ($appsGivenToTeachers as $app) {
-                        $this->entityManager->remove($app);
-                    }
                 }
             }
         }
