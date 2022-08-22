@@ -2,6 +2,8 @@
 
 namespace Classroom\Controller;
 
+use Classroom\Entity\CourseLinkUser;
+
 
 class ControllerCourseLinkUser extends Controller
 {
@@ -72,31 +74,38 @@ class ControllerCourseLinkUser extends Controller
                     $courseId = !empty($_POST['courseId']) ? intval($_POST['courseId']) : 0;
                     $dateBegin = !empty($_POST['dateBegin']) ? htmlspecialchars(strip_tags(trim($_POST['dateBegin']))) : '';
                     $dateEnd = !empty($_POST['dateEnd']) ? htmlspecialchars(strip_tags(trim($_POST['dateEnd']))) : '';
+                    //$retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
 
-
-                    $retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
-
-
+                    
                     $course = $this->entityManager->getRepository(Course::class)->findOneBy(["id" => $courseId]);
-
                     // step 1 => insert all new students
                     foreach ($studentsId as $studentId) {
                         $user = $this->entityManager->getRepository(User::class)->find($studentId);
 
-                        $linkActivityToClassroomExists = $this->entityManager
+                        $linkCourseToClassroomExists = $this->entityManager
                             ->getRepository(CourseLinkUser::class)
                             ->findOneBy(array(
                                 'user' => $user->getId(),
-                                'activity' => $activity->getId(),
-                                'reference' => $reference
+                                'course' => $course->getId()
                             ));
 
-                        if (!$linkActivityToClassroomExists) {
-                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, "", $introduction, $reference);
-                            $this->entityManager->persist($linkActivityToUser);
+                        if (!$linkCourseToClassroomExists) {
+                            $linkCourseToUser = new CourseLinkUser();
+                            $linkCourseToUser->setUser($user);
+                            $linkCourseToUser->setCourse($course);
+                            $linkCourseToUser->setIndex(0);
+                            $this->entityManager->persist($linkCourseToUser);
                             $this->entityManager->flush();
                         }
                     }
+
+                    return true;
+                },
+            );
+        }
+    }
+}
+
 
                     // get all retor attributions if any
         /*             $linkedActivityToClassrooms = $this->entityManager
@@ -127,10 +136,3 @@ class ControllerCourseLinkUser extends Controller
                             }
                         }
                     } */
-
-                    return true;
-                },
-            );
-        }
-    }
-}
