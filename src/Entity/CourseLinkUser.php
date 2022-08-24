@@ -7,11 +7,12 @@ use User\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\CourseLinkUserRepository")
- * @ORM\Table(name="classroom_courses_link_classroom_users")
+ * @ORM\Table(name="classroom_users_link_courses")
  */
 class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
- /** 
+
+    /** 
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue
@@ -32,12 +33,29 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $course;
 
+     /**
+     * @ORM\Column(name="activities_data", type="text", nullable=true)
+     * @var String
+     */
+    private $activitiesData;
+
     /**
-     * @ORM\Column(name="actual_activity_index", type="integer", nullable=false)
+     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
+     * @var \DateTime
+     */
+    private $dateBegin;
+
+    /**
+     * @ORM\Column(name="date_end", type="datetime", nullable=true)
+     * @var \DateTime
+     */
+    private $dateEnd;
+
+    /**
+     * @ORM\Column(name="course_state", type="integer", nullable=false)
      * @var int
      */
-    private $index;
-
+    private $courseState;
 
 
     public function getId()
@@ -65,15 +83,44 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->course = $course;
     }
 
-
-    public function getIndex()
+    public function getActivitiesData()
     {
-        return $this->index;
+        return $this->activitiesData;
     }
 
-    public function setIndex(?int $index)
+    public function setActivitiesData($activitiesData)
     {
-        $this->index = $index;
+        $this->activitiesData = $activitiesData;
+    }
+
+    public function getDateBegin()
+    {
+        return $this->dateBegin;
+    }
+
+    public function setDateBegin(?\DateTime $dateBegin)
+    {
+        $this->dateBegin = $dateBegin;
+    }
+
+    public function getDateEnd()
+    {
+        return $this->dateEnd;
+    }
+
+    public function setDateEnd(?\DateTime $dateEnd)
+    {
+        $this->dateEnd = $dateEnd;
+    }
+
+    public function getCourseState()
+    {
+        return $this->courseState;
+    }
+
+    public function setCourseState($courseState)
+    {
+        $this->courseState = $courseState;
     }
 
     public function jsonSerialize()
@@ -82,7 +129,10 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'id' => $this->id,
             'user' => $this->user,
             'course' => $this->course,
-            'index' => $this->index
+            'activitiesData' => $this->activitiesData,
+            'dateBegin' => $this->dateBegin,
+            'dateEnd' => $this->dateEnd,
+            'courseState' => $this->courseState
         ];
-    } 
+    }
 }

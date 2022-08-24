@@ -16,11 +16,7 @@ class ControllerCourseLinkUser extends Controller
         } else {
             $this->actions = array(
                 'link_user_to_course' => function () {
-                        /**
-                     * This method is used on the teacher activity panel 
-                     * to attribute an activity for the first time by clicking on the activity cog => attribute
-                     * Or to update the activity attribution inside a classroom when clicking on the activity cog => modify attribution
-                     */
+                     
                     // accept only POST request
                     if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
 
@@ -72,8 +68,9 @@ class ControllerCourseLinkUser extends Controller
 
                     // bind and sanitize the rest of incoming data
                     $courseId = !empty($_POST['courseId']) ? intval($_POST['courseId']) : 0;
-                    $dateBegin = !empty($_POST['dateBegin']) ? htmlspecialchars(strip_tags(trim($_POST['dateBegin']))) : '';
-                    $dateEnd = !empty($_POST['dateEnd']) ? htmlspecialchars(strip_tags(trim($_POST['dateEnd']))) : '';
+                    $dateBegin = !empty($_POST['dateBegin']) ? new \DateTime($_POST['dateBegin']) : '';
+                    $dateEnd = !empty($_POST['dateEnd']) ? new \DateTime($_POST['dateEnd']) : '';
+                    $activities = !empty($_POST['activities']) ? $_POST['activities'] : '';
                     //$retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
 
                     
@@ -93,13 +90,39 @@ class ControllerCourseLinkUser extends Controller
                             $linkCourseToUser = new CourseLinkUser();
                             $linkCourseToUser->setUser($user);
                             $linkCourseToUser->setCourse($course);
-                            $linkCourseToUser->setIndex(0);
+                            $linkCourseToUser->setActivitiesData(null);
+                            $linkCourseToUser->setCourseState(0);
+                            $linkCourseToUser->setDateBegin($dateBegin);
+                            $linkCourseToUser->setDateEnd($dateEnd);
+
                             $this->entityManager->persist($linkCourseToUser);
                             $this->entityManager->flush();
                         }
                     }
 
                     return true;
+                },
+                'get_my_courses_as_teacher' => function () {
+                    // accept only POST request
+                    if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+                    // accept only connected user
+                    if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotRetrievedNotAuthenticated"];
+                    // bind and sanitize incoming data to check if the logged user is the teacher
+                    $userId = intval($_SESSION['id']);
+                    $loggedUser = $this->entityManager->getRepository(User::class)->find($userId);
+
+
+                    // get the classroom teacher using the $loggedUser id
+                    $teacher = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy(['user' => $loggedUser->getId(), 'rights' => 2]);
+                    // the logged user is not the teacher, set error flag to true and exit the loop
+                    if (!$teacher) {
+                        return array("errorType" => "notTeacherErrorFlagTrue");
+                    }
+                    // get the courses linked to the teacher
+                    $courses = $this->entityManager->getRepository(CourseLinkUser::class)->findBy(['user' => $loggedUser->getId(), 'rights' => 2]);
+
+                    // return the courses linked to the teacher
+                    return $courses;
                 },
             );
         }
