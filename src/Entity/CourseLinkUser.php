@@ -2,8 +2,9 @@
 
 namespace Classroom\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use User\Entity\User;
+use Learn\Entity\Course;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="Classroom\Repository\CourseLinkUserRepository")
@@ -134,5 +135,14 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'dateEnd' => $this->dateEnd,
             'courseState' => $this->courseState
         ];
+    }
+
+    public static function jsonDeserialize($jsonDecoded)
+    {
+        $classInstance = new self();
+        foreach ($jsonDecoded as $attributeName => $attributeValue) {
+            $classInstance->{$attributeName} = $attributeValue;
+        }
+        return $classInstance;
     }
 }

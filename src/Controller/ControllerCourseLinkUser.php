@@ -2,8 +2,14 @@
 
 namespace Classroom\Controller;
 
+use User\Entity\User;
+use Learn\Entity\Course;
+use User\Entity\Regular;
+use Learn\Entity\Activity;
+use Classroom\Entity\Classroom;
 use Classroom\Entity\CourseLinkUser;
-
+use Learn\Entity\CourseLinkActivity;
+use Classroom\Entity\ClassroomLinkUser;
 
 class ControllerCourseLinkUser extends Controller
 {
@@ -68,9 +74,12 @@ class ControllerCourseLinkUser extends Controller
 
                     // bind and sanitize the rest of incoming data
                     $courseId = !empty($_POST['courseId']) ? intval($_POST['courseId']) : 0;
-                    $dateBegin = !empty($_POST['dateBegin']) ? new \DateTime($_POST['dateBegin']) : '';
+                    $dateBegin = !empty($_POST['dateBegin']) ? $_POST['dateBegin'] : '';
                     $dateEnd = !empty($_POST['dateEnd']) ? new \DateTime($_POST['dateEnd']) : '';
                     $activities = !empty($_POST['activities']) ? $_POST['activities'] : '';
+
+                    $dateTimeBegin = new \DateTime($dateBegin);
+                    $dayeTimeEnd = new \DateTime($dateEnd);
                     //$retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
 
                     
@@ -79,21 +88,15 @@ class ControllerCourseLinkUser extends Controller
                     foreach ($studentsId as $studentId) {
                         $user = $this->entityManager->getRepository(User::class)->find($studentId);
 
-                        $linkCourseToClassroomExists = $this->entityManager
-                            ->getRepository(CourseLinkUser::class)
-                            ->findOneBy(array(
-                                'user' => $user->getId(),
-                                'course' => $course->getId()
-                            ));
-
+                        $linkCourseToClassroomExists = $this->entityManager->getRepository(CourseLinkUser::class)->findOneBy(array('user' => $user->getId(), 'course' => $course->getId()));
                         if (!$linkCourseToClassroomExists) {
                             $linkCourseToUser = new CourseLinkUser();
                             $linkCourseToUser->setUser($user);
                             $linkCourseToUser->setCourse($course);
                             $linkCourseToUser->setActivitiesData(null);
                             $linkCourseToUser->setCourseState(0);
-                            $linkCourseToUser->setDateBegin($dateBegin);
-                            $linkCourseToUser->setDateEnd($dateEnd);
+                            $linkCourseToUser->setDateBegin($dateTimeBegin);
+                            $linkCourseToUser->setDateEnd($dayeTimeEnd);
 
                             $this->entityManager->persist($linkCourseToUser);
                             $this->entityManager->flush();
@@ -110,19 +113,28 @@ class ControllerCourseLinkUser extends Controller
                     // bind and sanitize incoming data to check if the logged user is the teacher
                     $userId = intval($_SESSION['id']);
                     $loggedUser = $this->entityManager->getRepository(User::class)->find($userId);
+                    // check if regular 
+                    $isRegular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => htmlspecialchars($_SESSION['id'])]);
 
-
-                    // get the classroom teacher using the $loggedUser id
-                    $teacher = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy(['user' => $loggedUser->getId(), 'rights' => 2]);
-                    // the logged user is not the teacher, set error flag to true and exit the loop
-                    if (!$teacher) {
+                    if (!$isRegular) {
                         return array("errorType" => "notTeacherErrorFlagTrue");
                     }
-                    // get the courses linked to the teacher
-                    $courses = $this->entityManager->getRepository(CourseLinkUser::class)->findBy(['user' => $loggedUser->getId(), 'rights' => 2]);
 
-                    // return the courses linked to the teacher
-                    return $courses;
+                    $myCourses = $this->entityManager->getRepository(Course::class)->findBy(['user' => $loggedUser->getId()]);
+                    $myCoursesArray = [];
+
+                    foreach($myCourses as $key => $course) {
+                        $courseArray = $course->jsonSerialize();
+                        $courseArray['activities'] = [];
+                        $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getId()]);
+                        foreach ($courseLinkActivities as $actiKey => $activity) {
+
+                            array_push($courseArray['activities'], $activity->getActivity());
+                        }
+                        array_push($myCoursesArray, $courseArray);
+                    }
+                    
+                    return $myCoursesArray;
                 },
             );
         }
