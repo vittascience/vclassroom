@@ -382,7 +382,44 @@ class ControllerClassroom extends Controller
                     }
                 }
             },
+            'get_auth_link' => function () {
+               
+                // accept only POST request
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+
+                // accept only connected user
+                if (empty($_SESSION['id'])) return ["errorType" => "classroomNotAuthenticated"];
+
+                $app = !(empty($_POST['app'])) ? htmlspecialchars(strip_tags(trim($_POST['app']))) : '';
+                return $this->processEncrypt($app, $_SESSION['id']);
+            },
         );
+    }
+
+    private function processEncrypt($appName, $id) {
+        $app_prefix = strtoupper(substr($appName, 0, 4));
+        DEFINE('URL', $_ENV[$app_prefix . '_URL']);
+        DEFINE('CRYPT_KEY', $_ENV[$app_prefix . '_CRYPT_KEY']);
+        DEFINE('CRYPT_IV', $_ENV[$app_prefix . '_CRYPT_IV']);
+        DEFINE('CRYPT_ALGO', $_ENV[$app_prefix . '_CRYPT_ALGO']);
+
+        return $this->get_auth_url($id);
+    }
+
+    private function encrypt($account_id) {
+        $data = $account_id.'-'.time()*1000;
+        $encrypted = strtoupper(bin2hex(openssl_encrypt(
+            $data,
+            CRYPT_ALGO,
+            CRYPT_KEY,
+            OPENSSL_RAW_DATA,
+            CRYPT_IV
+        )));
+        return $encrypted;
+    }
+
+    private function get_auth_url($account_id){
+        return URL.'?token='.$this->encrypt($account_id);
     }
 
     private function generateUniqueClassroomLink(){
