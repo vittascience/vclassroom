@@ -393,6 +393,22 @@ class ControllerClassroom extends Controller
                 $app = !(empty($_POST['app'])) ? htmlspecialchars(strip_tags(trim($_POST['app']))) : '';
                 return $this->processEncrypt($app, $_SESSION['id']);
             },
+            'get_file_names' => function () {
+                $app_name = !empty($_POST['appName']) ? htmlspecialchars(strip_tags(trim($_POST['appName']))) : '';
+
+                $extension = ['pdf'];
+                $filesToReturn = [];
+                $files = scandir(__DIR__."../../../../../../classroom/assets/plugins/media/$app_name/");
+
+                foreach ($files as $key => $file) {
+                    $path_parts = pathinfo($file);
+                    if (in_array($path_parts['extension'], $extension)) {
+                        $filesToReturn[] = $file;
+                    }
+                }
+
+                return $filesToReturn;
+            }
         );
     }
 
