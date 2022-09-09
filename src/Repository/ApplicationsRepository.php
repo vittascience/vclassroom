@@ -168,15 +168,41 @@ class ApplicationsRepository extends EntityRepository
             return ['canAdd' => false, 'message' => 'outDated'];
         }
 
-        $maxTeachersPerGroup = $group->getmaxTeachers();
-        $maxStudentsPerGroup = $group->getmaxStudents();
-        $maxStudentsPerTeachers = $group->getmaxStudentsPerTeachers();
+        $groupDefaultRestrictions = $this->getEntityManager()->getRepository(Restrictions::class)->findOneBy(['name' => "groupDefaultRestrictions"]);
+        $groupRestriction = (array)json_decode($groupDefaultRestrictions->getRestrictions());
+
+
+        // include the group's restrictions and the default restrictions
+        $maxTeachersPerGroup = 0;
+        $maxStudentsPerGroup = 0;
+        $maxStudentsPerTeachers = 0;
+        
+
+        if ($group->getmaxTeachers() == -1 || $groupRestriction['maxTeachers'] == -1) {
+            $maxTeachersPerGroup = -1;
+        } else {
+            $maxTeachersPerGroup = $groupRestriction['maxTeachers'] > $group->getmaxTeachers() ? $groupRestriction['maxTeachers'] : $group->getmaxTeachers();
+        }
+
+        if ($group->getmaxStudents() == -1 || $groupRestriction['maxStudents'] == -1) {
+            $maxStudentsPerGroup = -1;
+        } else {
+            $maxStudentsPerGroup = $groupRestriction['maxStudents'] > $group->getmaxStudents() ? $groupRestriction['maxStudents'] : $group->getmaxStudents();
+        }
+
+        if ($group->getmaxStudentsPerTeachers() == -1 || $groupRestriction['maxStudentsPerTeacher'] == -1) {
+            $maxStudentsPerTeachers = -1;
+        } else {
+            $maxStudentsPerTeachers = $groupRestriction['maxStudentsPerTeacher'] > $group->getmaxStudentsPerTeachers() ? $groupRestriction['maxStudentsPerTeacher'] : $group->getmaxStudentsPerTeachers();
+        }
 
         $totalStudentsInTheGroup = 0;
         $totalStudentsFromTeacher = 0;
 
         $teachersFromGroupWithThisApp = $this->getEntityManager()->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['group' => $group_id, 'application' => $app_id]);
-        if (count($teachersFromGroupWithThisApp) >= $maxTeachersPerGroup) {
+        
+        
+        if (count($teachersFromGroupWithThisApp) >= $maxTeachersPerGroup && $maxTeachersPerGroup != -1) {
             return ['canAdd' => false, 'message' => 'maxTeachers'];
         }
 
@@ -197,7 +223,8 @@ class ApplicationsRepository extends EntityRepository
             $totalStudentsFromTeacher += count($studentsInClassroomFromActualTeacher);
         }
 
-        if (($totalStudentsInTheGroup + $totalStudentsFromTeacher) >= $maxStudentsPerGroup) {
+
+        if (($totalStudentsInTheGroup + $totalStudentsFromTeacher) >= $maxStudentsPerGroup && $maxStudentsPerGroup != -1) {
             return [
                 'canAdd' => false,
                 'message' => 'maxStudentsInGroup',
@@ -207,7 +234,7 @@ class ApplicationsRepository extends EntityRepository
             ];
         }
 
-        if ($totalStudentsFromTeacher >= $maxStudentsPerTeachers) {
+        if ($totalStudentsFromTeacher >= $maxStudentsPerTeachers && $maxStudentsPerTeachers != -1) {
             return ['canAdd' => false, 'message' => 'maxStudentsFromTeacher'];
         }
 
