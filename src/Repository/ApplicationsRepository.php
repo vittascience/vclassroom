@@ -173,21 +173,27 @@ class ApplicationsRepository extends EntityRepository
 
 
         // include the group's restrictions and the default restrictions
-        $maxTeachersPerGroup = $groupRestriction['maxTeachers'] > $group->getmaxTeachers() ? $groupRestriction['maxTeachers'] : $group->getmaxTeachers();
-        $maxStudentsPerGroup = $groupRestriction['maxStudents'] > $group->getmaxStudents() ? $groupRestriction['maxStudents'] : $group->getmaxStudents();
-        $maxStudentsPerTeachers = $groupRestriction['maxStudentsPerTeacher'] > $group->getmaxStudentsPerTeachers() ? $groupRestriction['maxStudentsPerTeacher'] : $group->getmaxStudentsPerTeachers();
+        $maxTeachersPerGroup = 0;
+        $maxStudentsPerGroup = 0;
+        $maxStudentsPerTeachers = 0;
         
 
         if ($group->getmaxTeachers() == -1 || $groupRestriction['maxTeachers'] == -1) {
             $maxTeachersPerGroup = -1;
+        } else {
+            $maxTeachersPerGroup = $groupRestriction['maxTeachers'] > $group->getmaxTeachers() ? $groupRestriction['maxTeachers'] : $group->getmaxTeachers();
         }
 
         if ($group->getmaxStudents() == -1 || $groupRestriction['maxStudents'] == -1) {
             $maxStudentsPerGroup = -1;
+        } else {
+            $maxStudentsPerGroup = $groupRestriction['maxStudents'] > $group->getmaxStudents() ? $groupRestriction['maxStudents'] : $group->getmaxStudents();
         }
 
         if ($group->getmaxStudentsPerTeachers() == -1 || $groupRestriction['maxStudentsPerTeacher'] == -1) {
             $maxStudentsPerTeachers = -1;
+        } else {
+            $maxStudentsPerTeachers = $groupRestriction['maxStudentsPerTeacher'] > $group->getmaxStudentsPerTeachers() ? $groupRestriction['maxStudentsPerTeacher'] : $group->getmaxStudentsPerTeachers();
         }
 
         $totalStudentsInTheGroup = 0;
