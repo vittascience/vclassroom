@@ -398,7 +398,7 @@ class ControllerClassroom extends Controller
 
                 $extension = ['pdf'];
                 $filesToReturn = [];
-                $files = scandir(__DIR__."../../../../../../classroom/assets/plugins/media/$app_name/");
+                $files = scandir(__DIR__."/../../../../../classroom/assets/plugins/media/$app_name/");
 
                 foreach ($files as $key => $file) {
                     $path_parts = pathinfo($file);
