@@ -26,7 +26,7 @@ class Applications
     private $name;
 
     /**
-     * @ORM\Column(name="description", type="string", length=255, nullable=true)
+     * @ORM\Column(name="description", type="text", length=1500, nullable=true)
      * @var string
      */
     private $description;
