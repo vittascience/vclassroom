@@ -712,6 +712,11 @@ class ControllerSuperAdmin extends Controller
                                 }
                             }
                         }
+
+                        // get user's group
+                        $userGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id]);
+                        $this->manageHeritedApps($userGroup, $user);
+
                         // delete the groups that are not in the new list
                         foreach ($AllGroupsFromUser as $key2 => $value2) {
                             $AlreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $value2->getGroup()]);
@@ -735,7 +740,8 @@ class ControllerSuperAdmin extends Controller
                     } else {
                         return ['message' => 'missing data'];
                     }
-                }, 'delete_user' => function ($data) {
+                }, 
+                'delete_user' => function ($data) {
                     if (isset($data['user_id']) && $data['user_id'] != null) {
                         $user_id = htmlspecialchars($data['user_id']);
                         $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
@@ -973,6 +979,22 @@ class ControllerSuperAdmin extends Controller
                     }
                 },
             );
+        }
+    }
+
+    private function manageHeritedApps(Groups $group, User $user) {
+        $Apps = $this->entityManager->getRepository(GroupsLinkApplications::class)->findAll(['group' => $group->getId()]);
+        foreach ($Apps as $app) {
+            $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user->getUser(), 'application' => $app]);
+            if (!$appFromGroupExist) {
+                $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user->getUser()]);
+                $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app->getApplication()]);
+                $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                $newAppFromGroup->setApplication($application);
+                $newAppFromGroup->setGroup($group);
+                $newAppFromGroup->setUser($memberAppExist);
+                $this->entityManager->persist($newAppFromGroup);
+            }
         }
     }
 
