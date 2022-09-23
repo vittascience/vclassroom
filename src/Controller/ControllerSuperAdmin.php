@@ -986,9 +986,9 @@ class ControllerSuperAdmin extends Controller
         if ($appFromGroupExistBefore) {
             foreach ($appFromGroupExistBefore as $key => $value) {
                 $this->entityManager->remove($value);
-                $this->entityManager->flush();
             }
         }
+        $this->entityManager->flush();
 
         if ($group != null) {
             $Apps = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group->getId()]);
@@ -1002,10 +1002,10 @@ class ControllerSuperAdmin extends Controller
                     $newAppFromGroup->setGroup($group);
                     $newAppFromGroup->setUser($memberAppExist);
                     $this->entityManager->persist($newAppFromGroup);
-                    $this->entityManager->flush();
                 }
             }
         }
+        $this->entityManager->flush();
         
     }
 
