@@ -712,6 +712,7 @@ class ControllerSuperAdmin extends Controller
                                 }
                             }
                         }
+
                         // delete the groups that are not in the new list
                         foreach ($AllGroupsFromUser as $key2 => $value2) {
                             $AlreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $value2->getGroup()]);
@@ -724,18 +725,22 @@ class ControllerSuperAdmin extends Controller
                             }
                         }
 
-                        // Manage the group apps for user
-                        $appsManager = $this->manageAppsFromGroupsUsers($user_id, $application, $groups, $user);
-                        if ($appsManager != true) {
-                            return $appsManager;
-                        }
-
+                        // get user's group
                         $this->entityManager->flush();
+
+                        $userGroup = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id]);
+                        $groupToGive = null;
+                        if ($userGroup) {
+                            $groupToGive = $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $userGroup->getGroup()]);
+                        }
+                        $this->manageHeritedApps($groupToGive, $user);
+
                         return ['message' => 'success'];
                     } else {
                         return ['message' => 'missing data'];
                     }
-                }, 'delete_user' => function ($data) {
+                }, 
+                'delete_user' => function ($data) {
                     if (isset($data['user_id']) && $data['user_id'] != null) {
                         $user_id = htmlspecialchars($data['user_id']);
                         $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
@@ -976,6 +981,34 @@ class ControllerSuperAdmin extends Controller
         }
     }
 
+    private function manageHeritedApps(?Groups $group, User $user) {
+        $appFromGroupExistBefore = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user]);
+        if ($appFromGroupExistBefore) {
+            foreach ($appFromGroupExistBefore as $key => $value) {
+                $this->entityManager->remove($value);
+            }
+        }
+        $this->entityManager->flush();
+
+        if ($group != null) {
+            $Apps = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group->getId()]);
+            foreach ($Apps as $app) {
+                $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user, 'application' => $app]);
+                if (!$appFromGroupExist) {
+                    $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user]);
+                    $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app->getApplication()]);
+                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                    $newAppFromGroup->setApplication($application);
+                    $newAppFromGroup->setGroup($group);
+                    $newAppFromGroup->setUser($memberAppExist);
+                    $this->entityManager->persist($newAppFromGroup);
+                }
+            }
+        }
+        $this->entityManager->flush();
+        
+    }
+
     /**
      * @param $mail string : the mail of the user
      * @param $emailTemplateBodysSring string : the i18n string of the email template
@@ -1017,7 +1050,7 @@ class ControllerSuperAdmin extends Controller
         return $emailSent;
     }
 
-    private function manageAppsFromGroupsUsers(Int $user_id, array $application, ?array $groups, User $user)
+/*     private function manageAppsFromGroupsUsers(Int $user_id, array $application, ?array $groups, User $user)
     {
         $group = "";
         if (!empty($groups)) {
@@ -1044,7 +1077,7 @@ class ControllerSuperAdmin extends Controller
             $isAppActive = false;
         }
         return true;
-    }
+    } */
 
     private function manageAppsForGroups($applications, $group_id, $group)
     {
