@@ -283,7 +283,6 @@ class ControllerGroupAdmin extends Controller
                         }
                     }
 
-
                     $emailSent = $Response['emailSent'];
                     $accountConfirmationLink = $Response['link'];
 
@@ -317,9 +316,20 @@ class ControllerGroupAdmin extends Controller
                     // Only one group at the same time
 
                     $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
-                    $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
+
+
+
                     $user =  $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
-                    $userMail = $userR->getEmail();
+                    $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user]);
+                    $gar_user = false;
+                    
+                    $userMail = "";
+                    if (!$userR) {
+                        $gar_user = true;
+                        $userMail = "garUser". $user->getId();
+                    } else {
+                        $userMail = $userR->getEmail();
+                    }
                     $groupName = $group->getName();
 
 
@@ -332,7 +342,7 @@ class ControllerGroupAdmin extends Controller
                         }
                     }
 
-                    if ($userR && $group) {
+                    if (($userR || $gar_user) && $group) {
                         $alreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $group_id]);
                         if ($alreadyLinked) {
                             return ['message' => 'alreadylinked'];
