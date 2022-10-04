@@ -275,16 +275,17 @@ class ControllerGroupAdmin extends Controller
                     $this->entityManager->persist($regularUser);
                     $this->entityManager->flush();
 
+                    $sendMail = false;
 
                     if (isset($_ENV['VS_AUTO_MAIL'])) {
                         if ($_ENV['VS_AUTO_MAIL'] != false) {
-                            if ($groupCode == "" || $groupCode == null) {
-                                $Response = $this->sendActivationLink($email, $confirmationToken);
-                            } else {
-                                $Response = $this->sendActivationAndLinkToGroupLink($email, $confirmationToken, $groupCode);
-                            }
+                            $sendMail = true;
                         }
                     } else {
+                        $sendMail = true;
+                    }
+
+                    if ($sendMail) {
                         if ($groupCode == "" || $groupCode == null) {
                             $Response = $this->sendActivationLink($email, $confirmationToken);
                         } else {
