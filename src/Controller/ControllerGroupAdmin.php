@@ -293,7 +293,6 @@ class ControllerGroupAdmin extends Controller
                         }
                     }
 
-
                     $emailSent = $Response['emailSent'];
                     $accountConfirmationLink = $Response['link'];
 
@@ -337,7 +336,7 @@ class ControllerGroupAdmin extends Controller
                     $userMail = "";
                     if (!$userR) {
                         $gar_user = true;
-                        $userMail = "garUser". $user->getId();
+                        $userMail = "GAR User ". $user->getId();
                     } else {
                         $userMail = $userR->getEmail();
                     }
