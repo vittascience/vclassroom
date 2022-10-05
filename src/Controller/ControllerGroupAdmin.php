@@ -275,10 +275,20 @@ class ControllerGroupAdmin extends Controller
                     $this->entityManager->persist($regularUser);
                     $this->entityManager->flush();
 
-                    if ($groupCode == "" || $groupCode == null) {
-                        $Response = $this->sendActivationLink($email, $confirmationToken);
-                    } else {
-                        $Response = $this->sendActivationAndLinkToGroupLink($email, $confirmationToken, $groupCode);
+                    $sendMail = true;
+
+                    if (isset($_ENV['VS_AUTO_MAIL'])) {
+                        if ($_ENV['VS_AUTO_MAIL'] == false) {
+                            $sendMail = false;
+                        }
+                    }
+
+                    if ($sendMail) {
+                        if ($groupCode == "" || $groupCode == null) {
+                            $Response = $this->sendActivationLink($email, $confirmationToken);
+                        } else {
+                            $Response = $this->sendActivationAndLinkToGroupLink($email, $confirmationToken, $groupCode);
+                        }
                     }
 
                     $emailSent = $Response['emailSent'];
@@ -314,9 +324,20 @@ class ControllerGroupAdmin extends Controller
                     // Only one group at the same time
 
                     $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
-                    $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
+
+
+
                     $user =  $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
-                    $userMail = $userR->getEmail();
+                    $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user]);
+                    $gar_user = false;
+                    
+                    $userMail = "";
+                    if (!$userR) {
+                        $gar_user = true;
+                        $userMail = "GAR User ". $user->getId();
+                    } else {
+                        $userMail = $userR->getEmail();
+                    }
                     $groupName = $group->getName();
 
 
@@ -329,7 +350,7 @@ class ControllerGroupAdmin extends Controller
                         }
                     }
 
-                    if ($userR && $group) {
+                    if (($userR || $gar_user) && $group) {
                         $alreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $group_id]);
                         if ($alreadyLinked) {
                             return ['message' => 'alreadylinked'];
