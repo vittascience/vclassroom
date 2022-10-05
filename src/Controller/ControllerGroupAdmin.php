@@ -275,14 +275,12 @@ class ControllerGroupAdmin extends Controller
                     $this->entityManager->persist($regularUser);
                     $this->entityManager->flush();
 
-                    $sendMail = false;
+                    $sendMail = true;
 
                     if (isset($_ENV['VS_AUTO_MAIL'])) {
-                        if ($_ENV['VS_AUTO_MAIL'] != false) {
-                            $sendMail = true;
+                        if ($_ENV['VS_AUTO_MAIL'] == false) {
+                            $sendMail = false;
                         }
-                    } else {
-                        $sendMail = true;
                     }
 
                     if ($sendMail) {
