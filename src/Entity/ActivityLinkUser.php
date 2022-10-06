@@ -129,6 +129,12 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $response = null;
 
+    /**
+     * @ORM\Column(name="is_from_course", type="boolean", nullable=false, options={"default":false})
+     * @var bool
+     */
+    private $isFromCourse = false;
+
     public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = null)
     {
         $this->setUser($user);
@@ -530,6 +536,18 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->response = $response;
         return $this;
     }
+
+
+    public function setIsFromCourse($isFromCourse)
+    {
+        $this->isFromCourse = $isFromCourse;
+        return $this;
+    }
+
+    public function getIsFromCourse()
+    {
+        return $this->isFromCourse;
+    }
     
     public function jsonSerialize()
     {
@@ -571,7 +589,8 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'project' => $project,
             'reference' => $this->getReference(),
             'url'=> $this->getUrl(),
-            'response' => $response
+            'response' => $response,
+            'isFromCourse' => $this->getIsFromCourse()
         ];
     }
 
