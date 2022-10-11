@@ -143,54 +143,22 @@ class ControllerCourseLinkUser extends Controller
                     // bind and sanitize incoming data to check if the logged user is the teacher
                     $userId = intval($_SESSION['id']);
                     $loggedUser = $this->entityManager->getRepository(User::class)->find($userId);
-
-                    $myCourses = $this->entityManager->getRepository(Course::class)->findBy(['user' => $loggedUser->getId()]);
+                    $courseLinkActivities = $this->entityManager->getRepository(CourseLinkUser::class)->findBy(['user' => $loggedUser->getId()]);
                     $myCoursesArray = [];
 
-                    foreach($myCourses as $key => $course) {
+                    foreach($courseLinkActivities as $course) {
+                        // get activities linked to the course
                         $courseArray = $course->jsonSerialize();
                         $courseArray['activities'] = [];
-                        $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getId()]);
+                        $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getCourse()->getId()]);
                         foreach ($courseLinkActivities as $activity) {
                             array_push($courseArray['activities'], $activity->getActivity());
                         }
                         array_push($myCoursesArray, $courseArray);
                     }
-                    
                     return $myCoursesArray;
                 },
             );
         }
     }
 }
-
-
-                    // get all retor attributions if any
-        /*             $linkedActivityToClassrooms = $this->entityManager
-                        ->getRepository(ActivityLinkClassroom::class)
-                        ->findBy(array(
-                            'activity' => $activity,
-                            'reference' => $reference
-                        )); */
-
-                    // step 1 remove them all by default to handle the case when retro attribution is set to false
- /*                    if ($linkedActivityToClassrooms) {
-                        foreach ($linkedActivityToClassrooms as $linkedActivityToClassroom) {
-                            $this->entityManager->remove($linkedActivityToClassroom);
-                            $this->entityManager->flush();
-                        }
-                    } */
-
-                    // step 2 create the record and save them to handle the case when retro attribution to true, 
-/*                     if ($retroAttribution == 'true') {
-                        foreach ($classroomIds as $classroomId) {
-                            $classroom = $this->entityManager
-                                ->getRepository('Classroom\Entity\Classroom')
-                                ->findOneBy(array("id" => $classroomId));
-                            if ($classroom) {
-                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
-                                $this->entityManager->persist($linkActivityToClassroom);
-                                $this->entityManager->flush();
-                            }
-                        }
-                    } */
