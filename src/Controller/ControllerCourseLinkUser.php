@@ -135,6 +135,30 @@ class ControllerCourseLinkUser extends Controller
                     
                     return $myCoursesArray;
                 },
+                'get_my_courses_as_student' => function () {
+                    // accept only POST request
+                    if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+                    // accept only connected user
+                    if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotRetrievedNotAuthenticated"];
+                    // bind and sanitize incoming data to check if the logged user is the teacher
+                    $userId = intval($_SESSION['id']);
+                    $loggedUser = $this->entityManager->getRepository(User::class)->find($userId);
+
+                    $myCourses = $this->entityManager->getRepository(Course::class)->findBy(['user' => $loggedUser->getId()]);
+                    $myCoursesArray = [];
+
+                    foreach($myCourses as $key => $course) {
+                        $courseArray = $course->jsonSerialize();
+                        $courseArray['activities'] = [];
+                        $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getId()]);
+                        foreach ($courseLinkActivities as $activity) {
+                            array_push($courseArray['activities'], $activity->getActivity());
+                        }
+                        array_push($myCoursesArray, $courseArray);
+                    }
+                    
+                    return $myCoursesArray;
+                },
             );
         }
     }
