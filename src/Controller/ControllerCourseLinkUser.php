@@ -9,6 +9,7 @@ use Learn\Entity\Activity;
 use Classroom\Entity\Classroom;
 use Classroom\Entity\CourseLinkUser;
 use Learn\Entity\CourseLinkActivity;
+use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\ClassroomLinkUser;
 
 class ControllerCourseLinkUser extends Controller
@@ -84,11 +85,14 @@ class ControllerCourseLinkUser extends Controller
 
                     
                     $course = $this->entityManager->getRepository(Course::class)->findOneBy(["id" => $courseId]);
+                    // get activities of the course
+                    $courseActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(array('course' => $course->getId()));
                     // step 1 => insert all new students
                     foreach ($studentsId as $studentId) {
                         $user = $this->entityManager->getRepository(User::class)->find($studentId);
 
                         $linkCourseToClassroomExists = $this->entityManager->getRepository(CourseLinkUser::class)->findOneBy(array('user' => $user->getId(), 'course' => $course->getId()));
+
                         if (!$linkCourseToClassroomExists) {
                             $linkCourseToUser = new CourseLinkUser();
                             $linkCourseToUser->setUser($user);
@@ -97,10 +101,19 @@ class ControllerCourseLinkUser extends Controller
                             $linkCourseToUser->setCourseState(0);
                             $linkCourseToUser->setDateBegin($dateTimeBegin);
                             $linkCourseToUser->setDateEnd($dayeTimeEnd);
-
                             $this->entityManager->persist($linkCourseToUser);
-                            $this->entityManager->flush();
                         }
+
+                        // step 2 => insert all activities of the course for each student
+                        foreach ($courseActivities as $courseActivity) {
+                            $activity = $this->entityManager->getRepository(Activity::class)->find($courseActivity->getActivity()->getId());
+                            $activityLinkUser = new ActivityLinkUser($activity, $user);
+                            $activityLinkUser->setDateBegin($dateTimeBegin);
+                            $activityLinkUser->setDateEnd($dayeTimeEnd);
+                            $activityLinkUser->setIsFromCourse(1);
+                            $this->entityManager->persist($activityLinkUser);
+                        }
+                        $this->entityManager->flush();
                     }
 
                     return true;
