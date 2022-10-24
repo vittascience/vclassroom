@@ -108,6 +108,7 @@ class ControllerCourseLinkUser extends Controller
                         foreach ($courseActivities as $key => $courseActivity) {
                             $activity = $this->entityManager->getRepository(Activity::class)->find($courseActivity->getActivity()->getId());
                             $activityLinkUser = new ActivityLinkUser($activity, $user);
+                            $activityLinkUser->setCourse($course);
                             $activityLinkUser->setReference(strval(time()) . $key);
                             $activityLinkUser->setDateBegin($dateTimeBegin);
                             $activityLinkUser->setDateEnd($dayeTimeEnd);

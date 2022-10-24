@@ -18,24 +18,26 @@ use DateTime;
 class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
     public const MAX_TRIES = 10;
+
     /** 
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue
      */
     private $id;
+
     /**
      * @ORM\ManyToOne(targetEntity="User\Entity\User")
      * @ORM\JoinColumn(name="id_user", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var User
      */
     private $user;
+
     /**
      * @ORM\Column(name="reference", type="string",length=13, nullable=false)
      * @var string
      */
     private $reference;
-
 
     /**
      * @ORM\ManyToOne(targetEntity="Learn\Entity\Activity")
@@ -43,6 +45,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var Activity
      */
     private $activity;
+
     /**
      * @ORM\ManyToOne(targetEntity="Interfaces\Entity\Project")
      * @ORM\JoinColumn(name="project", referencedColumnName="id", onDelete="CASCADE", nullable=true)
@@ -62,61 +65,73 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var Course
      */
     private $course;
+
     /**
      * @ORM\Column(name="date_begin", type="datetime", nullable=true)
      * @var \DateTime
      */
     private $dateBegin = null;
+
     /**
      * @ORM\Column(name="date_end", type="datetime", nullable=true)
      * @var \DateTime
      */
     private $dateEnd = null;
+
     /**
      * @ORM\Column(name="date_send", type="datetime", nullable=true)
      * @var \DateTime
      */
     private $dateSend = null;
+
     /**
      * @ORM\Column(name="time_passed", type="integer", length=11, nullable=true)
      * @var int
      */
     private $timePassed = 0;
+
     /**
      * @ORM\Column(name="tries", type="integer", length=3, nullable=true)
      * @var int
      */
     private $tries = 0;
+
     /**
      * @ORM\Column(name="coefficient", type="integer", length=2, nullable=true)
      * @var int
      */
     private $coefficient = 1;
+
     /**
      * @ORM\Column(name="note", type="smallint", nullable=false)
      * @var int
      */
     private $note = 0;
+
     /**
      * @ORM\Column(name="commentary", type="string",length=2000, nullable=true)
      * @var string
      */
     private $commentary = "";
+
     /**
      * @ORM\Column(name="introduction", type="string",length=2000, nullable=true)
      * @var string
      */
     private $introduction = "";
+
     /**
      * @ORM\Column(name="is_autocorrected", type="boolean",nullable=false, options={"default":false})
      * @var bool
      */
     private $autocorrection = false;
+
     /**
      * @ORM\Column(name="is_evaluation", type="boolean",nullable=false, options={"default":false})
      * @var bool
      */
     private $evaluation = false;
+
     /**
      * @ORM\Column(name="url", type="string",length=255, nullable=true)
      * @var string
@@ -134,6 +149,10 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var bool
      */
     private $isFromCourse = false;
+    
+
+
+
 
     public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = null)
     {
