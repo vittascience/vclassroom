@@ -105,10 +105,10 @@ class ControllerCourseLinkUser extends Controller
                         }
 
                         // step 2 => insert all activities of the course for each student
-                        foreach ($courseActivities as $courseActivity) {
+                        foreach ($courseActivities as $key => $courseActivity) {
                             $activity = $this->entityManager->getRepository(Activity::class)->find($courseActivity->getActivity()->getId());
                             $activityLinkUser = new ActivityLinkUser($activity, $user);
-                            $activityLinkUser->setReference(strval(time()));
+                            $activityLinkUser->setReference(strval(time()) . $key);
                             $activityLinkUser->setDateBegin($dateTimeBegin);
                             $activityLinkUser->setDateEnd($dayeTimeEnd);
                             $activityLinkUser->setIsFromCourse(1);
