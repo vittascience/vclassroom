@@ -634,14 +634,16 @@ class ControllerGroupAdmin extends Controller
                         // Manage the group apps for user
                         $appsManager = $this->manageAppsFromGroups($user_id, $application, $groups, $group, $user);
                         
-                        if (key_exists("canAdd", $appsManager)) {
-                            if ($appsManager['canAdd'] != true) {
-                                return $appsManager;
+                        if ($appsManager === true) {
+                            $this->entityManager->flush();
+                            return ['message' => 'success'];
+                        } else {
+                            if (key_exists("canAdd", $appsManager)) {
+                                if ($appsManager['canAdd'] != true) {
+                                    return $appsManager;
+                                }
                             }
                         }
-
-                        $this->entityManager->flush();
-                        return ['message' => 'success'];
                     } else {
                         return ['message' => 'missing data'];
                     }
