@@ -88,6 +88,8 @@ class ControllerCourseLinkUser extends Controller
                     // get activities of the course
                     $courseActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(array('course' => $course->getId()));
                     // step 1 => insert all new students
+
+                    $randomStr = strval(time());
                     foreach ($studentsId as $studentId) {
                         $user = $this->entityManager->getRepository(User::class)->find($studentId);
 
@@ -109,7 +111,7 @@ class ControllerCourseLinkUser extends Controller
                             $activity = $this->entityManager->getRepository(Activity::class)->find($courseActivity->getActivity()->getId());
                             $activityLinkUser = new ActivityLinkUser($activity, $user);
                             $activityLinkUser->setCourse($course);
-                            $activityLinkUser->setReference(strval(time()) . $key);
+                            $activityLinkUser->setReference($randomStr . $key);
                             $activityLinkUser->setDateBegin($dateTimeBegin);
                             $activityLinkUser->setDateEnd($dayeTimeEnd);
                             $activityLinkUser->setIsFromCourse(1);
