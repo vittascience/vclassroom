@@ -30,7 +30,7 @@ class ControllerSuperAdmin extends Controller
                 'is_user_admin' => function () {
                     $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => htmlspecialchars($_SESSION['id'])]);
                     $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user]);
-                    if ($userR->getIsAdmin()) {
+                    if (!is_null($user) && $userR->getIsAdmin()) {
                         return ['Admin' => true];
                     }
                     return ['Admin' => false];
@@ -362,6 +362,7 @@ class ControllerSuperAdmin extends Controller
                         $max_students_per_teachers = $global_restrictions[2];
                         $max_students_per_groups = $global_restrictions[3];
                         $max_teachers_per_groups = $global_restrictions[4]; 
+                        $max_classrooms_per_teachers = $global_restrictions[5];
 
 
                         $group = new Groups;
@@ -376,6 +377,7 @@ class ControllerSuperAdmin extends Controller
                         $group->setmaxStudentsPerTeachers($max_students_per_teachers);
                         $group->setmaxStudents($max_students_per_groups);
                         $group->setmaxTeachers($max_teachers_per_groups);
+                        $group->setmaxClassroomsPerTeachers($max_classrooms_per_teachers);
 
                         // Vérifie si il n'y a pas déjà de groupe avec ce lien, si il y en a un alors on re-set le link et on recommence
                         $linkExist = $this->entityManager->getRepository(Groups::class)->findOneBy(['link' => $group->getLink()]);
@@ -450,6 +452,7 @@ class ControllerSuperAdmin extends Controller
                         $max_students_per_teachers = $global_restrictions[2];
                         $max_students_per_groups = $global_restrictions[3];
                         $max_teachers_per_groups = $global_restrictions[4]; 
+                        $max_classrooms_per_teachers = $global_restrictions[5];
 
                         if ($group) {
                             if ($date_begin != null && $date_end != null) {
@@ -459,6 +462,7 @@ class ControllerSuperAdmin extends Controller
                             $group->setmaxStudentsPerTeachers($max_students_per_teachers);
                             $group->setmaxStudents($max_students_per_groups);
                             $group->setmaxTeachers($max_teachers_per_groups); 
+                            $group->setmaxClassroomsPerTeachers($max_classrooms_per_teachers);
                             $group->setDescription($group_description);
                             $group->setName($group_name);
                             $this->entityManager->persist($group);
@@ -570,6 +574,7 @@ class ControllerSuperAdmin extends Controller
                                 $date_begin = $apps[0] != null ? \DateTime::createFromFormat('Y-m-d', $apps[0]) : null;
                                 $date_end = $apps[1] != null ? \DateTime::createFromFormat('Y-m-d', $apps[1]) : null;
                                 $max_students = $apps[2] != null ? (int)$apps[2] : 0;
+                                $max_classrooms = $apps[4] != null ? (int)$apps[4] : 0;
 
                                 if ($date_begin != null && $date_end != null) {
                                     $UserRestrictions = new UsersRestrictions();
@@ -579,6 +584,7 @@ class ControllerSuperAdmin extends Controller
                                         $UserRestrictions->setDateEnd($date_end);
                                     }
                                     $UserRestrictions->setMaxStudents($max_students);
+                                    $UserRestrictions->setMaxClassrooms($max_classrooms);
                                     $this->entityManager->persist($UserRestrictions);
                                 }
 
@@ -875,6 +881,8 @@ class ControllerSuperAdmin extends Controller
                                 }
 
                                 $UserRestrictions->setmaxStudents($global_user_restriction[2]);
+                                $UserRestrictions->setmaxClassrooms($global_user_restriction[3]);
+
                                 $this->entityManager->persist($UserRestrictions);
 
                                 foreach ($user_app as $key => $value) {
@@ -936,10 +944,12 @@ class ControllerSuperAdmin extends Controller
                     if (isset($data['maxStudents'])) {
 
                         $maxStudentsClear = htmlspecialchars($data['maxStudents']);
+                        $maxClassroomsClear = htmlspecialchars($data['maxClassrooms']);
 
                         $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'userDefaultRestrictions']);
                         $arrayRestriction = json_encode([
                             "maxStudents" => (int)$maxStudentsClear,
+                            "maxClassrooms" => (int)$maxClassroomsClear,
                         ]);
                         $restrictions->setRestrictions($arrayRestriction);
                         $this->entityManager->persist($restrictions);
@@ -956,12 +966,14 @@ class ControllerSuperAdmin extends Controller
                         $maxStudentsClear = htmlspecialchars($data['maxStudents']);
                         $maxTeachersClear = htmlspecialchars($data['maxTeachers']);
                         $maxPerTeachersClear = htmlspecialchars($data['maxPerTeachers']);
+                        $maxClassroomsClear = htmlspecialchars($data['maxClassrooms']);
 
                         $restrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => 'groupDefaultRestrictions']);
                         $arrayRestriction = json_encode([
                             "maxStudents" => (int)$maxStudentsClear,
                             "maxTeachers" => (int)$maxTeachersClear,
                             "maxStudentsPerTeacher" => (int)$maxPerTeachersClear,
+                            "maxClassrooms" => (int)$maxClassroomsClear,
                         ]);
                         $restrictions->setRestrictions($arrayRestriction);
                         $this->entityManager->persist($restrictions);
