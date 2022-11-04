@@ -88,7 +88,7 @@ class GroupsRepository extends EntityRepository
     public function getGroupInfo($group_id)
     {
         $Group = $this->getEntityManager()
-            ->createQueryBuilder()->select("g.id, g.name, g.description, g.link, g.maxStudents, g.maxTeachers, g.maxStudentsPerTeachers, g.dateBegin, g.dateEnd")
+            ->createQueryBuilder()->select("g.id, g.name, g.description, g.link, g.maxStudents, g.maxTeachers, g.maxClassroomsPerTeachers, g.maxStudentsPerTeachers, g.dateBegin, g.dateEnd")
             ->from(Groups::class, 'g')
             ->where('g.id = :id ')
             ->setParameter('id', $group_id)
