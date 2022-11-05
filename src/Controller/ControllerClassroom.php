@@ -138,7 +138,7 @@ class ControllerClassroom extends Controller
                 
                 // get default MaxClassrooms restrictions
                 $groupsRestrictionAmount = (array)json_decode($groupDefaultRestrictions->getRestrictions());
-                $groupsDefaultMaxClassrooms = $groupsRestrictionAmount['maxClassrooms'];
+                $groupsDefaultMaxClassrooms = $groupsRestrictionAmount['maxClassroomsPerTeacher'];
 
                 $usersRestrictionAmount = (array)json_decode($userDefaultRestrictions->getRestrictions());
                 $userDefaultMaxClassrooms = $usersRestrictionAmount['maxClassrooms'];
