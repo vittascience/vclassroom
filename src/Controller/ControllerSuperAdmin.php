@@ -973,7 +973,7 @@ class ControllerSuperAdmin extends Controller
                             "maxStudents" => (int)$maxStudentsClear,
                             "maxTeachers" => (int)$maxTeachersClear,
                             "maxStudentsPerTeacher" => (int)$maxPerTeachersClear,
-                            "maxClassrooms" => (int)$maxClassroomsClear,
+                            "maxClassroomsPerTeacher" => (int)$maxClassroomsClear,
                         ]);
                         $restrictions->setRestrictions($arrayRestriction);
                         $this->entityManager->persist($restrictions);
