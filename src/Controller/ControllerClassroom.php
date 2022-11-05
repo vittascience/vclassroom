@@ -3,17 +3,22 @@
 namespace Classroom\Controller;
 
 use Dotenv\Dotenv;
+use DAO\RegularDAO;
 use User\Entity\User;
 use User\Entity\Regular;
+use Classroom\Entity\Groups;
+use User\Entity\UserPremium;
 use User\Entity\ClassroomUser;
 use Classroom\Entity\Classroom;
-use Classroom\Entity\ClassroomLinkUser;
 
 /**
  * @ THOMAS MODIF line just below
  */
 
-use DAO\RegularDAO;
+use Classroom\Entity\Restrictions;
+use Classroom\Entity\UsersLinkGroups;
+use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\UsersRestrictions;
 
 class ControllerClassroom extends Controller
 {
@@ -93,9 +98,11 @@ class ControllerClassroom extends Controller
                     ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
                     : 'demostudent';
 
-                // get user "roles"
-                $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
-                $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
+
+                // get user and regular 
+                $user = $this->entityManager->getRepository(User::class)->findOneBy(["id" => $currentUserId]);
+                $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(["user" => $user->getId()]);
+                $premium = $this->entityManager->getRepository(UserPremium::class)->findOneBy(["user" => $user->getId()]);
 
                 // an error found, classroomName id required return the error
                 if (empty($classroomName)) return array('errorType' => 'ClassroomNameInvalid');
@@ -116,42 +123,65 @@ class ControllerClassroom extends Controller
 
                 $learnerNumberCheck = [
                     "idUser" => $currentUserId,
-                    "isPremium" => $isPremium,
-                    "isAdmin" => $isAdmin,
+                    "isPremium" => $premium,
+                    "isAdmin" => $regular->getIsAdmin(),
                     "classroomNumber" => $nbClassroom
                 ];
 
-                // set the $isAllowed flag to true if the current user is admin or premium to allow them more possibilities
-                $isAllowed = $learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"];
+                //get user restriction
+                $restrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(["user" => $user]);
+                $groupsRestrictions = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(["user" => $user->getId()]);
 
-                ///////////////////////////////////
-                // remove the limitations for CABRI
-                if (!$isAllowed) {
-                    if ($nbClassroom + 1 > 1) {
-                        // the current classroom number is reached, return an error
-                        return [
-                            "isClassroomAdded" => false,
-                            "classroomNumberLimit" => $nbClassroom
-                        ];
+
+                $userDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => "userDefaultRestrictions"]);
+                $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => "groupDefaultRestrictions"]);
+                
+                
+                $groupsRestrictionAmount = (array)json_decode($groupDefaultRestrictions->getRestrictions());
+                $groupsDefaultMaxClassrooms = $groupsRestrictionAmount['maxClassrooms'];
+
+                $usersRestrictionAmount = (array)json_decode($userDefaultRestrictions->getRestrictions());
+                $userDefaultMaxClassrooms = $usersRestrictionAmount['maxClassrooms'];
+
+                
+                $maxClassrooms = 1;
+                if ($learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"]) {
+                    $maxClassrooms = -1;
+                }
+
+
+                if (!empty($restrictions)) {
+                    if (!empty($restrictions->getMaxClassrooms()) && $maxClassrooms != -1) {
+                        $maxClassrooms = $restrictions->getMaxClassrooms();
                     }
                 }
 
-                // check the classroom number for premium users 
-                if ($learnerNumberCheck['isPremium']) {
-                    if ($nbClassroom + 1 > 20) {
+                if ($maxClassrooms < $userDefaultMaxClassrooms) {
+                    $maxClassrooms = $userDefaultMaxClassrooms;
+                }
 
-                        // the current classroom number is reached, return an error
-                        return [
-                            "isClassroomAdded" => false,
-                            "classroomNumberLimit" => $nbClassroom
-                        ];
+                if (!empty($groupsRestrictions)) {
+                    $group = $this->entityManager->getRepository(Groups::class)->findOneBy(["id" => $groupsRestrictions->getGroup()]);
+                    if ($group) {
+                        if ($group->getmaxClassroomsPerTeachers() != null) {
+                            if ($group->getmaxClassroomsPerTeachers() > $maxClassrooms && $maxClassrooms != -1) {
+                                $maxClassrooms = $group->getmaxClassroomsPerTeachers();
+                            }
+                        } else {
+                            if ($groupsDefaultMaxClassrooms > $maxClassrooms && $maxClassrooms != -1) {
+                                $maxClassrooms = $groupsDefaultMaxClassrooms;
+                            }
+                        }
                     }
                 }
-                // end remove the limitations for CABRI
-                ///////////////////////////////////////
-                /**
-                 * End of learner number limiting
-                 */
+
+                // check if the user is allowed to create a new classroom
+                if ($learnerNumberCheck["classroomNumber"] >= $maxClassrooms && $maxClassrooms != -1) {
+                    return [
+                        "isClassroomAdded" => false,
+                        "classroomNumberLimit" => $nbClassroom
+                    ];
+                }
 
                 $uniqueLink = $this->generateUniqueClassroomLink();
 

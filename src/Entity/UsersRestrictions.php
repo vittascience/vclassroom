@@ -127,7 +127,7 @@ class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
      * @param Int $maxStudents
      * @return UsersRestrictions
      */
-    public function setMaxStudents(Int $maxStudents): self
+    public function setMaxStudents(?Int $maxStudents): self
     {
         $this->maxStudents = $maxStudents;
         return $this;
@@ -146,7 +146,7 @@ class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
      * @param Int $maxClassrooms
      * @return UsersRestrictions
      */
-    public function setMaxClassrooms(Int $maxClassrooms): self
+    public function setMaxClassrooms(?Int $maxClassrooms): self
     {
         $this->maxClassrooms = $maxClassrooms;
         return $this;

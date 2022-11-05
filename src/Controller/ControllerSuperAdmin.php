@@ -881,7 +881,7 @@ class ControllerSuperAdmin extends Controller
                                 }
 
                                 $UserRestrictions->setmaxStudents($global_user_restriction[2]);
-                                $UserRestrictions->setmaxClassrooms($global_user_restriction[3]);
+                                $UserRestrictions->setMaxClassrooms($global_user_restriction[3]);
 
                                 $this->entityManager->persist($UserRestrictions);
 
