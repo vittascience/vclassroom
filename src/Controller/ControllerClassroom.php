@@ -128,15 +128,15 @@ class ControllerClassroom extends Controller
                     "classroomNumber" => $nbClassroom
                 ];
 
-                //get user restriction
+                // get restrictions
                 $restrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(["user" => $user]);
                 $groupsRestrictions = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(["user" => $user->getId()]);
 
-
+                // get default restrictions
                 $userDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => "userDefaultRestrictions"]);
                 $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findOneBy(['name' => "groupDefaultRestrictions"]);
                 
-                
+                // get default MaxClassrooms restrictions
                 $groupsRestrictionAmount = (array)json_decode($groupDefaultRestrictions->getRestrictions());
                 $groupsDefaultMaxClassrooms = $groupsRestrictionAmount['maxClassrooms'];
 
@@ -150,7 +150,7 @@ class ControllerClassroom extends Controller
                 }
 
 
-                if (!empty($restrictions)) {
+                if ($restrictions) {
                     if (!empty($restrictions->getMaxClassrooms()) && $maxClassrooms != -1) {
                         $maxClassrooms = $restrictions->getMaxClassrooms();
                     }
@@ -160,16 +160,16 @@ class ControllerClassroom extends Controller
                     $maxClassrooms = $userDefaultMaxClassrooms;
                 }
 
-                if (!empty($groupsRestrictions)) {
+                if ($groupsRestrictions) {
                     $group = $this->entityManager->getRepository(Groups::class)->findOneBy(["id" => $groupsRestrictions->getGroup()]);
                     if ($group) {
+                        if ($groupsDefaultMaxClassrooms > $maxClassrooms && $maxClassrooms != -1) {
+                            $maxClassrooms = $groupsDefaultMaxClassrooms;
+                        }
+
                         if ($group->getmaxClassroomsPerTeachers() != null) {
                             if ($group->getmaxClassroomsPerTeachers() > $maxClassrooms && $maxClassrooms != -1) {
                                 $maxClassrooms = $group->getmaxClassroomsPerTeachers();
-                            }
-                        } else {
-                            if ($groupsDefaultMaxClassrooms > $maxClassrooms && $maxClassrooms != -1) {
-                                $maxClassrooms = $groupsDefaultMaxClassrooms;
                             }
                         }
                     }
