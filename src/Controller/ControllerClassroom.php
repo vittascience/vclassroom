@@ -144,7 +144,7 @@ class ControllerClassroom extends Controller
                 $userDefaultMaxClassrooms = $usersRestrictionAmount['maxClassrooms'];
 
                 
-                $maxClassrooms = 1;
+                $maxClassrooms = 0;
                 if ($learnerNumberCheck["isAdmin"] || $learnerNumberCheck["isPremium"]) {
                     $maxClassrooms = -1;
                 }
