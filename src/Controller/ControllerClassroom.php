@@ -149,26 +149,25 @@ class ControllerClassroom extends Controller
                     $maxClassrooms = -1;
                 }
 
-
                 if ($restrictions) {
-                    if (!empty($restrictions->getMaxClassrooms()) && $maxClassrooms != -1) {
+                    if (!empty($restrictions->getMaxClassrooms()) && $maxClassrooms != -1 || $restrictions->getMaxClassrooms() == -1) {
                         $maxClassrooms = $restrictions->getMaxClassrooms();
                     }
                 }
 
-                if ($maxClassrooms < $userDefaultMaxClassrooms) {
+                if ($maxClassrooms < $userDefaultMaxClassrooms && $maxClassrooms != -1 || $userDefaultMaxClassrooms == -1) {
                     $maxClassrooms = $userDefaultMaxClassrooms;
                 }
 
                 if ($groupsRestrictions) {
                     $group = $this->entityManager->getRepository(Groups::class)->findOneBy(["id" => $groupsRestrictions->getGroup()]);
                     if ($group) {
-                        if ($groupsDefaultMaxClassrooms > $maxClassrooms && $maxClassrooms != -1) {
+                        if ($groupsDefaultMaxClassrooms > $maxClassrooms && $maxClassrooms != -1 || $groupsDefaultMaxClassrooms == -1) {
                             $maxClassrooms = $groupsDefaultMaxClassrooms;
                         }
 
                         if ($group->getmaxClassroomsPerTeachers() != null) {
-                            if ($group->getmaxClassroomsPerTeachers() > $maxClassrooms && $maxClassrooms != -1) {
+                            if ($group->getmaxClassroomsPerTeachers() > $maxClassrooms && $maxClassrooms != -1 || $group->getmaxClassroomsPerTeachers() == -1) {
                                 $maxClassrooms = $group->getmaxClassroomsPerTeachers();
                             }
                         }
@@ -179,7 +178,7 @@ class ControllerClassroom extends Controller
                 if ($learnerNumberCheck["classroomNumber"] >= $maxClassrooms && $maxClassrooms != -1) {
                     return [
                         "isClassroomAdded" => false,
-                        "classroomNumberLimit" => $nbClassroom
+                        "classroomNumberLimit" => $maxClassrooms
                     ];
                 }
 
