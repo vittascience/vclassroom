@@ -259,7 +259,8 @@ class UsersLinkGroupsRepository extends EntityRepository
                         IDENTITY(ur.user) as user, 
                         ur.dateBegin as date_begin, 
                         ur.dateEnd as date_end, 
-                        ur.maxStudents as max_students')
+                        ur.maxStudents as max_students,
+                        ur.maxClassrooms as max_classrooms')
             ->from(UsersRestrictions::class, 'ur')
             ->where('ur.user = :id')
             ->setParameter('id', $user_id)

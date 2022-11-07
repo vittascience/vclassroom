@@ -73,6 +73,14 @@ class Groups implements \JsonSerializable, \Utils\JsonDeserializer
 
 
     /**
+     * @ORM\Column(name="max_classrooms_per_teachers", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxClassroomsPerTeachers;
+
+
+
+    /**
      * @return Int
      */
     public function getId(): ?int
@@ -211,6 +219,25 @@ class Groups implements \JsonSerializable, \Utils\JsonDeserializer
     public function setmaxStudentsPerTeachers(Int $maximum): self
     {
         $this->maxStudentsPerTeachers = $maximum;
+        return $this;
+    }
+
+
+    /**
+     * @return Integer
+     */
+    public function getmaxClassroomsPerTeachers()
+    {
+        return $this->maxClassroomsPerTeachers;
+    }
+
+    /**
+     * @param Integer $maximum
+     * @return GroupsLinkApplications
+     */
+    public function setmaxClassroomsPerTeachers(Int $maximum): self
+    {
+        $this->maxClassroomsPerTeachers = $maximum;
         return $this;
     }
 

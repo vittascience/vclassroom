@@ -44,6 +44,12 @@ class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
      * @var integer
      */
     private $maxStudents;
+
+    /**
+     * @ORM\Column(name="max_classrooms", type="integer", nullable=true)
+     * @var integer
+     */
+    private $maxClassrooms;
     
 
 
@@ -121,9 +127,28 @@ class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
      * @param Int $maxStudents
      * @return UsersRestrictions
      */
-    public function setMaxStudents(Int $maxStudents): self
+    public function setMaxStudents(?Int $maxStudents): self
     {
         $this->maxStudents = $maxStudents;
+        return $this;
+    }
+
+
+    /**
+     * @return Int
+     */
+    public function getMaxClassrooms(): ?int
+    {
+        return $this->maxClassrooms;
+    }
+
+    /**
+     * @param Int $maxClassrooms
+     * @return UsersRestrictions
+     */
+    public function setMaxClassrooms(?Int $maxClassrooms): self
+    {
+        $this->maxClassrooms = $maxClassrooms;
         return $this;
     }
     
@@ -135,7 +160,8 @@ class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
             'user' => $this->getUser(),
             'dateBegin' => $this->getDateBegin(),
             'dateEnd' => $this->getDateEnd(),
-            'maxStudents' => $this->getMaxStudents()
+            'maxStudents' => $this->getMaxStudents(),
+            'maxClassrooms' => $this->getMaxClassrooms(),
         ];
     }
 
