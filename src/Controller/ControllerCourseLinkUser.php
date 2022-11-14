@@ -144,10 +144,18 @@ class ControllerCourseLinkUser extends Controller
                         $courseArray = $course->jsonSerialize();
                         $courseArray['activities'] = [];
                         $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getId()]);
+                        $toAdd = true;
                         foreach ($courseLinkActivities as $activity) {
+                            if (!$activity->getActivity()->isFromClassroom()) {
+                                $toAdd = false;
+                                break;
+                            }
                             array_push($courseArray['activities'], $activity->getActivity());
                         }
-                        array_push($myCoursesArray, $courseArray);
+                        
+                        if ($toAdd) {
+                            array_push($myCoursesArray, $courseArray);
+                        }
                     }
                     
                     return $myCoursesArray;
