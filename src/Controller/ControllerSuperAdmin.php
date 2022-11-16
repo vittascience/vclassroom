@@ -547,6 +547,11 @@ class ControllerSuperAdmin extends Controller
                                 if ($value[1] != -1) {
                                     $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);
 
+                                    $full = $this->isGroupFull($value[1]);
+                                    if ($full["response"] == false) {
+                                        return $full;
+                                    }
+
                                     $rights = 0;
                                     $UsersLinkGroups = new UsersLinkGroups();
                                     $UsersLinkGroups->setGroup($group);
@@ -1062,34 +1067,31 @@ class ControllerSuperAdmin extends Controller
         return $emailSent;
     }
 
-/*     private function manageAppsFromGroupsUsers(Int $user_id, array $application, ?array $groups, User $user)
+    // Check restrictions via applications
+    private function isGroupFull(Int $group_id): ?array
     {
-        $group = "";
-        if (!empty($groups)) {
-            $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
+        // Get the default user restrictions in the database
+        $groupDefaultRestrictions = $this->entityManager->getRepository(Restrictions::class)->findBy(['name' => "groupDefaultRestrictions"]);
+        $groupRestriction = (array)json_decode($groupDefaultRestrictions[0]->getRestrictions());
+        $nbUsersInGroups = $this->entityManager->getRepository(UsersLinkGroups::class)->findBy(['group' => $group_id]);
+        $maxTeacher = $groupRestriction['maxTeachers'];
+        $group = $this->entityManager->getRepository(Groups::class)->find($group_id);
+        if ($group->getmaxTeachers() != null) {
+            $maxTeacher = $group->getmaxTeachers();
         }
-        $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user_id]);
-        $isAppActive = false;
-        foreach ($application as $app) {
-            foreach ($appFromGroupExist as $appFromGroup) {
-                if ($appFromGroup->getApplication()->getId() == $app[0] && $app[1] == false) {
-                    $this->entityManager->remove($appFromGroup);
-                } else if ($appFromGroup->getApplication()->getId() == $app[0]) {
-                    $isAppActive = true;
-                }
-            }
-            if (!$isAppActive && $app[1] == true && $group != "") {
-                $apps = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app[0]]);
-                $newAppFromGroup = new UsersLinkApplicationsFromGroups();
-                $newAppFromGroup->setApplication($apps);
-                $newAppFromGroup->setGroup($group);
-                $newAppFromGroup->setUser($user);
-                $this->entityManager->persist($newAppFromGroup);
-            }
-            $isAppActive = false;
+
+        if ($maxTeacher == -1) {
+            return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true];
         }
-        return true;
-    } */
+
+        if ($maxTeacher != 0) {
+            if (count($nbUsersInGroups) >= $maxTeacher) {
+                return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => false];
+            }
+        }
+
+        return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true];
+    }
 
     private function manageAppsForGroups($applications, $group_id, $group)
     {

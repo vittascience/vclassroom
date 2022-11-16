@@ -1050,6 +1050,10 @@ class ControllerGroupAdmin extends Controller
             $maxTeacher = $group->getmaxTeachers();
         }
 
+        if ($maxTeacher == -1) {
+            return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => true];
+        }
+
         if ($maxTeacher != 0) {
             if (count($nbUsersInGroups) >= $maxTeacher) {
                 return ['maximum' => $maxTeacher, 'teacher' => count($nbUsersInGroups), 'response' => false];
