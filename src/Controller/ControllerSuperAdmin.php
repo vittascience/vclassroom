@@ -702,6 +702,12 @@ class ControllerSuperAdmin extends Controller
                         $group = "";
                         if (!empty($groups)) {
                             if ($groups[1] != -1) {
+
+                                $full = $this->isGroupFull($groups[1]);
+                                if ($full["response"] == false) {
+                                    return $full;
+                                }
+
                                 $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $groups[1]]);
                                 $AlreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $groups[1]]);
                                 $rights = $groups[0] == true ? 1 : 0;
