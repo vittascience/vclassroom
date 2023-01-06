@@ -7,6 +7,7 @@ use Learn\Entity\Course;
 use User\Entity\Regular;
 use Learn\Entity\Activity;
 use Classroom\Entity\Classroom;
+use Classroom\Entity\Applications;
 use Classroom\Entity\CourseLinkUser;
 use Learn\Entity\CourseLinkActivity;
 use Classroom\Entity\ActivityLinkUser;
@@ -178,9 +179,10 @@ class ControllerCourseLinkUser extends Controller
                         $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getCourse()->getId()]);
                         foreach ($courseLinkActivities as $activity) {
                             $activityLinkUser = $this->entityManager->getRepository(ActivityLinkUser::class)->findOneBy(['user' => $loggedUser->getId(), 'activity' => $activity->getActivity()->getId(), "course" => $course->getCourse()->getId()]);
-                            $activityArray = $activity->getActivity()->jsonSerialize();
-                            $activityArray['activityLinkUser'] = $activityLinkUser;
-                            array_push($courseArray['activities'], $activityArray);
+                            $activityRestriction = $this->entityManager->getRepository(Applications::class)->findOneBy(['name' => $activity->getActivity()->getType()]);
+                            $serializedActivity = $activityLinkUser->jsonSerialize();
+                            $serializedActivity["activity"]["isLti"] = $activityRestriction ? $activityRestriction->getIsLti() : false;
+                            array_push($courseArray['activities'], $serializedActivity);
                         }
                         array_push($myCoursesArray, $courseArray);
                     }
