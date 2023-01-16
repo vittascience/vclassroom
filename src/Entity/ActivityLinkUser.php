@@ -149,6 +149,12 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var bool
      */
     private $isFromCourse = false;
+
+    /**
+     * @ORM\Column(name="optional_data", type="text", nullable=true)
+     * @var String
+     */
+    private $optionalData = null;
     
 
 
@@ -538,7 +544,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 
 
     /**
-     * Get the value of dateSend
+     * Get the value of response
      */
     public function getResponse(): ?string
     {
@@ -567,6 +573,25 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->isFromCourse;
     }
+
+    /**
+     * Get the value of optionalData
+     */
+    public function getOptionalData(): ?string
+    {
+        return $this->optionalData;
+    }
+
+    /**
+     * Set the value of optionalData
+     * @param  string  $optionalData
+     * @return  self
+     */
+    public function setOptionalData(?String $optionalData)
+    {
+        $this->optionalData = $optionalData;
+        return $this;
+    }
     
     public function jsonSerialize()
     {
@@ -575,6 +600,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         } else {
             $course = null;
         }
+
         if ($this->getProject() != null) {
             $project = $this->getProject()->jsonSerialize();
         } else {
@@ -588,6 +614,15 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         } else {
             $response = $this->getResponse();
         }
+
+        $unserializedData = @unserialize($this->getOptionalData());
+        // Handle the previous format
+        if ($unserializedData) {
+            $optionalData = json_encode($unserializedData);
+        } else {
+            $optionalData = $this->getOptionalData();
+        }
+
         return [
             'id' => $this->getId(),
             'user' => $this->getUser()->jsonSerialize(),
@@ -609,7 +644,8 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'reference' => $this->getReference(),
             'url'=> $this->getUrl(),
             'response' => $response,
-            'isFromCourse' => $this->getIsFromCourse()
+            'isFromCourse' => $this->getIsFromCourse(),
+            'optionalData' => $optionalData
         ];
     }
 
