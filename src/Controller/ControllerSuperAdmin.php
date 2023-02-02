@@ -16,6 +16,7 @@ use Classroom\Entity\UsersRestrictions;
 use Classroom\Entity\UsersLinkApplications;
 use Classroom\Entity\GroupsLinkApplications;
 use Classroom\Entity\UsersLinkApplicationsFromGroups;
+use Learn\Entity\Activity;
 
 class ControllerSuperAdmin extends Controller
 {
@@ -128,6 +129,25 @@ class ControllerSuperAdmin extends Controller
                         $lti_data = isset($data['lti_data']) ? json_decode($data['lti_data'], true) : null;
 
                         $app = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $application_id]);
+
+                        
+
+                        //check if an application with the same name already exist
+                        $app_exist = $this->entityManager->getRepository(Applications::class)->findOneBy(['name' => $application_name]);
+                        if ($app_exist) {
+                            return ['message' => 'application with the same name already exist'];
+                        }
+
+                        // if the name change we need to update all activities with the new name
+                        if ($application_name != $app->getName()) {
+                            // select all activities with the old name
+                            $activities = $this->entityManager->getRepository(Activity::class)->findBy(['type' => $app->getName()]);
+                            foreach ($activities as $value) {
+                                $value->setType($application_name);
+                                $this->entityManager->persist($value);
+                            }
+                        }
+
                         $app->setName($application_name);
                         $app->setDescription($application_description);
                         $app->setImage($application_image);
