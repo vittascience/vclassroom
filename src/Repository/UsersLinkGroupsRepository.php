@@ -6,6 +6,7 @@ use User\Entity\User;
 use User\Entity\Regular;
 use User\Entity\Teacher;
 use Classroom\Entity\Groups;
+use User\Entity\UserPremium;
 use Doctrine\ORM\Query\Expr\Join;
 use Classroom\Entity\Applications;
 use Doctrine\ORM\EntityRepository;
@@ -29,24 +30,22 @@ class UsersLinkGroupsRepository extends EntityRepository
     {
 
         $orderby = "u.surname";
+        $sort = 0 ? $orderby = "u.surname" : $orderby = "u.firstname";
 
-        if ($sort == 0) {
-            $orderby = "u.surname";
-        } else if ($sort == 1) {
-            $orderby = "u.firstname";
-        }
-
-        if ($group_id == 0)
+        if ($group_id == 0) {
             return false;
+        }
 
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
 
         if ($group_id >= 1) {
             $result = $this->getEntityManager()
-                ->createQueryBuilder()->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active")
+                ->createQueryBuilder()
+                ->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                 ->from(User::class, 'u')
                 ->innerJoin(UsersLinkGroups::class, 'g')
                 ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
+                ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
                 ->where('g.group = :id AND u.id = g.user')
                 ->orderBy('g.rights', 'DESC')
                 ->addOrderBy($orderby)
@@ -66,9 +65,10 @@ class UsersLinkGroupsRepository extends EntityRepository
             if (!empty($users_id)) {
                 $result = $this->getEntityManager()
                     ->createQueryBuilder()
-                    ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active")
+                    ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                     ->from(User::class, 'u')
                     ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
+                    ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
                     ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
                     ->setParameter('ids', $users_id)
                     ->orderBy($orderby)
@@ -87,9 +87,10 @@ class UsersLinkGroupsRepository extends EntityRepository
         } else if ($group_id == -2) {
             $result = $this->getEntityManager()
                 ->createQueryBuilder()
-                ->select("u.id, u.surname, u.firstname, u.pseudo, IDENTITY(r.user) as isRegular, r.active")
+                ->select("u.id, u.surname, u.firstname, u.pseudo, IDENTITY(r.user) as isRegular, r.active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                 ->from(User::class, 'u')
                 ->leftJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
+                ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
                 ->where('r.active is NULL')
                 ->orderBy($orderby)
                 ->getQuery();
@@ -98,7 +99,7 @@ class UsersLinkGroupsRepository extends EntityRepository
         // fetch applications of users
         $ApplicationsOfUsers = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select("a.id AS application_id, a.name AS application_name, a.image AS application_image, u.id AS user_id, ur.dateBegin as date_begin, ur.dateEnd as date_end")
+            ->select("a.id AS application_id, a.name AS application_name, a.image AS application_image, u.id AS user_id, ur.dateBegin as date_begin, ur.dateEnd as p_date_end")
             ->from(Applications::class, 'a')
             ->innerJoin(UsersLinkApplications::class, 'ula', Join::WITH, 'a.id = ula.application')
             ->innerJoin(User::class, 'u', Join::WITH, 'u.id = ula.user')
@@ -365,10 +366,11 @@ class UsersLinkGroupsRepository extends EntityRepository
     {
 
         $Users = $this->getEntityManager()
-            ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email, r.active")
+            ->createQueryBuilder()->select("u.id, u.firstname, u.surname, u.pseudo, r.email, r.active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
-            ->where('u.firstname LIKE :name OR u.surname LIKE :name')
+            ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
+            ->where('u.firstname LIKE :name OR u.surname LIKE :name OR r.email LIKE :name')
             ->setParameter('name', '%' . $string . '%')
             ->groupBy('u.id')
             ->getQuery();
