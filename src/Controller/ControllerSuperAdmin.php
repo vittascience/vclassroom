@@ -1023,7 +1023,7 @@ class ControllerSuperAdmin extends Controller
                 'get_all_newsletter_members' => function ($data) {
                     $usersNewsletter = $this->entityManager->getRepository(User::class)->getNewsLetterMembers();
                     return $usersNewsletter;
-                },
+                }
             );
         }
     }
