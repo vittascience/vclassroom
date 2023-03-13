@@ -41,7 +41,7 @@ class UsersLinkGroupsRepository extends EntityRepository
         if ($group_id >= 1) {
             $result = $this->getEntityManager()
                 ->createQueryBuilder()
-                ->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
+                ->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active, r.newsletter, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                 ->from(User::class, 'u')
                 ->innerJoin(UsersLinkGroups::class, 'g')
                 ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
@@ -65,7 +65,7 @@ class UsersLinkGroupsRepository extends EntityRepository
             if (!empty($users_id)) {
                 $result = $this->getEntityManager()
                     ->createQueryBuilder()
-                    ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
+                    ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active, r.newsletter, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                     ->from(User::class, 'u')
                     ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                     ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
@@ -87,7 +87,7 @@ class UsersLinkGroupsRepository extends EntityRepository
         } else if ($group_id == -2) {
             $result = $this->getEntityManager()
                 ->createQueryBuilder()
-                ->select("u.id, u.surname, u.firstname, u.pseudo, IDENTITY(r.user) as isRegular, r.active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
+                ->select("u.id, u.surname, u.firstname, u.pseudo, IDENTITY(r.user) as isRegular, r.newsletter, r.active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                 ->from(User::class, 'u')
                 ->leftJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                 ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
@@ -146,13 +146,23 @@ class UsersLinkGroupsRepository extends EntityRepository
         foreach ($records as $key => $value) {
             foreach ($ApplicationsOfUsers as $key2 => $value2) {
                 if ((int)$value['id'] == (int)$value2['user_id']) {
-                    $records[$key]['applications'][] = [
-                        'id' => $value2['application_id'],
-                        'name' => $value2['application_name'],
-                        'image' => $value2['application_image'],
-                        'date_end' => $value2['date_end'],
-                        'date_begin' => $value2['date_begin']
-                    ];
+                    if (array_key_exists("date_end", $value2) && array_key_exists("date_begin", $value2)) {
+                        $records[$key]['applications'][] = [
+                            'id' => $value2['application_id'],
+                            'name' => $value2['application_name'],
+                            'image' => $value2['application_image'],
+                            'date_end' => $value2['date_end'],
+                            'date_begin' => $value2['date_begin']
+                        ];
+                    } else {
+                        $records[$key]['applications'][] = [
+                            'id' => $value2['application_id'],
+                            'name' => $value2['application_name'],
+                            'image' => $value2['application_image'],
+                            'date_end' => null,
+                            'date_begin' => null
+                        ];
+                    }
                 }
             }
 
@@ -206,7 +216,7 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         $User = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select('u.id, u.firstname, u.surname, u.pseudo, r.email, IDENTITY(r.user) as isRegular, r.active as isActive, r.isAdmin, r.telephone, r.bio, IDENTITY(t.user) as isTeacher, t.grade, t.subject, t.school')
+            ->select('u.id, u.firstname, u.surname, u.pseudo, r.email, IDENTITY(r.user) as isRegular, r.newsletter, r.active as isActive, r.isAdmin, r.telephone, r.bio, IDENTITY(t.user) as isTeacher, t.grade, t.subject, t.school')
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
             ->leftJoin(Teacher::class, 't', 'WITH', 't.user = u.id')

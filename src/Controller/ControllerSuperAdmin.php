@@ -1020,6 +1020,10 @@ class ControllerSuperAdmin extends Controller
                         return ['message' => "missing data"];
                     }
                 },
+                'get_all_newsletter_members' => function ($data) {
+                    $usersNewsletter = $this->entityManager->getRepository(Regular::class)->getNewsLetterMembers();
+                    return $usersNewsletter;
+                },
             );
         }
     }
