@@ -158,14 +158,12 @@ class ControllerGroupAdmin extends Controller
                             $bodyTitle = i18next::getTranslation('manager.users.mail.finalizeAccount.bodyTitle');
                             $textBeforeLink = i18next::getTranslation('manager.users.mail.finalizeAccount.textBeforeLink');
 
-                            $body = "
-                            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                                $bodyTitle
-                            </a>
-                            <br>
-                            <br>
-                            <p>$textBeforeLink $accountConfirmationLink
-                        ";
+                            $body = "<a href='$accountConfirmationLink' class='c-btn'>
+                                        $bodyTitle
+                                        </a>
+                                        <br>
+                                        <br>
+                                        <p>$textBeforeLink <a href='$accountConfirmationLink'>$accountConfirmationLink</a></p>";
 
                             $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
                             /////////////////////////////////////
@@ -1080,14 +1078,15 @@ class ControllerGroupAdmin extends Controller
         $bodyTitle = i18next::getTranslation('classroom.register.accountConfirmationEmail.bodyTitle');
         $textBeforeLink = i18next::getTranslation('classroom.register.accountConfirmationEmail.textBeforeLink');
 
-        $body = "
-            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                $bodyTitle
-            </a>
-            <br>
-            <br>
-            <p>$textBeforeLink $accountConfirmationLink
-        ";
+
+        
+        $body = "<a href='$accountConfirmationLink' class='c-btn'>
+                    $bodyTitle
+                    </a>
+                    <br>
+                    <br>
+                    <p>$textBeforeLink <a href='$accountConfirmationLink'>$accountConfirmationLink</a></p>";
+
         $emailSent = Mailer::sendMail($email, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
 
         return ['emailSent' => $emailSent, 'link' => $accountConfirmationLink];
@@ -1111,14 +1110,12 @@ class ControllerGroupAdmin extends Controller
         $bodyTitle = i18next::getTranslation('manager.users.mail.finalizeAccount.bodyTitle');
         $textBeforeLink = i18next::getTranslation('manager.users.mail.finalizeAccount.textBeforeLink');
 
-        $body = "
-            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
+        $body = "<a href='$accountConfirmationLink' class='c-btn'>
                 $bodyTitle
-            </a>
-            <br>
-            <br>
-            <p>$textBeforeLink $accountConfirmationLink
-        ";
+                </a>
+                <br>
+                <br>
+                <p>$textBeforeLink <a href='$accountConfirmationLink'>$accountConfirmationLink</a></p>";
 
         $emailSent = Mailer::sendMail($email, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
 
@@ -1146,14 +1143,12 @@ class ControllerGroupAdmin extends Controller
         $emailSubject = i18next::getTranslation('manager.users.mail.resetPassword.subject');
         $bodyTitle = i18next::getTranslation('manager.users.mail.resetPassword.bodyTitle');
         $textBeforeLink = i18next::getTranslation('manager.users.mail.resetPassword.textBeforeLink');
-        $body = "
-            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                $bodyTitle
-            </a>
-            <br>
-            <br>
-            <p>$textBeforeLink $accountConfirmationLink
-        ";
+        $body = "<a href='$accountConfirmationLink' class='c-btn'>
+                    $bodyTitle
+                    </a>
+                    <br>
+                    <br>
+                    <p>$textBeforeLink <a href='$accountConfirmationLink'>$accountConfirmationLink</a></p>";
 
         $emailSent = Mailer::sendMail($mail,  $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
 
