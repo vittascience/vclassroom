@@ -1086,13 +1086,13 @@ class ControllerSuperAdmin extends Controller
         $emailSubject = i18next::getTranslation($emailSubjectString);
         $bodyTitle = i18next::getTranslation($bodyTitleString);
         $textBeforeLink = i18next::getTranslation($textBeforeLinkString);
-        $body = "
-                            <a href='$accountConfirmationLink' style='text-decoration: none;padding: 10px;background: #27b88e;color: white;margin: 1rem auto;width: 50%;display: block;'>
-                                $bodyTitle
-                            </a>
-                            <br>
-                            <br>
-                            <p>$textBeforeLink $accountConfirmationLink";
+        $body = "<a href='$accountConfirmationLink' class='c-btn'>
+                    $bodyTitle
+                </a>
+                <br>
+                <br>
+                <p>$textBeforeLink <a href='$accountConfirmationLink'>$accountConfirmationLink</a></p>";
+
         $emailSent = Mailer::sendMail($mail, $emailSubject, $body, strip_tags($body), $emailTtemplateBody);
         return $emailSent;
     }
