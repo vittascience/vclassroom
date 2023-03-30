@@ -46,7 +46,8 @@ class ControllerClassroom extends Controller
                     return $classrooms = [];
                 }
 
-                $demoStudent = htmlspecialchars(strip_tags(trim($this->envVariables['VS_DEMOSTUDENT'])));
+                $demoStudent = $this->manageDemoStudentPseudo();
+
                 // some classrooms found, push them into $classrooms array
                 $i = 0;
                 foreach ($classrooms as $classroom) {
@@ -484,6 +485,23 @@ class ControllerClassroom extends Controller
 
         return $link;
         
+    }
+
+    private function manageDemoStudentPseudo() {
+        $demoStudent = $this->envVariables['VS_DEMOSTUDENT'];
+        if (str_contains($demoStudent, '"')) {
+            $demoStudent = str_replace('"', '', $demoStudent);
+        }
+
+        $demoStudentToUpdate = $this->entityManager->getRepository(ClassroomLinkUser::class)->getDemoStudentWithWrongPseudo($demoStudent);
+        if ($demoStudentToUpdate) {
+            foreach ($demoStudentToUpdate as $value) {
+                $value->setPseudo($demoStudent);
+                $this->entityManager->persist($value);
+                $this->entityManager->flush();
+            }
+        }
+        return $demoStudent;
     }
 }
 
