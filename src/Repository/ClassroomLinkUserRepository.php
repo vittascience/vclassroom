@@ -40,6 +40,24 @@ class ClassroomLinkUserRepository extends EntityRepository
         return $arrayStudents;
     }
 
+    public function getDemoStudentWithWrongPseudo($pseudo)
+    {
+       return $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('u')
+            ->from(User::class,'u')
+            ->where('u.firstname = :firstname')
+            ->andWhere('u.surname = :surname')
+            ->andWhere('u.pseudo != :name')
+            ->setParameters(array(
+                'firstname' => 'élève',
+                'surname' => 'modèl',
+                'name' => $pseudo
+            ))
+            ->getQuery()
+            ->getResult();
+    }
+
 
     public function getStudentsOrdered($classroomId, $rights, $demoStudent)
     {
@@ -101,19 +119,6 @@ class ClassroomLinkUserRepository extends EntityRepository
                                 ->getQuery()
                                 ->getResult();
         return  $classrooms;
-        /* 
-        // another query that procude the same results as above
-        $query = $this->_em->createQuery("
-            SELECT c.name
-            FROM Classroom\Entity\Classroom c
-            LEFT JOIN Classroom\Entity\ClassroomLinkUser clu
-            WITH c.id = clu.classroom
-            WHERE clu.user=$teacherId
-
-        ");
-        $classrooms = $query->getResult(); 
-        */
-       
     }
 
     public function getTeacherClassroomBy($teacherId,$classroomName,$uai,$classroomCode){
@@ -153,21 +158,6 @@ class ClassroomLinkUserRepository extends EntityRepository
                                 ->getQuery()
                                 ->getOneOrNullResult();
         return $studentClassrooms;
-        /* $studentClassrooms = $this->getEntityManager()
-                                ->createQueryBuilder()
-                                ->select('c,clu')
-                                ->from(Classroom::class,'c')
-                                ->join(ClassroomLinkUser::class,'clu','WITH','c.id = clu.classroom')
-                                ->join(User::class,'u','WITH','u.id = clu.user')
-                                ->where('c.id = :classroomId')
-                                ->andWhere('u.id = :studentId')
-                                ->setParameters(array(
-                                    'classroomId' => $classroomId,
-                                    'studentId' => $studentId
-                                ))
-                                ->getQuery()
-                                ->getResult();
-        return $studentClassrooms; */
     }
 
     public function getStudentClassroomsAndRelatedTeacher($classroomName,$uai){
