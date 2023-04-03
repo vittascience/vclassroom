@@ -2,26 +2,21 @@
 
 namespace Classroom\Controller;
 
-use Dotenv\Dotenv;
-use DAO\RegularDAO;
 use User\Entity\User;
 use User\Entity\Regular;
 use Classroom\Entity\Groups;
 use User\Entity\UserPremium;
 use User\Entity\ClassroomUser;
 use Classroom\Entity\Classroom;
-
-/**
- * @ THOMAS MODIF line just below
- */
-
 use Classroom\Entity\Restrictions;
 use Classroom\Entity\UsersLinkGroups;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\UsersRestrictions;
+use Classroom\Traits\UtilsTrait;
 
 class ControllerClassroom extends Controller
 {
+    use UtilsTrait;
     public function __construct($entityManager, $user)
     {
         parent::__construct($entityManager, $user);
@@ -95,9 +90,7 @@ class ControllerClassroom extends Controller
                 $classroomName = !empty($_POST['name']) ? htmlspecialchars(strip_tags(trim($_POST['name']))) : '';
                 $school = !empty($_POST['school']) ? htmlspecialchars(strip_tags(trim($_POST['school']))) : '';
                 $isBlocked = !empty($_POST['isBlocked']) ? htmlspecialchars(strip_tags(trim($_POST['isBlocked']))) : false;          
-                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
-                    : 'demostudent';
+                $demoStudent = $this->manageDemoStudentPseudo();
 
 
                 // get user and regular 
@@ -379,9 +372,8 @@ class ControllerClassroom extends Controller
                     ? htmlspecialchars(strip_tags(trim($_POST['link'])))
                     : '';
 
-                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
-                    : 'demostudent';
+
+                $demoStudent = $this->manageDemoStudentPseudo();
 
                 // no link provided, return an error
                 if (empty($link)) return array('errorClassroomLinkInvalid' => true);
@@ -487,22 +479,6 @@ class ControllerClassroom extends Controller
         
     }
 
-    private function manageDemoStudentPseudo() {
-        $demoStudent = $this->envVariables['VS_DEMOSTUDENT'];
-        if (str_contains($demoStudent, '"')) {
-            $demoStudent = str_replace('"', '', $demoStudent);
-        }
-
-        $demoStudentToUpdate = $this->entityManager->getRepository(ClassroomLinkUser::class)->getDemoStudentWithWrongPseudo($demoStudent);
-        if ($demoStudentToUpdate) {
-            foreach ($demoStudentToUpdate as $value) {
-                $value->setPseudo($demoStudent);
-                $this->entityManager->persist($value);
-                $this->entityManager->flush();
-            }
-        }
-        return $demoStudent;
-    }
 }
 
 function passwordGenerator()
