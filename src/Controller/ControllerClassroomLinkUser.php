@@ -3,18 +3,18 @@
 namespace Classroom\Controller;
 
 use DAO\RegularDAO;
-use models\Regular;
 use User\Entity\User;
-use Classroom\Entity\Groups;
 use User\Entity\ClassroomUser;
 use Classroom\Entity\Applications;
 use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\ActivityLinkClassroom;
+use Classroom\Traits\UtilsTrait;
 
 
 class ControllerClassroomLinkUser extends Controller
 {
+    use UtilsTrait;
     public function __construct($entityManager, $user)
     {
         parent::__construct($entityManager, $user);
@@ -45,7 +45,7 @@ class ControllerClassroomLinkUser extends Controller
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
 
                 // bind and sanitize .env demoStudent
-                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT']) ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT'])))) : 'demostudent';
+                $demoStudent = $this->manageDemoStudentPseudo();
 
                 // bind incoming users
                 $incomingUsers = $_POST['users'];
@@ -260,9 +260,7 @@ class ControllerClassroomLinkUser extends Controller
                 $isAdmin = RegularDAO::getSharedInstance()->isAdmin($currentUserId);
 
                 // bind and sanitize .env demoStudent
-                $demoStudent = !empty($this->envVariables['VS_DEMOSTUDENT'])
-                    ? htmlspecialchars(strip_tags(trim(strtolower($this->envVariables['VS_DEMOSTUDENT']))))
-                    : 'demostudent';
+                $demoStudent = $this->manageDemoStudentPseudo();
 
                 // retrieve all classrooms of the current user
                 $teacherClassrooms = $this->entityManager
