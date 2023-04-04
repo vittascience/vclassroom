@@ -135,7 +135,9 @@ class ControllerSuperAdmin extends Controller
                         //check if an application with the same name already exist
                         $app_exist = $this->entityManager->getRepository(Applications::class)->findOneBy(['name' => $application_name]);
                         if ($app_exist) {
-                            return ['message' => 'application with the same name already exist'];
+                            if ($app_exist->getId() != $application_id) {
+                                return ['message' => 'application with the same name already exist'];
+                            }
                         }
 
                         // if the name change we need to update all activities with the new name
