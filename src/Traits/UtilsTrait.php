@@ -17,12 +17,16 @@ trait UtilsTrait {
             $demoStudent = str_replace('"', '', $demoStudent);
         }
 
+        $this->FixForDemoStudentBug();
+
         $demoStudentToUpdate = $this->entityManager->getRepository(ClassroomLinkUser::class)->getDemoStudentWithWrongPseudo($demoStudent);
         if ($demoStudentToUpdate) {
             foreach ($demoStudentToUpdate as $value) {
-                $value->setPseudo($demoStudent);
-                $this->entityManager->persist($value);
-                $this->entityManager->flush();
+                if (strlen($value->getPassword()) > 4) {
+                    $value->setPseudo($demoStudent);
+                    $this->entityManager->persist($value);
+                    $this->entityManager->flush();
+                }
             }
         }
         return $demoStudent;
