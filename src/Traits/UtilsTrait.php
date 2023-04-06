@@ -17,7 +17,7 @@ trait UtilsTrait {
             $demoStudent = str_replace('"', '', $demoStudent);
         }
 
-        $this->FixForDemoStudentBug();
+        //$this->FixForDemoStudentBug();
 
         $demoStudentToUpdate = $this->entityManager->getRepository(ClassroomLinkUser::class)->getDemoStudentWithWrongPseudo($demoStudent);
         if ($demoStudentToUpdate) {
@@ -33,7 +33,7 @@ trait UtilsTrait {
     }
 
 
-    public function FixForDemoStudentBug() {
+/*     public function FixForDemoStudentBug() {
         $demoStudent = $this->envVariables['VS_DEMOSTUDENT'];
 
         if (empty($this->envVariables['VS_DEMOSTUDENT'])) {
@@ -57,6 +57,6 @@ trait UtilsTrait {
                 }
             }
         }
-    }
+    } */
 }
 
