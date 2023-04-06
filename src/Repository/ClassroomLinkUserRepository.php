@@ -194,6 +194,7 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->from(User::class,'u')
             ->where('u.firstname = :firstname')
             ->andWhere('u.surname = :surname')
+            ->andWhere('u.pseudo = :demoStudent')
             ->setParameters(array(
                 'demoStudent' => $demoStudent,
                 'firstname' => 'élève',
