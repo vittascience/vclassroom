@@ -94,15 +94,20 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->where('clu.rights = :rights')
             ->andWhere('clu.classroom = :classroom')
             ->andWhere('u.pseudo = :demoStudent')
+            ->andWhere('u.firstname = :firstname')
+            ->andWhere('u.surname = :surname')
             ->setParameters(array(
                 'rights' => $rights,
                 'classroom' => $classroomId,
-                'demoStudent' => $demoStudent
+                'demoStudent' => $demoStudent,
+                'firstname' => 'élève',
+                'surname' => 'modèl'
             ))
             ->getQuery()
             ->getOneOrNullResult();
         
             array_unshift($studentsArr,$tmpDemostudent);
+
 
         return $studentsArr;
     }
@@ -178,5 +183,23 @@ class ClassroomLinkUserRepository extends EntityRepository
                                                     ->getQuery()
                                                     ->getResult();
         return $studentClassroomsAndRelatedTeacher;
+    }
+
+
+    public function getAllDemoStudent($demoStudent) {
+        return $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('u')
+            ->from(User::class,'u')
+            ->where('u.firstname = :firstname')
+            ->andWhere('u.surname = :surname')
+            ->andWhere('u.pseudo = :demoStudent')
+            ->setParameters(array(
+                'demoStudent' => $demoStudent,
+                'firstname' => 'élève',
+                'surname' => 'modèl'
+            ))
+            ->getQuery()
+            ->getResult();
     }
 }
