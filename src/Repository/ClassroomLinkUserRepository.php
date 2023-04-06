@@ -104,11 +104,10 @@ class ClassroomLinkUserRepository extends EntityRepository
                 'surname' => 'modèl'
             ))
             ->getQuery()
-            ->getResult();
+            ->getOneOrNullResult();
+        
+            array_unshift($studentsArr,$tmpDemostudent);
 
-            if (count($tmpDemostudent) > 0) {
-                array_push( $studentsArr, $tmpDemostudent[0]);
-            }
 
         return $studentsArr;
     }
