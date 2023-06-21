@@ -145,6 +145,13 @@ class ControllerCourseLinkUser extends Controller
                         $courseArray = $course->jsonSerialize();
                         $courseArray['activities'] = [];
                         $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getId()]);
+
+                        // order activities by position
+                        usort($courseLinkActivities, function($a, $b) {
+                            return $a->getIndexOrder() <=> $b->getIndexOrder();
+                        });
+
+
                         $toAdd = true;
                         foreach ($courseLinkActivities as $activity) {
                             if (!$activity->getActivity()->isFromClassroom()) {
