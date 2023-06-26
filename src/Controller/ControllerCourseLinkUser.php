@@ -145,6 +145,13 @@ class ControllerCourseLinkUser extends Controller
                         $courseArray = $course->jsonSerialize();
                         $courseArray['activities'] = [];
                         $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getId()]);
+
+                        // order activities by position
+                        usort($courseLinkActivities, function($a, $b) {
+                            return $a->getIndexOrder() <=> $b->getIndexOrder();
+                        });
+
+
                         $toAdd = true;
                         foreach ($courseLinkActivities as $activity) {
                             if (!$activity->getActivity()->isFromClassroom()) {
@@ -177,6 +184,12 @@ class ControllerCourseLinkUser extends Controller
                         $courseArray = $course->jsonSerialize();
                         $courseArray['activities'] = [];
                         $courseLinkActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(['course' => $course->getCourse()->getId()]);
+
+                        // order activities by index order
+                        usort($courseLinkActivities, function($a, $b) {
+                            return $a->getIndexOrder() <=> $b->getIndexOrder();
+                        });
+                        
                         foreach ($courseLinkActivities as $activity) {
                             $activityLinkUser = $this->entityManager->getRepository(ActivityLinkUser::class)->findOneBy(['user' => $loggedUser->getId(), 'activity' => $activity->getActivity()->getId(), "course" => $course->getCourse()->getId()]);
                             $activityRestriction = $this->entityManager->getRepository(Applications::class)->findOneBy(['name' => $activity->getActivity()->getType()]);
