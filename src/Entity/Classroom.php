@@ -230,7 +230,7 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
         return $this;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'id' => $this->getId(),
