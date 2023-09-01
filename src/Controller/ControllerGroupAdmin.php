@@ -878,9 +878,13 @@ class ControllerGroupAdmin extends Controller
                             //get users restrictions
                             $usersRestrictions = $this->entityManager->getRepository(UsersRestrictions::class)->findOneBy(['user' => $teacher->getUser()]);
                             $teacherPersonalMax = $usersRestrictionAmount['maxStudents'];
-                            if ($usersRestrictions->getDateEnd() > $today) {
-                                $teacherPersonalMax = $usersRestrictions->getmaxStudents();
+
+                            if ($usersRestrictions) {
+                                if ($usersRestrictions->getDateEnd() > $today) {
+                                    $teacherPersonalMax = $usersRestrictions->getmaxStudents();
+                                }
                             }
+
                             $teacherClassrooms = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['user' => $teacher->getUser(), 'rights' => 2]);
                             foreach ($teacherClassrooms as $classroomObject) {
                                 // retrieve all student for the current classroom
