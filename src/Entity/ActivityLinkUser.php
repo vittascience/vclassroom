@@ -579,6 +579,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function getOptionalData(): ?string
     {
+        if (is_array($this->optionalData)) {
+            return json_encode($this->optionalData);
+        }
         return $this->optionalData;
     }
 
@@ -587,8 +590,15 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @param  string  $optionalData
      * @return  self
      */
-    public function setOptionalData(?String $optionalData)
+    // arr or string
+
+    public function setOptionalData($optionalData)
     {
+
+        if (is_array($optionalData)) {
+            $optionalData = json_encode($optionalData);
+        }
+
         $this->optionalData = $optionalData;
         return $this;
     }
