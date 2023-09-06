@@ -358,7 +358,7 @@ class ControllerActivityLinkUser extends Controller
                     ->findOneBy(array("id" => $activityId));
 
                 if ($optionalData) {
-                    $activity->setOptionalData(serialize($optionalData));
+                    $activity->setOptionalData($optionalData);
                 }
 
                 $activity->setCorrection($correction);
