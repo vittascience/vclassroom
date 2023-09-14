@@ -124,7 +124,7 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->courseState = $courseState;
     }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize()
     {
         return [
             'id' => $this->id,
