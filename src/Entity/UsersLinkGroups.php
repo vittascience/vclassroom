@@ -102,7 +102,7 @@ class UsersLinkGroups implements \JsonSerializable, \Utils\JsonDeserializer
         return $this;
     }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize()
     {
         return [
             'id' => $this->getId(),

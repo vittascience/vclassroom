@@ -603,7 +603,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         return $this;
     }
     
-    public function jsonSerialize(): mixed
+    public function jsonSerialize()
     {
         if ($this->getCourse() != null) {
             $course = $this->getCourse()->jsonSerialize();
