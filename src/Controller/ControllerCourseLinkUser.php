@@ -207,6 +207,9 @@ class ControllerCourseLinkUser extends Controller
 
                         foreach ($courseLinkActivities as $activity) {
                             $activityLinkUser = $this->entityManager->getRepository(ActivityLinkUser::class)->findOneBy(['user' => $loggedUser->getId(), 'activity' => $activity->getActivity()->getId(), "course" => $course->getCourse()->getId()]);
+                            if (!$activityLinkUser) {
+                                $activityLinkUser = $this->attributeActivityForCourse($activity->getActivity()->getId(), $course->getCourse(), $loggedUser->getId(), $courseLinkActivities);
+                            }
                             $activityRestriction = $this->entityManager->getRepository(Applications::class)->findOneBy(['name' => $activity->getActivity()->getType()]);
                             $serializedActivity = $activityLinkUser->jsonSerialize();
                             $serializedActivity["activity"]["isLti"] = $activityRestriction ? $activityRestriction->getIsLti() : false;
@@ -255,6 +258,50 @@ class ControllerCourseLinkUser extends Controller
                     return ["success" => true, "message" => "Course unlinked"];
                 }
             );
+        }
+    }
+    private function attributeActivityForCourse($activityId, $course, $userId, $courseLinkUser) {
+        $acti = $this->entityManager->getRepository(Activity::class)->findOneBy(["id" => $activityId]);
+        $userN = $this->entityManager->getRepository(User::class)->findOneBy(["id" => $userId]);
+        if ($acti) {
+            $activityLinkUser = new ActivityLinkUser($acti, $userN);
+            if ($acti->getType() == "reading" && $course->getFormat() == 1) {
+                $activityLinkUser->setCorrection(2);
+                $activityLinkUser->setNote(4);
+                if ($course->getFormat() == 1) {
+                    $courseLinkUser->setCourseState($courseLinkUser->getCourseState() + 1);
+                }
+            }
+
+            $randomStr = strval(time());
+            $dateTimeBegin = new \DateTime();
+            $dayeTimeEnd = new \DateTime(date('Y-m-d H:i:s', strtotime('+1 year')));
+            // get my class id 
+            $classroomLinkUser = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy(['user' => $userId]);
+            $classroomId = $classroomLinkUser->getClassroom()->getId();
+            // get students in classroom
+            $students = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['classroom' => $classroomId, 'rights' => 0]);
+            if (count($students) > 0) {
+                foreach ($students as $student) {
+                    if ($student->getUser()->getId() != $userId) {
+                        $actlinkuser = $this->entityManager->getRepository(ActivityLinkUser::class)->findOneBy(['course' => $course, 'activity' => $activityId, 'user' => $student->getUser()->getId()]);
+                        $randomStr = $actlinkuser->getReference();
+                        $dateTimeBegin = $actlinkuser->getDateBegin();
+                        $dayeTimeEnd = $actlinkuser->getDateEnd();
+                        break;
+                    }
+                }
+            }
+
+            $activityLinkUser->setCourse($course);
+            $activityLinkUser->setReference($randomStr);
+            $activityLinkUser->setDateBegin($dateTimeBegin);
+            $activityLinkUser->setDateEnd($dayeTimeEnd);
+            $activityLinkUser->setIsFromCourse(1);
+            $this->entityManager->persist($activityLinkUser);
+            $this->entityManager->flush();
+
+            return $activityLinkUser;
         }
     }
 }
