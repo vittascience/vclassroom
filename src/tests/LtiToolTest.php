@@ -388,7 +388,7 @@ class LtiToolTest extends TestCase{
     }
 
     /** dataProvider for testGetIdReturnsId */
-    public function provideIds(){
+    public static function provideIds(){
         return array(
             array(1),
             array(112),
@@ -397,7 +397,7 @@ class LtiToolTest extends TestCase{
     }
 
     /** dataProvider for testSetApplicationRejectsInvalidValue */
-    public function provideInvalidApplicationValues(){
+    public static function provideInvalidApplicationValues(){
         return array(
             array(new \stdClass),
             array(true),
@@ -408,7 +408,7 @@ class LtiToolTest extends TestCase{
     }
 
     /** dataProvider for testSetApplicationAcceptsValidValue*/
-    public function provideValidApplicationValues(){
+    public static function provideValidApplicationValues(){
         $application1 = new Applications;
         $application1->setName('some name 1');
         $application2 = new Applications;
@@ -428,7 +428,7 @@ class LtiToolTest extends TestCase{
      * => testGetDeploymentIdReturnsValue
      * => testSetDeploymentIdAcceptsValidValue
      */
-    public function provideStringValues(){
+    public static function provideStringValues(){
         return array(
             array('test-lms_vittasciences'),
             array('48f36e10-c1c1-4df0-af8b-85c857d1634a'),
@@ -449,7 +449,7 @@ class LtiToolTest extends TestCase{
      * => testGetDeepLinkUrlReturnsValue
      * => testSetDeepLinkUrlRejectsInvalidValue
      * */
-    public function provideNonStringValue(){
+    public static function provideNonStringValue(){
         return array(
             array(new \stdClass),
             array(true),
@@ -467,7 +467,7 @@ class LtiToolTest extends TestCase{
      * => testGetRedirectionUrlReturnsValue
      * => testSetDeepLinkUrlAcceptsValidValue
      * */
-    public function provideUrls(){
+    public static function provideUrls(){
         return array(
             array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
             array('https://goole.com'),
@@ -480,7 +480,7 @@ class LtiToolTest extends TestCase{
      * => testGetPrivateKeyReturnsValue 
      * => testSetPrivateKeyAcceptsValidValue
      * */
-    public function providePrivateKeys(){
+    public static function providePrivateKeys(){
         return array(
             array('-----BEGIN RSA PRIVATE KEY-----
             MIIEowIBAAKCAQEA12qnagqeOVhD95g4Xt3Z8MKhzVwu8Du6HWzadvoUqk7xOYHf
