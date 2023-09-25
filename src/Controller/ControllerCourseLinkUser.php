@@ -261,9 +261,12 @@ class ControllerCourseLinkUser extends Controller
         }
     }
     private function attributeActivityForCourse($activityId, $course, $userId, $courseLinkUser) {
+
         $acti = $this->entityManager->getRepository(Activity::class)->findOneBy(["id" => $activityId]);
         $userN = $this->entityManager->getRepository(User::class)->findOneBy(["id" => $userId]);
+        
         if ($acti) {
+
             $activityLinkUser = new ActivityLinkUser($acti, $userN);
             if ($acti->getType() == "reading" && $course->getFormat() == 1) {
                 $activityLinkUser->setCorrection(2);
@@ -279,20 +282,23 @@ class ControllerCourseLinkUser extends Controller
             // get my class id 
             $classroomLinkUser = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy(['user' => $userId]);
             $classroomId = $classroomLinkUser->getClassroom()->getId();
+
+            
             // get students in classroom
             $students = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy(['classroom' => $classroomId, 'rights' => 0]);
             if (count($students) > 0) {
                 foreach ($students as $student) {
                     if ($student->getUser()->getId() != $userId) {
                         $actlinkuser = $this->entityManager->getRepository(ActivityLinkUser::class)->findOneBy(['course' => $course, 'activity' => $activityId, 'user' => $student->getUser()->getId()]);
-                        $randomStr = $actlinkuser->getReference();
-                        $dateTimeBegin = $actlinkuser->getDateBegin();
-                        $dayeTimeEnd = $actlinkuser->getDateEnd();
-                        break;
+                        if ($actlinkuser) {
+                            $randomStr = $actlinkuser->getReference();
+                            $dateTimeBegin = $actlinkuser->getDateBegin();
+                            $dayeTimeEnd = $actlinkuser->getDateEnd();
+                            break;
+                        }
                     }
                 }
             }
-
             $activityLinkUser->setCourse($course);
             $activityLinkUser->setReference($randomStr);
             $activityLinkUser->setDateBegin($dateTimeBegin);
