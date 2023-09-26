@@ -76,10 +76,10 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setActivity(null); // null
     }
     
-    /** @dataProvider provideProjectObjects */
-    public function testGetProjectReturnsAnInstanceOfProject($providedValue){
-        $fakeProjectSetterDeclaration = function() use($providedValue){
-            $this->project = $providedValue;
+    public function testGetProjectReturnsAnInstanceOfProject(){
+        $mockedProject = $this->createMock(Project::class);
+        $fakeProjectSetterDeclaration = function() use($mockedProject){
+            $this->project = $mockedProject;
         };
 
         $fakeProjectSetterExecution = $fakeProjectSetterDeclaration->bindTo(
@@ -89,7 +89,7 @@ class ActivityLinkUserTest extends TestCase
 
         $fakeProjectSetterExecution();
 
-        $this->assertEquals($providedValue, $this->activityLinkUser->getProject());
+        $this->assertEquals($mockedProject, $this->activityLinkUser->getProject());
         $this->assertInstanceOf(Project::class, $this->activityLinkUser->getProject());
     }
 
@@ -99,19 +99,20 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setProject($providedValue);
     }
 
-    /** @dataProvider provideProjectObjects */
-    public function testSetProjectAcceptsValidValue($providedValue){
+    public function testSetProjectAcceptsValidValue(){
+        $mockedProject = $this->createMock(Project::class);
+
         $this->assertNull($this->activityLinkUser->getProject());
 
-        $this->activityLinkUser->setProject($providedValue);
-        $this->assertEquals($providedValue, $this->activityLinkUser->getProject());
+        $this->activityLinkUser->setProject($mockedProject);
+        $this->assertEquals($mockedProject, $this->activityLinkUser->getProject());
         $this->assertInstanceOf(Project::class, $this->activityLinkUser->getProject());
     }
 
-    /** @dataProvider provideCourseObjects */
-    public function testGetCourseReturnsCourseObject($providedValue){
-        $fakeCourseSetterDeclaration = function() use($providedValue){
-            return $this->course = $providedValue;
+    public function testGetCourseReturnsCourseObject(){
+        $mockedCourse = $this->createMock(Course::class);
+        $fakeCourseSetterDeclaration = function() use($mockedCourse){
+            return $this->course = $mockedCourse;
         };
 
         $fakeCourseSetterExecution = $fakeCourseSetterDeclaration->bindTo(
@@ -130,12 +131,13 @@ class ActivityLinkUserTest extends TestCase
         $this->activityLinkUser->setCourse($providedValue);
     }
 
-    /** @dataProvider provideCourseObjects */
-    public function testSetCourseAcceptsValidCourseValue($providedValue){
+    public function testSetCourseAcceptsValidCourseValue(){
+        $mockedCourse = $this->createMock(Course::class);
+
         $this->assertNull($this->activityLinkUser->getCourse());
 
-        $this->activityLinkUser->setCourse($providedValue);
-        $this->assertEquals($providedValue, $this->activityLinkUser->getCourse());
+        $this->activityLinkUser->setCourse($mockedCourse);
+        $this->assertEquals($mockedCourse, $this->activityLinkUser->getCourse());
         $this->assertInstanceOf(Course::class, $this->activityLinkUser->getCourse());
     }
 
@@ -351,12 +353,6 @@ class ActivityLinkUserTest extends TestCase
          $this->assertEquals($providedValue, $this->activityLinkUser->getAutocorrection());
      }
 
-    //  /** @dataProvider provideInvalidValues */
-    //  public function testSetAutoCorrectionRejectsInvalidValue($providedValue){
-    //      $this->expectException(EntityDataIntegrityException::class);
-    //      $this->activityLinkUser->setAutocorrection($providedValue);
-    //  }
-
       /** @dataProvider provideBooleanValues */
       public function testGetEvaluationReturnsValue($providedValue){
         $fakeEvaluationSetterDeclaration = function() use($providedValue){
@@ -372,12 +368,6 @@ class ActivityLinkUserTest extends TestCase
 
         $this->assertEquals($providedValue, $this->activityLinkUser->getEvaluation());
      }
-
-    //  /** @dataProvider provideInvalidValues */
-    //  public function testSetEvaluationRejectsInvalidValue($providedValue){
-    //      $this->expectException(EntityDataIntegrityException::class);
-    //      $this->activityLinkUser->setEvaluation($providedValue);
-    //  }
 
      /** @dataProvider provideUrls */
      public function testGetUrlReturnsValue($providedValue){
@@ -432,23 +422,6 @@ class ActivityLinkUserTest extends TestCase
         );
     }
 
-    /**
-     * dataProvider for 
-     * => testGetProjectReturnsAnInstanceOfProject
-     * => testSetProjectAcceptsValidValue
-     */
-    public static function provideProjectObjects(){
-        $project1 = $this->createMock(Project::class);
-        $project2 = $this->createMock(Project::class);
-        $project3 = $this->createMock(Project::class);
-
-        return array(
-            array($project1),
-            array($project2),
-            array($project3)
-        );
-    }
-
     /** 
      * dataProvider for 
      * => testSetProjectRejectsInvalidValue 
@@ -460,19 +433,6 @@ class ActivityLinkUserTest extends TestCase
             array([]),
             array(1),
             array('1251'),
-        );
-    }
-
-    /** dataProvider for testGetCourseReturnsCourseObject */
-    public static function provideCourseObjects(){
-        $mockedCourse1 = $this->createMock(Course::class);
-        $mockedCourse2 = $this->createMock(Course::class);
-        $mockedCourse3 = $this->createMock(Course::class);
-
-        return array(
-            array($mockedCourse1),
-            array($mockedCourse2),
-            array($mockedCourse3),
         );
     }
 
