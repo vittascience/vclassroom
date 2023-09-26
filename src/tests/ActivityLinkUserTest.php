@@ -424,7 +424,7 @@ class ActivityLinkUserTest extends TestCase
     // }
 
     /** dataProvider for testGetIdReturnValue */
-    public function provideIds(){
+    public static function provideIds(){
         return array(
             array(1),
             array(65),
@@ -437,7 +437,7 @@ class ActivityLinkUserTest extends TestCase
      * => testGetProjectReturnsAnInstanceOfProject
      * => testSetProjectAcceptsValidValue
      */
-    public function provideProjectObjects(){
+    public static function provideProjectObjects(){
         $project1 = $this->createMock(Project::class);
         $project2 = $this->createMock(Project::class);
         $project3 = $this->createMock(Project::class);
@@ -454,7 +454,7 @@ class ActivityLinkUserTest extends TestCase
      * => testSetProjectRejectsInvalidValue 
      * => testSetCourseRejectsInvalidValue
      * */
-    public function provideInvalidObjectValues(){
+    public static function provideInvalidObjectValues(){
         return array(
             array(new \stdClass()),
             array([]),
@@ -464,7 +464,7 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider for testGetCourseReturnsCourseObject */
-    public function provideCourseObjects(){
+    public static function provideCourseObjects(){
         $mockedCourse1 = $this->createMock(Course::class);
         $mockedCourse2 = $this->createMock(Course::class);
         $mockedCourse3 = $this->createMock(Course::class);
@@ -482,7 +482,7 @@ class ActivityLinkUserTest extends TestCase
      * => testSetDateEndRejectsInvalidValue
      * => testSetDateSendRejectsInvalidValue
      */
-    public function provideInvalidDateValues(){
+    public static function provideInvalidDateValues(){
         return array(
             array(new \stdClass()),
             array([]),
@@ -491,7 +491,7 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider testGetDateSendReturnValidValue */
-    public function provideDateValues(){
+    public static function provideDateValues(){
         return array(
             array('2021-12-13 00:00:00'),
             array('2022-01-13 15:00:00'),
@@ -500,7 +500,7 @@ class ActivityLinkUserTest extends TestCase
     }
     
     /** dataProvider for testGetCorrectionReturnsValue */
-    public function  provideIntegerValues(){
+    public static function  provideIntegerValues(){
         return array(
             array(0),
             array(1),
@@ -514,7 +514,7 @@ class ActivityLinkUserTest extends TestCase
      * => testSetCorrectionRejectsInvalidValue 
      * => testSetAutoCorrectionRejectsInvalidValue
      */
-     public function provideInvalidValues(){
+     public static function provideInvalidValues(){
          return array(
              array('1'),
              array([]),
@@ -524,7 +524,7 @@ class ActivityLinkUserTest extends TestCase
      }
  
      /** dataProvider for testGetReferenceReturnsValue */
-    public function provideReferenceValues(){
+    public static function provideReferenceValues(){
         return array(
             array('1638797610'),
             array('1638801064'),
@@ -533,7 +533,7 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider for testSetReferenceRejectsInvalidValue */
-    public function provideNonStringValues(){
+    public static function provideNonStringValues(){
         return array(
             array(1),
             array(new \stdClass()),
@@ -545,7 +545,7 @@ class ActivityLinkUserTest extends TestCase
      * dataProvider for
      * => testGetAutoCorrectionReturnsValue
      */
-    public function provideBooleanValues(){
+    public static function provideBooleanValues(){
         return array(
             array(true),
             array(false),
@@ -553,7 +553,7 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider for  */
-    public function provideUrls(){
+    public static function provideUrls(){
         return array(
             array('https://fr.vittascience.com/python/?mode=mixed&console=right'),
             array('https://goole.com'),
@@ -562,7 +562,7 @@ class ActivityLinkUserTest extends TestCase
     }
 
     /** dataProvider for testSetResponseRejectsInvalidValue */
-    public function provideStringValues(){
+    public static function provideStringValues(){
         return array(
             array('response1'),
             array('string1'),

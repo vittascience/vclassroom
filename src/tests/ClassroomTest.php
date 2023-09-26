@@ -152,7 +152,7 @@ class ClassroomTest extends TestCase
      * => testSetGarCodeRejectsNonStringValue
      * => testGetUaiRejectsNonStringValue
      */
-    public function provideNonStringValues()
+    public static function provideNonStringValues()
     {
         return array(
             array([]),
@@ -162,7 +162,7 @@ class ClassroomTest extends TestCase
     }
 
       /** dataProvider testSetGarCodeAcceptsStringValue */
-      public function provideGarCodeStrings(){
+      public static function provideGarCodeStrings(){
         return array(
             array('2B'),
             array('BTS1SN'),
@@ -173,7 +173,7 @@ class ClassroomTest extends TestCase
     }
 
      /** dataProvider testSetIsChangedRejectsNonBooleanValue */
-     public function provideNonBooleanValues(){
+     public static function provideNonBooleanValues(){
         return array(
             array([]),
             array(new \stdClass()),
@@ -181,7 +181,7 @@ class ClassroomTest extends TestCase
         );
     }
 
-    public function provideTrueAndFalseAsString(){
+    public static function provideTrueAndFalseAsString(){
         return array(
             array('true'),
             array('false')
@@ -189,7 +189,7 @@ class ClassroomTest extends TestCase
     }
     
     /** dataProvider for testSetUaiAcceptsValidStringValue */
-    public function provideUaiStrings(){
+    public static function provideUaiStrings(){
         return array(
             array('0180591V'),
             array('0180591B'),
@@ -198,7 +198,7 @@ class ClassroomTest extends TestCase
     }
 
     /** dataProvider for testLinkIsSet */
-    public function provideAlphanumStrings(){
+    public static function provideAlphanumStrings(){
         return array(
             array('gov1w'),
             array('k2wv6'),
