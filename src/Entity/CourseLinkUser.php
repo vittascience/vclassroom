@@ -34,11 +34,25 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     private $course;
 
+
+    /**
+     * @ORM\Column(name="reference", type="integer", nullable=true)
+     * @var int
+     */
+    private $reference;
+
      /**
      * @ORM\Column(name="activities_data", type="text", nullable=true)
      * @var String
      */
     private $activitiesData;
+
+     /**
+     * @ORM\Column(name="activities_references", type="text", nullable=true)
+     * @var String
+     */
+    private $activitiesReferences;
+
 
     /**
      * @ORM\Column(name="date_begin", type="datetime", nullable=true)
@@ -124,16 +138,44 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->courseState = $courseState;
     }
 
+    public function getActivitiesReferences()
+    {
+        return $this->activitiesReferences;
+    }
+
+    public function setActivitiesReferences($activitiesReferences)
+    {
+        $this->activitiesReferences = $activitiesReferences;
+    }
+
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
+    public function setReference($reference)
+    {
+        $this->reference = $reference;
+    }
+
     public function jsonSerialize()
     {
+
+        $activitiesReferences = [];
+        if ($this->activitiesReferences) {
+            $activitiesReferences = json_decode($this->activitiesReferences);
+        }
+
         return [
             'id' => $this->id,
             'user' => $this->user,
             'course' => $this->course,
+            'reference' => $this->reference,
             'activitiesData' => $this->activitiesData,
             'dateBegin' => $this->dateBegin,
             'dateEnd' => $this->dateEnd,
-            'courseState' => $this->courseState
+            'courseState' => $this->courseState,
+            'activitiesReferences' => $activitiesReferences
         ];
     }
 
