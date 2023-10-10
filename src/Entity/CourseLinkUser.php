@@ -36,7 +36,7 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 
 
     /**
-     * @ORM\Column(name="reference", type="integer", nullable=true)
+     * @ORM\Column(name="reference", type="string",length=15, nullable=true)
      * @var int
      */
     private $reference;

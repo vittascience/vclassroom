@@ -132,7 +132,6 @@ class ControllerCourseLinkUser extends Controller
                             $linkCourseToUser->setDateEnd($dayeTimeEnd);
                             $linkCourseToUser->setReference($randomStr . $courseId);
                             $linkCourseToUser->setActivitiesReferences(json_encode($activitiesReference));
-                            
                             $this->entityManager->persist($linkCourseToUser);
                         }
 
