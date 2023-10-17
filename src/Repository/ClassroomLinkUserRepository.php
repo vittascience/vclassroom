@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\Classroom;
 use Classroom\Entity\ClassroomLinkUser;
+use Classroom\Entity\CourseLinkUser;
 use User\Entity\User;
 
 class ClassroomLinkUserRepository extends EntityRepository
@@ -29,11 +30,22 @@ class ClassroomLinkUserRepository extends EntityRepository
                 ))
                 ->getQuery()
                 ->getResult();
+
+            $courseLinkUser = $this->getEntityManager()
+                ->createQueryBuilder()
+                ->select('clu')
+                ->from(CourseLinkUser::class,'clu')
+                ->join(User::class, 'u','WITH','clu.user = u.id')
+                ->where('clu.user = :userId')
+                ->setParameter('userId', $student->getUser()->getId())
+                ->getQuery()
+                ->getResult();
             
             // fill the students array
             $arrayStudents[] = array(
                 'user' => $student->getUser()->jsonSerialize(), 
                 'activities' => $activities, 
+                'courses' => $courseLinkUser,
                 'pwd' => $student->getUser()->getPassword()
             );
         }
