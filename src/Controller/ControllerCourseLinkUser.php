@@ -37,7 +37,6 @@ class ControllerCourseLinkUser extends Controller
                     $incomingClassroomsId = $_POST['classrooms'];
                     $reference = !empty($_POST['reference']) ? htmlspecialchars(strip_tags(trim($_POST['reference']))) : null;
 
-
                     $classroomIds = [];
                     foreach ($incomingClassroomsId as $incomingClassroomId) {
                         if (intval($incomingClassroomId) == 0) continue;
@@ -93,6 +92,24 @@ class ControllerCourseLinkUser extends Controller
                     $courseActivities = $this->entityManager->getRepository(CourseLinkActivity::class)->findBy(array('course' => $course->getId()));
                     // step 1 => insert all new students
 
+
+                    $activitiesReferences = [];
+                    if ($reference) {
+                        // remove attribution if the student is not in the array
+                        $courseLinkUsers = $this->entityManager->getRepository(CourseLinkUser::class)->findBy(['course' => $courseId, 'reference' => $reference]);
+
+                        foreach ($courseLinkUsers as $clu) {
+                            $activitiesReferences = json_decode($clu->getActivitiesReferences());
+                            //get student classroom
+                            $classroomLinkUser = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy(['user' => $clu->getUser()->getId()]);
+                            if (!in_array($clu->getUser()->getId(), $studentsId) && $classroomLinkUser->getClassroom()->getId() == $classroomId) {
+                                $this->entityManager->remove($clu);
+                            }
+                        }
+                        $this->entityManager->flush();
+                    }
+
+
                     $randomStr = strval(time());
                     foreach ($studentsId as $studentId) {
                         $user = $this->entityManager->getRepository(User::class)->find($studentId);
@@ -102,6 +119,14 @@ class ControllerCourseLinkUser extends Controller
                         // step 2 => insert all activities of the course for each student
                         foreach ($courseActivities as $key => $courseActivity) {
                             $activity = $this->entityManager->getRepository(Activity::class)->find($courseActivity->getActivity()->getId());
+
+                            // check if activity link user already exists
+                            $activityLinkUser = $this->entityManager->getRepository(ActivityLinkUser::class)->findOneBy(['user' => $user->getId(), 'activity' => $activity->getId(), "course" => $course->getId()]);
+                            if ($activityLinkUser) {
+                                array_push($activitiesReference, $activityLinkUser->getReference());
+                                continue;
+                            }
+
                             $activityLinkUser = new ActivityLinkUser($activity, $user);
                             if ($activity->getType() == "reading" && $course->getFormat() == 1) {
                                 $readingCount++;
@@ -109,13 +134,25 @@ class ControllerCourseLinkUser extends Controller
                                 $activityLinkUser->setNote(4);
                             }
                             $activityLinkUser->setCourse($course);
-                            $activityLinkUser->setReference($randomStr . $key);
+                            if ($reference) {
+                                $activityLinkUser->setReference($activitiesReferences[$key]);
+                            } else {
+                                $activityLinkUser->setReference($randomStr . $key);
+                            }
+
+                            
                             $activityLinkUser->setDateBegin($dateTimeBegin);
                             $activityLinkUser->setDateEnd($dayeTimeEnd);
                             $activityLinkUser->setIsFromCourse(1);
                             $this->entityManager->persist($activityLinkUser);
 
                             array_push($activitiesReference, $activityLinkUser->getReference());
+                        }
+
+                        //check if course link user already exists
+                        $courseLinkUser = $this->entityManager->getRepository(CourseLinkUser::class)->findOneBy(['user' => $user->getId(), 'course' => $course->getId(), 'reference' => $reference]);
+                        if ($courseLinkUser) {
+                            continue;
                         }
 
                         $linkCourseToUser = new CourseLinkUser();
@@ -130,7 +167,11 @@ class ControllerCourseLinkUser extends Controller
                         }
                         $linkCourseToUser->setDateBegin($dateTimeBegin);
                         $linkCourseToUser->setDateEnd($dayeTimeEnd);
-                        $linkCourseToUser->setReference($randomStr . $courseId);
+                        if ($reference) {
+                            $linkCourseToUser->setReference($reference);
+                        } else {
+                            $linkCourseToUser->setReference($randomStr . $courseId);
+                        }
                         $linkCourseToUser->setActivitiesReferences(json_encode($activitiesReference));
                         $this->entityManager->persist($linkCourseToUser);
 
