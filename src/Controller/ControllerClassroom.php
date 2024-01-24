@@ -288,8 +288,9 @@ class ControllerClassroom extends Controller
                     ->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findOneBy(array(
                         'user' => $userId,
-                        'rights' => 2
-                    ));
+                        'rights' => 2,
+                        'classroom' => $classroomFound->getId()
+                ));
 
                 // the user is not the teacher of this classroom, return an error
                 if (!$teacherFound) return array('errorTeacherNotExists' => true);
