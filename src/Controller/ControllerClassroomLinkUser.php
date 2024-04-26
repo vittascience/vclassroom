@@ -33,10 +33,8 @@ class ControllerClassroomLinkUser extends Controller
 
                 // accept only connected user
                 if (empty($_SESSION['id'])) return ["errorType" => "addUsersNotAuthenticated"];
-
-                // use the same regex as in the User entity to avoid troubleshouting
-                $regexForPseudo = "/^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ]{1}[\w\sáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ'&@\-_.()]{0,98}[\wáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ)]{0,1}$/";
-
+                
+                $alphaNumericRegexWithAccent = '/^[a-zA-Z0-9À-ÿ\s]+$/';
                 // get the currently logged user (professor, admin, premium,...) 
                 $currentUserId = intval($_SESSION["id"]);
 
@@ -53,7 +51,7 @@ class ControllerClassroomLinkUser extends Controller
                 $usersToAddErrorFlag = false;
                 foreach ($incomingUsers as $incomingUser) {
                     // bind and sanitize each incoming user
-                    $student = preg_match($regexForPseudo, $incomingUser)
+                    $student = preg_match($alphaNumericRegexWithAccent, $incomingUser)
                         ? htmlspecialchars(strip_tags(trim($incomingUser)), ENT_QUOTES)
                         : '';
 
