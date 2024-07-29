@@ -78,14 +78,19 @@ class ControllerCourseLinkUser extends Controller
 
                     // bind and sanitize the rest of incoming data
                     $courseId = !empty($_POST['courseId']) ? intval($_POST['courseId']) : 0;
-                    $dateBegin = !empty($_POST['dateBegin']) ? $_POST['dateBegin'] : '';
-                    $dateEnd = !empty($_POST['dateEnd']) ? new \DateTime($_POST['dateEnd']) : '';
-                    $activities = !empty($_POST['activities']) ? $_POST['activities'] : '';
+                    $dateBegin = !empty($_POST['dateBegin']) ? $_POST['dateBegin'] : null;
+                    $dateEnd = !empty($_POST['dateEnd']) ? $_POST['dateEnd'] : null;
 
-                    $dateTimeBegin = new \DateTime($dateBegin);
-                    $dayeTimeEnd = new \DateTime($dateEnd);
-                    //$retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
 
+                    $dateBeginParsed = null;
+                    $dateEndParsed = null;
+
+                    try {
+                        $dateBeginParsed = new \DateTime($dateBegin);
+                        $dateEndParsed = new \DateTime($dateEnd);
+                    } catch (\Exception $e) {
+                        return array("errorType" => "dateErrorFlagTrue");
+                    }
 
                     $course = $this->entityManager->getRepository(Course::class)->findOneBy(["id" => $courseId]);
                     // get activities of the course
@@ -141,8 +146,8 @@ class ControllerCourseLinkUser extends Controller
                             }
 
                             
-                            $activityLinkUser->setDateBegin($dateTimeBegin);
-                            $activityLinkUser->setDateEnd($dayeTimeEnd);
+                            $activityLinkUser->setDateBegin($dateBeginParsed);
+                            $activityLinkUser->setDateEnd($dateEndParsed);
                             $activityLinkUser->setIsFromCourse(1);
                             $this->entityManager->persist($activityLinkUser);
 
@@ -165,8 +170,8 @@ class ControllerCourseLinkUser extends Controller
                         } else {
                             $linkCourseToUser->setCourseState(0);
                         }
-                        $linkCourseToUser->setDateBegin($dateTimeBegin);
-                        $linkCourseToUser->setDateEnd($dayeTimeEnd);
+                        $linkCourseToUser->setDateBegin($dateBeginParsed);
+                        $linkCourseToUser->setDateEnd($dateEndParsed);
                         if ($reference) {
                             $linkCourseToUser->setReference($reference);
                         } else {
