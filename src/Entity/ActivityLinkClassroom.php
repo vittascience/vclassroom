@@ -159,23 +159,19 @@ class ActivityLinkClassroom implements \JsonSerializable, \Utils\JsonDeserialize
     }
 
     /**
-     * @return \DateTime
+     * @return ?\DateTime
      */
-    public function getDateBegin()
+    public function getDateBegin(): ?\DateTime  
     {
         return $this->dateBegin;
     }
 
     /**
-     * @param \DateTime $dateBegin
+     * @param ?\DateTime $dateBegin
      */
-    public function setDateBegin($dateBegin)
+    public function setDateBegin(?\DateTime $dateBegin)
     {
-
-        if ($dateBegin instanceof \DateTime || $dateBegin == "")
-            $this->dateBegin = $dateBegin;
-        else
-            throw new EntityDataIntegrityException("dateBegin needs to be DateTime or null");
+        $this->dateBegin = $dateBegin;
     }
 
     /**
