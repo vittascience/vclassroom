@@ -159,6 +159,7 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 
     public function jsonSerialize()
     {
+        $activitiesReferences = null;
         if ($this->activitiesReferences != null) {
             $activitiesReferences = json_decode($this->activitiesReferences);
         }
