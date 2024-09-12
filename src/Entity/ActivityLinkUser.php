@@ -106,7 +106,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @ORM\Column(name="note", type="smallint", nullable=false)
      * @var int
      */
-    private $note = 0;
+    private $note = 4;
 
     /**
      * @ORM\Column(name="commentary", type="string",length=2000, nullable=true)
@@ -160,7 +160,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 
 
 
-    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 0, $response = null)
+    public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 4, $response = null)
     {
         $this->setUser($user);
         $this->setActivity($activity);
