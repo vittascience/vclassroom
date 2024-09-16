@@ -265,19 +265,15 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * @param \DateTime $dateBegin
      */
-    public function setDateBegin($dateBegin)
+    public function setDateBegin(?\DateTime $dateBegin)
     {
-
-        if ($dateBegin instanceof \DateTime || $dateBegin == "")
-            $this->dateBegin = $dateBegin;
-        else
-            throw new EntityDataIntegrityException("dateBegin needs to be DateTime or null");
+        $this->dateBegin = $dateBegin;
     }
 
     /**
      * @return \DateTime
      */
-    public function getDateEnd()
+    public function getDateEnd(): ?\DateTime
     {
         return $this->dateEnd;
     }

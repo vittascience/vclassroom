@@ -187,6 +187,10 @@ class ControllerActivityLinkUser extends Controller
                 $retroAttribution = !empty($_POST['retroAttribution']) ? htmlspecialchars(strip_tags(trim($_POST['retroAttribution']))) : '';
                 $reference = !empty($_POST['ref']) ? htmlspecialchars(strip_tags(trim($_POST['ref']))) : '';
 
+
+                $dateB = $dateBegin ? new \DateTime($dateBegin) : null;
+                $dateE = $dateEnd ? new \DateTime($dateEnd) : null;
+
                 // a reference has been received, we are in an update context
                 if (!empty($reference)) {
                     $activity = $this->entityManager
@@ -208,7 +212,7 @@ class ControllerActivityLinkUser extends Controller
                             ));
 
                         if (!$linkActivityToClassroomExists) {
-                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, "", $introduction, $reference);
+                            $linkActivityToUser = new ActivityLinkUser($activity, $user, $dateB, $dateE, $evaluation, $autocorrection, "", $introduction, $reference);
                             $this->entityManager->persist($linkActivityToUser);
                             $this->entityManager->flush();
                         }
@@ -249,7 +253,7 @@ class ControllerActivityLinkUser extends Controller
                                 ->getRepository('Classroom\Entity\Classroom')
                                 ->findOneBy(array("id" => $classroomId));
                             if ($classroom) {
-                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
+                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, $dateB, $dateE, $evaluation, $autocorrection, $introduction, $reference);
                                 $this->entityManager->persist($linkActivityToClassroom);
                                 $this->entityManager->flush();
                             }
@@ -273,7 +277,7 @@ class ControllerActivityLinkUser extends Controller
                             ->findOneBy(array("id" => $studentId));
 
                         if ($user) {
-                            $linkActivityToUser = new ActivityLinkUser($activity, $user, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, "", $introduction, $reference);
+                            $linkActivityToUser = new ActivityLinkUser($activity, $user, $dateB, $dateE, $evaluation, $autocorrection, "", $introduction, $reference);
                             $this->entityManager->persist($linkActivityToUser);
                         }
                     }
@@ -304,7 +308,7 @@ class ControllerActivityLinkUser extends Controller
                                 if ($linkActivityToClassroomExists) continue;
 
                                 // no record found, save a new entry in classroom_activities_link_classroom
-                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, new \DateTime($dateBegin),  new \DateTime($dateEnd), $evaluation, $autocorrection, $introduction, $reference);
+                                $linkActivityToClassroom = new ActivityLinkClassroom($activity, $classroom, $dateB, $dateE, $evaluation, $autocorrection, $introduction, $reference);
                                 $this->entityManager->persist($linkActivityToClassroom);
                             }
                         }
