@@ -267,11 +267,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setDateBegin(?\DateTime $dateBegin)
     {
-        if ($dateBegin instanceof \DateTime || $dateBegin == null) {
-            $this->dateBegin = $dateBegin;
-        } else {
-            throw new EntityDataIntegrityException("dateBegin needs to be DateTime or null");
-        }
+        $this->dateBegin = $dateBegin;
     }
 
     /**
@@ -285,13 +281,9 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * @param \DateTime $dateEnd
      */
-    public function setDateEnd($dateEnd)
+    public function setDateEnd(?\DateTime $dateEnd)
     {
-        if ($dateEnd instanceof \DateTime || $dateEnd == null) {
-            $this->dateEnd = $dateEnd;
-        } else {
-            throw new EntityDataIntegrityException("dateEnd needs to be DateTime or null");
-        }
+        $this->dateEnd = $dateEnd;
     }
 
     /**
@@ -307,7 +299,6 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      */
     public function setDateSend($dateSend)
     {
-
         if ($dateSend instanceof \DateTime || $dateSend == "")
             $this->dateSend = $dateSend;
         else
