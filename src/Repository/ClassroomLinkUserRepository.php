@@ -18,6 +18,11 @@ class ClassroomLinkUserRepository extends EntityRepository
 
         $arrayStudents = [];
         foreach ($students as $student) {
+
+            if ($student == null) {
+                continue;
+            }
+            
             // get the activities for each student
             $activities = $this->getEntityManager()
                 ->createQueryBuilder()
