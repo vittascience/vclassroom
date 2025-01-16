@@ -2,9 +2,10 @@
 
 namespace Classroom\Repository;
 
+use Learn\Entity\Activity;
 use Doctrine\ORM\EntityRepository;
 use Classroom\Entity\ActivityLinkClassroom;
-use Learn\Entity\Activity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 
 class ActivityLinkClassroomRepository extends EntityRepository
@@ -16,10 +17,8 @@ class ActivityLinkClassroomRepository extends EntityRepository
             ->select('alc')
             ->from(ActivityLinkClassroom::class,'alc')
             ->where("alc.classroom = :classroom AND alc.dateEnd >= :dateTrigger ")
-            ->setParameters(array(
-                'classroom' => $classroom,
-                'dateTrigger' => new \DateTime('now')
-            ))
+            ->setParameter('classroom', $classroom)
+            ->setParameter('dateTrigger', new \DateTime('now'))
             ->getQuery()
             ->getResult();
 

@@ -2,10 +2,11 @@
 
 namespace Classroom\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use User\Entity\User;
+use Doctrine\ORM\Mapping as ORM;
+use Classroom\Repository\UsersRestrictionsRepository;
 
-#[ORM\Entity(repositoryClass: Classroom\Repository\UsersRestrictionsRepository::class)]
+#[ORM\Entity(repositoryClass: UsersRestrictionsRepository::class)]
 #[ORM\Table(name: "classroom_users_restrictions")]
 class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 {

@@ -2,10 +2,12 @@
 
 namespace Classroom\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use User\Entity\User;
+use Classroom\Entity\Groups;
+use Doctrine\ORM\Mapping as ORM;
+use Classroom\Repository\UsersLinkGroupsRepository;
 
-#[ORM\Entity(repositoryClass: Classroom\Repository\UsersLinkGroupsRepository::class)]
+#[ORM\Entity(repositoryClass: UsersLinkGroupsRepository::class)]
 #[ORM\Table(name: "classroom_users_link_groups")]
 class UsersLinkGroups implements \JsonSerializable, \Utils\JsonDeserializer
 {

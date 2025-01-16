@@ -2,10 +2,11 @@
 
 namespace Classroom\Repository;
 
+use Learn\Entity\Activity;
 use Doctrine\ORM\EntityRepository;
 use Classroom\Entity\ActivityLinkUser;
 use Classroom\Entity\ClassroomLinkUser;
-use Learn\Entity\Activity;
+use Doctrine\Common\Collections\ArrayCollection;
 
 
 class ActivityLinkUserRepository extends EntityRepository
@@ -34,7 +35,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND t.note =0 AND t.tries < :maxTries AND t.course IS NULL AND t.isFromCourse = 0)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -47,7 +49,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND (t.note >0 OR t.tries > :maxTries) AND t.course IS NULL AND t.isFromCourse = 0)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -60,23 +63,31 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND t.note =0 AND t.tries < :maxTries AND t.course IS NOT NULL)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
     }
 
-    function getDoneCoursesCount($userId)
+    public function getDoneCoursesCount(int $userId): int
     {
-        $query = $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select('COUNT(t)')
-            ->from(ActivityLinkUser::class, 't')
-            ->where('(t.user = :id AND (t.note >0 OR t.tries > :maxTries) AND t.course IS NOT NULL)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
-            ->getQuery()
-            ->getSingleScalarResult();
-        return intVal($query);
+        try {
+            $query = $this->getEntityManager()
+                ->createQueryBuilder()
+                ->select('COUNT(t)')
+                ->from(ActivityLinkUser::class, 't')
+                ->where('(t.user = :id AND (t.note > 0 OR t.tries > :maxTries) AND t.course IS NOT NULL)')
+                ->setParameter('id', $userId)
+                ->setParameter('maxTries', $this->maxTries)
+                ->getQuery()
+                ->getSingleScalarResult();
+    
+            return intval($query);
+        } catch (\Exception $e) {
+            // Log or handle the error
+            return 0;
+        }
     }
 
     function getNewActivities($userId)
@@ -138,12 +149,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->from(ActivityLinkUser::class,'alu')
             ->leftJoin(ClassroomLinkUser::class,'clu','WITH','clu.user=alu.user')
             ->andWhere('clu.classroom= :classroomId AND alu.reference= :reference')
-            ->setParameters(
-                array(
-                    'classroomId' => $classroomId,
-                    'reference' => $reference
-                )
-            )
+            ->setParameter('classroomId', $classroomId)
+            ->setParameter('reference', $reference)
             ->getQuery()
             ->getResult();
         return $studentsActivities;

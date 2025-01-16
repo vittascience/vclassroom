@@ -2,12 +2,13 @@
 
 namespace Classroom\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Utils\Exceptions\EntityDataIntegrityException;
 use User\Entity\User;
 use Classroom\Entity\Classroom;
+use Doctrine\ORM\Mapping as ORM;
+use Utils\Exceptions\EntityDataIntegrityException;
+use Classroom\Repository\ClassroomLinkUserRepository;
 
-#[ORM\Entity(repositoryClass: "Classroom\Repository\ClassroomLinkUserRepository")]
+#[ORM\Entity(repositoryClass: ClassroomLinkUserRepository::class)]
 #[ORM\Table(name: "classroom_users_link_classrooms")]
 class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
