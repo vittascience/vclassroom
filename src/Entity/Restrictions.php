@@ -5,31 +5,21 @@ namespace Classroom\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\RestrictionsRepository")
- * @ORM\Table(name="classroom_restrictions")
- */
+#[ORM\Entity(repositoryClass: "Classroom\Repository\RestrictionsRepository")]
+#[ORM\Table(name: "classroom_restrictions")]
 class Restrictions implements \JsonSerializable, \Utils\JsonDeserializer
 {
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+
+    #[ORM\Id]
+    #[ORM\Column(type: "integer")]
+    #[ORM\GeneratedValue]
     private $id;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=255, nullable=false)
-     * @var string
-     */
+    #[ORM\Column(name: "name", type: "string", length: 255, nullable: false)]
     private $name;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     * @var array
-     */
+    #[ORM\Column(type: "json", nullable: true)]
     private $restrictions;
-
 
     /**
      * @return Int

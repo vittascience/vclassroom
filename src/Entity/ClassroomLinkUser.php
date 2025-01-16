@@ -4,53 +4,39 @@ namespace Classroom\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Utils\Exceptions\EntityDataIntegrityException;
-use Utils\Exceptions\EntityOperatorException;
 use User\Entity\User;
 use Classroom\Entity\Classroom;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ClassroomLinkUserRepository")
- * @ORM\Table(name="classroom_users_link_classrooms")
- */
+#[ORM\Entity(repositoryClass: "Classroom\Repository\ClassroomLinkUserRepository")]
+#[ORM\Table(name: "classroom_users_link_classrooms")]
 class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
-    /**
-     * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="User\Entity\User")
-     * @ORM\JoinColumn(name="id_user", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var User
-     */
-    private $user;
-    /**
-     * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Classroom")
-     * @ORM\JoinColumn(name="id_classroom", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var Classroom
-     */
-    private $classroom;
-    /**
-     * @ORM\Column(name="rights", type="integer", length=2, nullable=true)
-     * 0=student, 1=teacher, 2=superadmin
-     * @var integer
-     */
-    private $rights;
-    public function __construct(User $user, Classroom $classroom, $rights = 0)
+    #[ORM\Id]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: "id_user", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
+    private User $user;
+
+    #[ORM\Id]
+    #[ORM\ManyToOne(targetEntity: Classroom::class)]
+    #[ORM\JoinColumn(name: "id_classroom", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
+    private Classroom $classroom;
+
+    #[ORM\Column(name: "rights", type: "integer", length: 2, nullable: true)]
+    private int $rights;
+
+    public function __construct(User $user, Classroom $classroom, int $rights = 0)
     {
         $this->setUser($user);
         $this->setClassroom($classroom);
         $this->setRights($rights);
     }
-    /**
-     * @return User
-     */
-    public function getUser()
+
+    public function getUser(): User
     {
         return $this->user;
     }
-    /**
-     * @param User $user
-     */
-    public function setUser($user)
+
+    public function setUser(User $user): void
     {
         if ($user instanceof User) {
             $this->user = $user;
@@ -58,17 +44,13 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             throw new EntityDataIntegrityException("user attribute needs to be an instance of User");
         }
     }
-    /**
-     * @return Classroom 
-     */
-    public function getClassroom()
+
+    public function getClassroom(): Classroom
     {
         return $this->classroom;
     }
-    /**
-     * @param Classroom $classroom
-     */
-    public function setClassroom($classroom)
+
+    public function setClassroom(Classroom $classroom): void
     {
         if ($classroom instanceof Classroom) {
             $this->classroom = $classroom;
@@ -76,24 +58,22 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             throw new EntityDataIntegrityException("classroom attribute needs to be an instance of Classroom");
         }
     }
-    /**
-     * @return int
-     */
-    public function getRights()
+
+    public function getRights(): int
     {
         return $this->rights;
     }
-    /**
-     * @param int $rights
-     */
-    public function setRights($rights)
+
+    public function setRights(int $rights): void
     {
-        if (is_int($rights) && $rights >= 0 && $rights <= 2) {
+        if ($rights >= 0 && $rights <= 2) {
             $this->rights = $rights;
-        } else
+        } else {
             throw new EntityDataIntegrityException("id needs to be integer and between 0 and 2");
+        }
     }
-    public function jsonSerialize()
+
+    public function jsonSerialize(): array
     {
         return [
             'user' => $this->getUser()->jsonSerialize(),
@@ -102,7 +82,7 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         ];
     }
 
-    public static function jsonDeserialize($jsonDecoded)
+    public static function jsonDeserialize($jsonDecoded): self
     {
         $classInstance = new self(new User(), new Classroom("aaaaa"));
         foreach ($jsonDecoded as $attributeName => $attributeValue) {

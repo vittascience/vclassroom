@@ -4,59 +4,38 @@ namespace Classroom\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Utils\Exceptions\EntityDataIntegrityException;
-use Utils\Exceptions\EntityOperatorException;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ClassroomRepository")
- * @ORM\Table(name="classrooms")
- */
+#[ORM\Entity(repositoryClass: "Classroom\Repository\ClassroomRepository")]
+#[ORM\Table(name: "classrooms")]
 class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
 {
     const MAX_PICTURE_SIZE = 10000000;
     const ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyz0123456789";
-    /** 
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
-    /**
-     * @ORM\Column(name="name", type="string", length=255, nullable=false)
-     * @var string
-     */
+
+    #[ORM\Column(name: "name", type: "string", length: 255, nullable: false)]
     private $name;
-    /**
-     * @ORM\Column(name="school", type="string", length=255, nullable=false)
-     * @var string
-     */
+
+    #[ORM\Column(name: "school", type: "string", length: 255, nullable: false)]
     private $school;
-   /**
-     * @ORM\Column(name="gar_code", type="string", length=255, nullable=true)
-     * @var string
-     */
+
+    #[ORM\Column(name: "gar_code", type: "string", length: 255, nullable: true)]
     private $garCode;
-    /**
-     * @ORM\Column(name="link", type="string", length=5, nullable=false)
-     * @var string
-     */
+
+    #[ORM\Column(name: "link", type: "string", length: 5, nullable: false)]
     private $link;
 
-    /**
-     * @ORM\Column(name="is_changed", type="boolean", nullable=true)
-     * @var bool
-     */
+    #[ORM\Column(name: "is_changed", type: "boolean", nullable: true)]
     private $isChanged = false;
 
-    /**
-     * @ORM\Column(name="is_blocked", type="boolean", nullable=true)
-     * @var bool
-     */
+    #[ORM\Column(name: "is_blocked", type: "boolean", nullable: true)]
     private $isBlocked = false;
 
-    /**
-     * @ORM\Column(name="uai",type="string",nullable=true)
-     * @var string
-     */
+    #[ORM\Column(name: "uai", type: "string", nullable: true)]
     private $uai;
 
     public function __construct($name = "default", $school = "default")
@@ -66,108 +45,81 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
         $this->setIsChanged(false);
         $this->setIsBlocked(false);
     }
-    /**
-     * @return int
-     */
+
     public function getId()
     {
         return $this->id;
     }
-    /**
-     * @param int $id
-     */
+
     public function setId($id)
     {
         if (is_int($id) && $id > 0) {
             $this->id = $id;
-        } else
+        } else {
             throw new EntityDataIntegrityException("id needs to be integer and positive");
+        }
     }
 
-    /**
-     * @return string
-     */
     public function getName()
     {
         return $this->name;
     }
-    /**
-     * @param string $name
-     */
+
     public function setName($name)
     {
         if (is_string($name) && strlen($name) > 0 && strlen($name) < 255) {
             $this->name = $name;
         } else {
-            throw new EntityDataIntegrityException("name needs to be string with a lenght greater than 0 and lesser than 255");
+            throw new EntityDataIntegrityException("name needs to be string with a length greater than 0 and lesser than 255");
         }
     }
 
-    /**
-     * @return string
-     */
     public function getSchool()
     {
         return $this->school;
     }
-    /**
-     * @param string $school
-     */
+
     public function setSchool($school)
     {
         if (is_string($school) && strlen($school) < 255) {
             $this->school = $school;
         } else {
-            throw new EntityDataIntegrityException("name needs to be string with a lenght lesser than 255");
+            throw new EntityDataIntegrityException("name needs to be string with a length lesser than 255");
         }
     }
 
-    /**
-     * @return string
-     */
     public function getGarCode()
     {
         return $this->garCode;
     }
-    /**
-     * @param string $garCode
-     */
+
     public function setGarCode($garCode)
     {
         if (is_string($garCode) && strlen($garCode) < 255) {
             $this->garCode = $garCode;
         } else {
-            throw new EntityDataIntegrityException("gar code needs to be string with a lenght lesser than 255");
+            throw new EntityDataIntegrityException("gar code needs to be string with a length lesser than 255");
         }
     }
-    /**
-     * @return string
-     */
+
     public function getLink()
     {
         return $this->link;
     }
-    /**
-     * @param string $link
-     */
+
     public function setLink($link)
     {
-        if(!is_string($link) || !preg_match('/[0-9a-z]{5}/', $link)){
+        if (!is_string($link) || !preg_match('/[0-9a-z]{5}/', $link)) {
             throw new EntityDataIntegrityException("The link needs to be alphanumerical string with 5 characters");
         }
         $this->link = $link;
     }
 
-    /**
-     * @return bool
-     */
     public function getIsChanged()
     {
         return $this->isChanged;
     }
-    /**
-     * @param bool $isChanged
-     */
+
     public function setIsChanged($isChanged)
     {
         if (is_bool($isChanged)) {
@@ -177,16 +129,11 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
         }
     }
 
-    /**
-     * @return bool
-     */
     public function getIsBlocked()
     {
         return $this->isBlocked;
     }
-    /**
-     * @param bool $isBlocked
-     */
+
     public function setIsBlocked($isBlocked)
     {
         if ($isBlocked == "false") {
@@ -196,33 +143,20 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
             $isBlocked = true;
         }
         if (is_bool($isBlocked)) {
-
             $this->isBlocked = $isBlocked;
         } else {
-            throw new EntityDataIntegrityException("isBlocked needs to be boolean  ");
+            throw new EntityDataIntegrityException("isBlocked needs to be boolean");
         }
     }
 
-    /**
-     * Get the value of uai
-     *
-     * @return  string
-     */ 
     public function getUai()
     {
         return $this->uai;
     }
 
-    /**
-     * Set the value of uai
-     *
-     * @param  string  $uai
-     *
-     * @return  self
-     */ 
     public function setUai($uai)
     {
-        if(!is_string($uai)){
+        if (!is_string($uai)) {
             throw new EntityDataIntegrityException("The uai has to be a string");
         }
         $this->uai = $uai;
@@ -251,6 +185,7 @@ class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
         }
         return $classInstance;
     }
+
     public static function linkGenerator()
     {
         return "12345";

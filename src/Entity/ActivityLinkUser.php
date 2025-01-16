@@ -4,161 +4,89 @@ namespace Classroom\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Utils\Exceptions\EntityDataIntegrityException;
-use Utils\Exceptions\EntityOperatorException;
 use User\Entity\User;
 use Learn\Entity\Activity;
 use Learn\Entity\Course;
 use Interfaces\Entity\Project;
 use DateTime;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ActivityLinkUserRepository")
- * @ORM\Table(name="classroom_activities_link_classroom_users")
- */
+#[ORM\Entity(repositoryClass: "Classroom\Repository\ActivityLinkUserRepository")]
+#[ORM\Table(name: "classroom_activities_link_classroom_users")]
 class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
     public const MAX_TRIES = 10;
 
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User\Entity\User")
-     * @ORM\JoinColumn(name="id_user", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var User
-     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: "id_user", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
     private $user;
 
-    /**
-     * @ORM\Column(name="reference", type="string",length=13, nullable=false)
-     * @var string
-     */
+    #[ORM\Column(name: "reference", type: "string", length: 13, nullable: false)]
     private $reference;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Activity")
-     * @ORM\JoinColumn(name="id_activity", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var Activity
-     */
+    #[ORM\ManyToOne(targetEntity: Activity::class)]
+    #[ORM\JoinColumn(name: "id_activity", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
     private $activity;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Interfaces\Entity\Project")
-     * @ORM\JoinColumn(name="project", referencedColumnName="id", onDelete="CASCADE", nullable=true)
-     * @var Project
-     */
+    #[ORM\ManyToOne(targetEntity: Project::class)]
+    #[ORM\JoinColumn(name: "project", referencedColumnName: "id", onDelete: "CASCADE", nullable: true)]
     private $project;
 
-    /**
-     * @ORM\Column(name="correction",type="integer", nullable=true,length=2)
-     * @var int
-     */
+    #[ORM\Column(name: "correction", type: "integer", nullable: true, length: 2)]
     private $correction;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Course")
-     * @ORM\JoinColumn(name="id_course", referencedColumnName="id", onDelete="CASCADE", nullable=true)
-     * @var Course
-     */
+    #[ORM\ManyToOne(targetEntity: Course::class)]
+    #[ORM\JoinColumn(name: "id_course", referencedColumnName: "id", onDelete: "CASCADE", nullable: true)]
     private $course;
 
-    /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
-     * @var \DateTime
-     */
+    #[ORM\Column(name: "date_begin", type: "datetime", nullable: true)]
     private $dateBegin = null;
 
-    /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
-     * @var \DateTime
-     */
+    #[ORM\Column(name: "date_end", type: "datetime", nullable: true)]
     private $dateEnd = null;
 
-    /**
-     * @ORM\Column(name="date_send", type="datetime", nullable=true)
-     * @var \DateTime
-     */
+    #[ORM\Column(name: "date_send", type: "datetime", nullable: true)]
     private $dateSend = null;
 
-    /**
-     * @ORM\Column(name="time_passed", type="integer", length=11, nullable=true)
-     * @var int
-     */
+    #[ORM\Column(name: "time_passed", type: "integer", length: 11, nullable: true)]
     private $timePassed = 0;
 
-    /**
-     * @ORM\Column(name="tries", type="integer", length=3, nullable=true)
-     * @var int
-     */
+    #[ORM\Column(name: "tries", type: "integer", length: 3, nullable: true)]
     private $tries = 0;
 
-    /**
-     * @ORM\Column(name="coefficient", type="integer", length=2, nullable=true)
-     * @var int
-     */
+    #[ORM\Column(name: "coefficient", type: "integer", length: 2, nullable: true)]
     private $coefficient = 1;
 
-    /**
-     * @ORM\Column(name="note", type="smallint", nullable=false)
-     * @var int
-     */
+    #[ORM\Column(name: "note", type: "smallint", nullable: false)]
     private $note = 4;
 
-    /**
-     * @ORM\Column(name="commentary", type="string",length=2000, nullable=true)
-     * @var string
-     */
+    #[ORM\Column(name: "commentary", type: "string", length: 2000, nullable: true)]
     private $commentary = "";
 
-    /**
-     * @ORM\Column(name="introduction", type="string",length=2000, nullable=true)
-     * @var string
-     */
+    #[ORM\Column(name: "introduction", type: "string", length: 2000, nullable: true)]
     private $introduction = "";
 
-    /**
-     * @ORM\Column(name="is_autocorrected", type="boolean",nullable=false, options={"default":false})
-     * @var bool
-     */
+    #[ORM\Column(name: "is_autocorrected", type: "boolean", nullable: false, options: ["default" => false])]
     private $autocorrection = false;
 
-    /**
-     * @ORM\Column(name="is_evaluation", type="boolean",nullable=false, options={"default":false})
-     * @var bool
-     */
+    #[ORM\Column(name: "is_evaluation", type: "boolean", nullable: false, options: ["default" => false])]
     private $evaluation = false;
 
-    /**
-     * @ORM\Column(name="url", type="string",length=255, nullable=true)
-     * @var string
-     */
-    private $url="";
+    #[ORM\Column(name: "url", type: "string", length: 255, nullable: true)]
+    private $url = "";
 
-    /**
-     * @ORM\Column(name="response", type="text", nullable=true)
-     * @var String
-     */
+    #[ORM\Column(name: "response", type: "text", nullable: true)]
     private $response = null;
 
-    /**
-     * @ORM\Column(name="is_from_course", type="boolean", nullable=false, options={"default":false})
-     * @var bool
-     */
+    #[ORM\Column(name: "is_from_course", type: "boolean", nullable: false, options: ["default" => false])]
     private $isFromCourse = false;
 
-    /**
-     * @ORM\Column(name="optional_data", type="text", nullable=true)
-     * @var String
-     */
+    #[ORM\Column(name: "optional_data", type: "text", nullable: true)]
     private $optionalData = null;
-    
-
-
-
 
     public function __construct(Activity $activity, User $user, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,$url="",  $introduction = "", $reference = 'aaaaa', $commentary = "", $tries = 0, $timePassed = 0, $coefficient = 1, $note = 4, $response = null)
     {
@@ -179,6 +107,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->setUrl($url);
         $this->setResponse($response);
     }
+
     /**
      * @return User
      */
@@ -186,6 +115,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->user;
     }
+
     /**
      * @param User $user
      */
@@ -204,6 +134,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->activity;
     }
+
     /**
      * @param Activity $activity
      */
@@ -304,6 +235,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         else
             throw new EntityDataIntegrityException("dateSend needs to be DateTime or null");
     }
+    
     /**
      * @return int
      */
@@ -311,6 +243,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->id;
     }
+
     /**
      * @param int $id
      */
@@ -327,6 +260,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->tries;
     }
+
     /**
      * @param int $tries
      */
@@ -345,6 +279,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->correction;
     }
+
     /**
      * @param int $correction
      */
@@ -363,6 +298,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->timePassed;
     }
+
     /**
      * @param int $timePassed
      */
@@ -381,6 +317,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->coefficient;
     }
+
     /**
      * @param int $coefficient
      */
@@ -399,6 +336,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->introduction;
     }
+
     /**
      * @param string $introduction
      */
@@ -410,6 +348,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             throw new EntityDataIntegrityException("introduction needs to be string with a lenght lesser than 2000 and" . strlen($introduction));
         }
     }
+
     /**
      * @return string
      */
@@ -417,6 +356,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->commentary;
     }
+
     /**
      * @param string $commentary
      */
@@ -428,6 +368,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             throw new EntityDataIntegrityException("commentary needs to be string with a lenght lesser than 2000");
         }
     }
+
     /**
      * @return string
      */
@@ -435,6 +376,7 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         return $this->reference;
     }
+
     /**
      * @param string $commentary
      */

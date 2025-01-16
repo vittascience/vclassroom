@@ -6,71 +6,40 @@ use User\Entity\User;
 use Learn\Entity\Course;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\CourseLinkUserRepository")
- * @ORM\Table(name="classroom_users_link_courses")
- */
+#[ORM\Entity(repositoryClass: "Classroom\Repository\CourseLinkUserRepository")]
+#[ORM\Table(name: "classroom_users_link_courses")]
 class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
-
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: "integer")]
+    #[ORM\GeneratedValue]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User\Entity\User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var User
-     */
+    #[ORM\ManyToOne(targetEntity: "User\Entity\User")]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
     private $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Course")
-     * @ORM\JoinColumn(name="course_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var User
-     */
+    #[ORM\ManyToOne(targetEntity: "Learn\Entity\Course")]
+    #[ORM\JoinColumn(name: "course_id", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
     private $course;
 
-    
-    /**
-     * @ORM\Column(name="reference", type="string",length=13, nullable=true)
-     * @var string
-     */
+    #[ORM\Column(name: "reference", type: "string", length: 13, nullable: true)]
     private $reference;
 
-    /**
-     * @ORM\Column(name="activities_references", type="text", nullable=true)
-     * @var String
-     */
+    #[ORM\Column(name: "activities_references", type: "text", nullable: true)]
     private $activitiesReferences;
 
-     /**
-     * @ORM\Column(name="activities_data", type="text", nullable=true)
-     * @var String
-     */
+    #[ORM\Column(name: "activities_data", type: "text", nullable: true)]
     private $activitiesData;
 
-    /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
-     * @var \DateTime
-     */
+    #[ORM\Column(name: "date_begin", type: "datetime", nullable: true)]
     private $dateBegin;
 
-    /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
-     * @var \DateTime
-     */
+    #[ORM\Column(name: "date_end", type: "datetime", nullable: true)]
     private $dateEnd;
 
-    /**
-     * @ORM\Column(name="course_state", type="integer", nullable=false)
-     * @var int
-     */
+    #[ORM\Column(name: "course_state", type: "integer", nullable: false)]
     private $courseState;
-
 
     public function getId()
     {

@@ -2,130 +2,77 @@
 
 namespace Classroom\Entity;
 
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use User\Entity\User;
 use Classroom\Entity\Applications;
 use Classroom\Entity\Groups;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\GroupsLinkApplicationsRepository")
- * @ORM\Table(name="classroom_groups_link_applications")
- */
+#[ORM\Entity(repositoryClass: "Classroom\Repository\GroupsLinkApplicationsRepository")]
+#[ORM\Table(name: "classroom_groups_link_applications")]
 class GroupsLinkApplications
 {
-
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: "integer")]
+    #[ORM\GeneratedValue]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Groups")
-     * @ORM\JoinColumn(name="group_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var Groups
-     */
+    #[ORM\ManyToOne(targetEntity: "Classroom\Entity\Groups")]
+    #[ORM\JoinColumn(name: "group_id", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
     private $group;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Applications")
-     * @ORM\JoinColumn(name="application_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
-     * @var Applications
-     */
+    #[ORM\ManyToOne(targetEntity: "Classroom\Entity\Applications")]
+    #[ORM\JoinColumn(name: "application_id", referencedColumnName: "id", onDelete: "CASCADE", nullable: false)]
     private $application;
 
-
-    /**
-     * @ORM\Column(name="max_activities_per_groups", type="integer", nullable=true)
-     * @var integer
-     */
+    #[ORM\Column(name: "max_activities_per_groups", type: "integer", nullable: true)]
     private $maxActivitiesPerGroups;
 
-
-    /**
-     * @ORM\Column(name="max_activities_per_teachers", type="integer", nullable=true)
-     * @var integer
-     */
+    #[ORM\Column(name: "max_activities_per_teachers", type: "integer", nullable: true)]
     private $maxActivitiesPerTeachers;
 
-
-    /**
-     * @return Int
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return Groups
-     */
-    public function getGroup()
+    public function getGroup(): Groups
     {
         return $this->group;
     }
 
-    /**
-     * @param Groups $group
-     * @return GroupsLinkApplications
-     */
     public function setGroup(Groups $group): self
     {
         $this->group = $group;
         return $this;
     }
 
-    /**
-     * @return Applications application
-     */
-    public function getApplication()
+    public function getApplication(): Applications
     {
         return $this->application;
     }
 
-    /**
-     * @param Applications
-     * @return GroupsLinkApplications
-     */
     public function setApplication(Applications $application): self
     {
         $this->application = $application;
         return $this;
     }
 
-    /**
-     * @return Integer
-     */
-    public function getmaxActivitiesPerGroups()
+    public function getmaxActivitiesPerGroups(): ?int
     {
         return $this->maxActivitiesPerGroups;
     }
 
-    /**
-     * @param Integer $maximum
-     * @return GroupsLinkApplications
-     */
-    public function setmaxActivitiesPerGroups(Int $maximum): self
+    public function setmaxActivitiesPerGroups(int $maximum): self
     {
         $this->maxActivitiesPerGroups = $maximum;
         return $this;
     }
 
-    /**
-     * @return Integer
-     */
-    public function getmaxActivitiesPerTeachers()
+    public function getmaxActivitiesPerTeachers(): ?int
     {
         return $this->maxActivitiesPerTeachers;
     }
 
-    /**
-     * @param Integer $maximum
-     * @return GroupsLinkApplications
-     */
-    public function setmaxActivitiesPerTeachers(Int $maximum): self
+    public function setmaxActivitiesPerTeachers(int $maximum): self
     {
         $this->maxActivitiesPerTeachers = $maximum;
         return $this;
@@ -139,7 +86,6 @@ class GroupsLinkApplications
             'application_id' => $this->getApplication(),
             'max_activities_per_group' => $this->getmaxActivitiesPerGroups(),
             'max_activities_per_teachers' => $this->getmaxActivitiesPerTeachers()
-
         ];
     }
 
