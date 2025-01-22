@@ -37,7 +37,7 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         return $this->user;
     }
 
-    public function setUser(User $user): void
+    public function setUser($user): void
     {
         if ($user instanceof User) {
             $this->user = $user;
@@ -51,7 +51,7 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         return $this->classroom;
     }
 
-    public function setClassroom(Classroom $classroom): void
+    public function setClassroom($classroom): void
     {
         if ($classroom instanceof Classroom) {
             $this->classroom = $classroom;
@@ -65,7 +65,7 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         return $this->rights;
     }
 
-    public function setRights(int $rights): void
+    public function setRights($rights): void
     {
         if ($rights >= 0 && $rights <= 2) {
             $this->rights = $rights;
