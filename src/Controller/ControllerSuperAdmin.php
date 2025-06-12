@@ -410,10 +410,7 @@ class ControllerSuperAdmin extends Controller
                         $this->entityManager->persist($group);
                         $this->entityManager->flush();
 
-                        $lastgroup = $this->entityManager->getRepository(Groups::class)->findOneBy([], ['id' => 'desc']);
-                        $group_id = $lastgroup->getId();
-
-                        $this->manageAppsForGroups($applications, $group_id, $group);
+                        $this->manageAppsForGroups($applications, $group->getId(), $group);
                         $this->entityManager->flush();
 
                         return ['response' => 'success'];

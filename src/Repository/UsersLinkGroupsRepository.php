@@ -19,28 +19,14 @@ use Classroom\Entity\UsersLinkApplicationsFromGroups;
 
 class UsersLinkGroupsRepository extends EntityRepository
 {
-    /**
-     *  @param int $group_id, 
-     *  @param int $page, 
-     *  @param int $userpp, 
-     *  @param int $sort
-     *  @return Array of users
-     */
-    public function getAllMembersFromGroup(int $group_id, Int $page, Int $userspp, Int $sort)
+    // Récupère la requête principale selon le type de groupe
+    private function getMainQuery(int $group_id, string $orderByField)
     {
+        $entityManager = $this->getEntityManager();
 
-        $orderby = "u.surname";
-        $sort = 0 ? $orderby = "u.surname" : $orderby = "u.firstname";
-
-        if ($group_id == 0) {
-            return false;
-        }
-
-        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
-
-        if ($group_id >= 1) {
-            $result = $this->getEntityManager()
-                ->createQueryBuilder()
+        if ($group_id > 0) {
+            // Cas d'un groupe spécifique
+            return $entityManager->createQueryBuilder()
                 ->select("u.id, u.surname, u.firstname, u.pseudo, g.rights AS rights, r.active as active, r.newsletter, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                 ->from(User::class, 'u')
                 ->innerJoin(UsersLinkGroups::class, 'g')
@@ -48,76 +34,77 @@ class UsersLinkGroupsRepository extends EntityRepository
                 ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
                 ->where('g.group = :id AND u.id = g.user')
                 ->orderBy('g.rights', 'DESC')
-                ->addOrderBy($orderby)
+                ->addOrderBy($orderByField)
                 ->setParameter('id', $group_id)
                 ->getQuery();
-        } else if ($group_id == -1) {
-            $id_members_in_groups = $this->getEntityManager()
-                ->createQueryBuilder()->select("IDENTITY(g.user) as user, g.id")
+
+        } elseif ($group_id === -1) {
+            // Cas des membres n'appartenant à aucun groupe
+            $entityManager = $this->getEntityManager();
+            $subQueryResult = $entityManager->createQueryBuilder()
+                ->select("IDENTITY(g.user) as user")
                 ->from(UsersLinkGroups::class, 'g')
                 ->getQuery()
                 ->getScalarResult();
 
-            $users_id = [];
-            foreach ($id_members_in_groups as $key => $value) {
-                $users_id[] = $value['user'];
+            $userIdsInGroups = [];
+            foreach ($subQueryResult as $row) {
+                $userIdsInGroups[] = $row['user'];
             }
-            if (!empty($users_id)) {
-                $result = $this->getEntityManager()
-                    ->createQueryBuilder()
+
+            if (!empty($userIdsInGroups)) {
+                return $entityManager->createQueryBuilder()
                     ->select("u.id, u.surname, u.firstname, u.pseudo, r.active as active, r.newsletter, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                     ->from(User::class, 'u')
                     ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                     ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
-                    ->where($queryBuilder->expr()->notIn('u.id', ':ids'))
-                    ->setParameter('ids', $users_id)
-                    ->orderBy($orderby)
+                    ->where($entityManager->createQueryBuilder()->expr()->notIn('u.id', ':ids'))
+                    ->setParameter('ids', $userIdsInGroups)
+                    ->orderBy($orderByField)
                     ->getQuery();
             } else {
-                // in the case where $users_id is empty, we can't use the notIn statement
-                $result = $this->getEntityManager()
-                    ->createQueryBuilder()
+                // Aucun utilisateur dans un groupe : renvoie les utilisateurs actifs
+                return $entityManager->createQueryBuilder()
                     ->select("u.id, u.surname, u.firstname, u.pseudo")
                     ->from(User::class, 'u')
                     ->innerJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                     ->where('r.active = 1')
-                    ->orderBy($orderby)
+                    ->orderBy($orderByField)
                     ->getQuery();
             }
-        } else if ($group_id == -2) {
-            $result = $this->getEntityManager()
-                ->createQueryBuilder()
+        } elseif ($group_id === -2) {
+            // Cas des utilisateurs sans lien dans la table Regular
+            return $entityManager->createQueryBuilder()
                 ->select("u.id, u.surname, u.firstname, u.pseudo, IDENTITY(r.user) as isRegular, r.newsletter, r.active, IDENTITY(p.user) as p_user, p.dateEnd as p_date_end")
                 ->from(User::class, 'u')
                 ->leftJoin(Regular::class, 'r', Join::WITH, 'r.user = u.id')
                 ->leftJoin(UserPremium::class, 'p', Join::WITH, 'p.user = u.id')
                 ->where('r.active is NULL')
-                ->orderBy($orderby)
+                ->orderBy($orderByField)
                 ->getQuery();
         }
 
-        // fetch applications of users
-        $ApplicationsOfUsers = $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select("a.id AS application_id, a.name AS application_name, a.image AS application_image, u.id AS user_id, ur.dateBegin as date_begin, ur.dateEnd as p_date_end")
+        return null;
+    }
+
+    // Récupère les applications globales liées aux utilisateurs
+    private function getApplicationsOfUsers()
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select("a.id AS application_id, a.name AS application_name, a.image AS application_image, u.id AS user_id, ur.dateBegin as date_begin, ur.dateEnd as date_end")
             ->from(Applications::class, 'a')
             ->innerJoin(UsersLinkApplications::class, 'ula', Join::WITH, 'a.id = ula.application')
             ->innerJoin(User::class, 'u', Join::WITH, 'u.id = ula.user')
             ->innerJoin(UsersRestrictions::class, 'ur', Join::WITH, 'ur.user = u.id')
             ->getQuery()
             ->getScalarResult();
+    }
 
-        $ApplicationsOfUsersFromGroup = $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select("  a.id AS application_id, 
-                        a.name AS application_name,
-                        a.image AS application_image, 
-                        u.id AS user_id, 
-                        g.dateBegin as date_begin, 
-                        g.dateEnd as date_end,
-                        g.maxStudentsPerTeachers as max_students_per_teachers,
-                        g.maxStudents as max_students_per_groups,
-                        g.maxTeachers as max_teachers_per_groups")
+    // Récupère les applications liées aux utilisateurs via les groupes
+    private function getApplicationsOfUsersFromGroup(int $group_id)
+    {
+        return $this->getEntityManager()->createQueryBuilder()
+            ->select("a.id AS application_id, a.name AS application_name, a.image AS application_image, u.id AS user_id, g.dateBegin as date_begin, g.dateEnd as date_end, g.maxStudentsPerTeachers as max_students_per_teachers, g.maxStudents as max_students_per_groups, g.maxTeachers as max_teachers_per_groups")
             ->from(Applications::class, 'a')
             ->innerJoin(UsersLinkApplicationsFromGroups::class, 'ulafg', Join::WITH, 'a.id = ulafg.application')
             ->innerJoin(User::class, 'u', Join::WITH, 'u.id = ulafg.user')
@@ -126,66 +113,101 @@ class UsersLinkGroupsRepository extends EntityRepository
             ->setParameter('id', $group_id)
             ->getQuery()
             ->getScalarResult();
+    }
 
-        
-        $paginator = new Paginator($result);
+    // Gère la pagination d'une requête
+    private function paginateQuery($query, int $page, int $usersPerPage)
+    {
+        $paginator = new Paginator($query);
         $paginator->setUseOutputWalkers(false);
         $totalItems = count($paginator);
+        $totalPages = ceil($totalItems / $usersPerPage);
         $currentPage = $page;
-        $totalPagesCount = ceil($totalItems / $userspp);
-        $nextPage = (($currentPage < $totalPagesCount) ? $currentPage + 1 : $totalPagesCount);
-        $previousPage = (($currentPage > 1) ? $currentPage - 1 : 1);
+        $nextPage = ($currentPage < $totalPages) ? $currentPage + 1 : $totalPages;
+        $previousPage = ($currentPage > 1) ? $currentPage - 1 : 1;
 
         $records = $paginator->getQuery()
-            ->setFirstResult($userspp * ($currentPage - 1))
-            ->setMaxResults($userspp)
+            ->setFirstResult($usersPerPage * ($currentPage - 1))
+            ->setMaxResults($usersPerPage)
             ->getScalarResult();
 
+        return [
+            'records'         => $records,
+            'totalItems'      => $totalItems,
+            'totalPages'      => $totalPages,
+            'currentPage'     => $currentPage,
+            'nextPage'        => $nextPage,
+            'previousPage'    => $previousPage
+        ];
+    }
 
-        // Set les applications aux groupes qui les possèdent dans le resultat initial
-        foreach ($records as $key => $value) {
-            foreach ($ApplicationsOfUsers as $key2 => $value2) {
-                if ((int)$value['id'] == (int)$value2['user_id']) {
-                    if (array_key_exists("date_end", $value2) && array_key_exists("date_begin", $value2)) {
-                        $records[$key]['applications'][] = [
-                            'id' => $value2['application_id'],
-                            'name' => $value2['application_name'],
-                            'image' => $value2['application_image'],
-                            'date_end' => $value2['date_end'],
-                            'date_begin' => $value2['date_begin']
-                        ];
-                    } else {
-                        $records[$key]['applications'][] = [
-                            'id' => $value2['application_id'],
-                            'name' => $value2['application_name'],
-                            'image' => $value2['application_image'],
-                            'date_end' => null,
-                            'date_begin' => null
-                        ];
-                    }
+    public function getAllMembersFromGroup(int $group_id, int $page, int $usersPerPage, int $sort)
+    {
+        // Choix du critère de tri
+        $orderByField = ($sort === 0) ? "u.surname" : "u.firstname";
+
+        // Vérifie que le groupe est valide
+        if ($group_id === 0) {
+            return false;
+        }
+
+        // Récupération de la requête principale selon le type de groupe
+        $query = $this->getMainQuery($group_id, $orderByField);
+        if ($query === null) {
+            return false;
+        }
+
+        // Pagination
+        $pagination = $this->paginateQuery($query, $page, $usersPerPage);
+        $records = $pagination['records'];
+
+        // Récupération des applications
+        $applicationsGlobales = $this->getApplicationsOfUsers();
+        $applicationsGroup = $this->getApplicationsOfUsersFromGroup($group_id);
+
+        // Association des applications aux utilisateurs
+        foreach ($records as $index => $user) {
+            // Applications globales
+            foreach ($applicationsGlobales as $app) {
+                if ((int)$user['id'] === (int)$app['user_id']) {
+                    $records[$index]['applications'][] = [
+                        'id'         => $app['application_id'],
+                        'name'       => $app['application_name'],
+                        'image'      => $app['application_image'],
+                        'date_begin' => $app['date_begin'] ?? null,
+                        'date_end'   => $app['date_end'] ?? null,
+                    ];
                 }
             }
-
-            foreach ($ApplicationsOfUsersFromGroup as $AppOfUserFromGroup) {
-                if ((int)$value['id'] == (int)$AppOfUserFromGroup['user_id']) {
-                    $records[$key]['applicationsFromGroups'][] = [
-                        'id' => $AppOfUserFromGroup['application_id'],
-                        'name' => $AppOfUserFromGroup['application_name'],
-                        'image' => $AppOfUserFromGroup['application_image'],
-                        'dateBegin' => $AppOfUserFromGroup['date_begin'],
-                        'dateEnd' => $AppOfUserFromGroup['date_end'],
-                        'maxStudentsPerTeachers' => $AppOfUserFromGroup['max_students_per_teachers'],
-                        'maxStudentsPerGroups' => $AppOfUserFromGroup['max_students_per_groups'],
-                        'maxTeachersPerGroups' => $AppOfUserFromGroup['max_teachers_per_groups']
+            // Applications issues des groupes
+            foreach ($applicationsGroup as $appGroup) {
+                if ((int)$user['id'] === (int)$appGroup['user_id']) {
+                    $records[$index]['applicationsFromGroups'][] = [
+                        'id'                     => $appGroup['application_id'],
+                        'name'                   => $appGroup['application_name'],
+                        'image'                  => $appGroup['application_image'],
+                        'date_begin'             => $appGroup['date_begin'],
+                        'date_end'               => $appGroup['date_end'],
+                        'maxStudentsPerTeachers' => $appGroup['max_students_per_teachers'],
+                        'maxStudentsPerGroups'   => $appGroup['max_students_per_groups'],
+                        'maxTeachersPerGroups'   => $appGroup['max_teachers_per_groups']
                     ];
                 }
             }
         }
 
-        $records[] = ['totalItems' => $totalItems, 'currentPage' => (int)$currentPage, 'totalPagesCount' => $totalPagesCount, 'nextPage' => $nextPage, 'previousPage' => $previousPage];
+        // Ajout des informations de pagination à la fin
+        $records[] = [
+            'totalItems'      => $pagination['totalItems'],
+            'currentPage'     => $pagination['currentPage'],
+            'totalPagesCount' => $pagination['totalPages'],
+            'nextPage'        => $pagination['nextPage'],
+            'previousPage'    => $pagination['previousPage']
+        ];
 
         return $records;
     }
+
 
     public function getAdminFromGroup(int $group_id)
     {
