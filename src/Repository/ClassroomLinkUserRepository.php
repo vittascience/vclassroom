@@ -25,16 +25,14 @@ class ClassroomLinkUserRepository extends EntityRepository
             
             // get the activities for each student
             $activities = $this->getEntityManager()
-                ->createQueryBuilder()
-                ->select('alu')
-                ->from(ActivityLinkUser::class,'alu')
-                ->join(User::class, 'u','WITH','alu.user = u.id')
-                ->where('alu.user = :userId')
-                ->setParameters(array(
-                    'userId' => $student->getUser()->getId()
-                ))
-                ->getQuery()
-                ->getResult();
+                                ->createQueryBuilder()
+                                ->select('partial alu.{id, reference, dateBegin, dateEnd, dateSend}', 'partial a.{id, title}')
+                                ->from(ActivityLinkUser::class, 'alu')
+                                ->join('alu.activity', 'a')
+                                ->where('alu.user = :userId')
+                                ->setParameter('userId', $student->getUser()->getId())
+                                ->getQuery()
+                                ->getResult();
 
             $courseLinkUser = $this->getEntityManager()
                 ->createQueryBuilder()
