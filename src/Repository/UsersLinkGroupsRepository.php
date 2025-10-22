@@ -238,7 +238,7 @@ class UsersLinkGroupsRepository extends EntityRepository
 
         $User = $this->getEntityManager()
             ->createQueryBuilder()
-            ->select('u.id, u.firstname, u.surname, u.pseudo, r.email, IDENTITY(r.user) as isRegular, r.newsletter, r.active as isActive, r.isAdmin, r.telephone, r.bio, IDENTITY(t.user) as isTeacher, t.grade, t.subject, t.school')
+            ->select('u.id, u.firstname, u.surname, u.pseudo, r.email, r.roles, IDENTITY(r.user) as isRegular, r.newsletter, r.active as isActive, r.isAdmin, r.telephone, r.bio, IDENTITY(t.user) as isTeacher, t.grade, t.subject, t.school')
             ->from(User::class, 'u')
             ->leftJoin(Regular::class, 'r', 'WITH', 'r.user = u.id')
             ->leftJoin(Teacher::class, 't', 'WITH', 't.user = u.id')
