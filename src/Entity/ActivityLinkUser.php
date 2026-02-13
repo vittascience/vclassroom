@@ -155,6 +155,13 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var String
      */
     private $optionalData = null;
+
+
+    /**
+     * @ORM\Column(name="journey",type="integer", nullable=true)
+     * @var int
+     */
+    private $journey;
     
 
 
@@ -593,6 +600,17 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->optionalData = $optionalData;
         return $this;
     }
+
+    public function getJourney()
+    {
+        return $this->journey;
+    }
+
+    public function setJourney($journey)
+    {
+        $this->journey = $journey;
+        return $this;
+    }
     
     public function jsonSerialize()
     {
@@ -646,7 +664,8 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'url'=> $this->getUrl(),
             'response' => $response,
             'isFromCourse' => $this->getIsFromCourse(),
-            'optionalData' => $optionalData
+            'optionalData' => $optionalData,
+            'journey' => $this->getJourney()
         ];
     }
 
