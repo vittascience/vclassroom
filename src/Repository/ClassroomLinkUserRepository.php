@@ -65,7 +65,7 @@ class ClassroomLinkUserRepository extends EntityRepository
     {
         return (int) $this->getEntityManager()
             ->createQueryBuilder()
-            ->select('COUNT(student_clu.id)')
+            ->select('COUNT(student_clu.user)')
             ->from(ClassroomLinkUser::class, 'teacher_clu')
             ->innerJoin(
                 ClassroomLinkUser::class, 'student_clu', 'WITH',
