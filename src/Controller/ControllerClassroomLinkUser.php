@@ -239,6 +239,9 @@ class ControllerClassroomLinkUser extends Controller
                         break;
                     }
 
+                    // truncate pseudo to match DB column length (max 100 chars)
+                    $studentPseudo = mb_substr($studentPseudo, 0, 100);
+
                     // no error found, fille the student array
                     array_push(
                         $studentsToAdd,
