@@ -57,6 +57,32 @@ class ClassroomLinkUserRepository extends EntityRepository
         return $arrayStudents;
     }
 
+    /**
+     * Count all students (excluding demoStudent) across all classrooms of a given teacher.
+     * Single query, no entity hydration — returns a scalar int.
+     */
+    public function countStudentsForTeacher(int $teacherId, string $demoStudent): int
+    {
+        return (int) $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(student_clu.user)')
+            ->from(ClassroomLinkUser::class, 'teacher_clu')
+            ->innerJoin(
+                ClassroomLinkUser::class, 'student_clu', 'WITH',
+                'student_clu.classroom = teacher_clu.classroom AND student_clu.rights = 0'
+            )
+            ->innerJoin(User::class, 'u', 'WITH', 'student_clu.user = u.id')
+            ->where('teacher_clu.user = :teacherId')
+            ->andWhere('teacher_clu.rights = 2')
+            ->andWhere('u.pseudo != :demoStudent')
+            ->setParameters([
+                'teacherId' => $teacherId,
+                'demoStudent' => $demoStudent,
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function getDemoStudentWithWrongPseudo($pseudo)
     {
        return $this->getEntityManager()
