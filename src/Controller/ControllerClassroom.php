@@ -36,25 +36,53 @@ class ControllerClassroom extends Controller
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $userId, 'rights' => 2));
 
-                //no classrooms found, return an empty array    
+                //no classrooms found, return an empty array
                 if (!$classrooms) {
-                    return $classrooms = [];
+                    return [];
                 }
 
                 $demoStudent = $this->manageDemoStudentPseudo();
 
-                // some classrooms found, push them into $classrooms array
-                $i = 0;
+                // Lightweight response: no full student data, only counts
+                // Students are lazily loaded per classroom via get_classroom_students
+                $result = [];
                 foreach ($classrooms as $classroom) {
-                    $students = $this->entityManager
+                    $stats = $this->entityManager
                         ->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->getAllStudentsInClassroom($classroom->getClassroom()->getId(), 0, $demoStudent);
-                    
-                    $classrooms[$i] = array("classroom" => $classroom->getClassroom(), "students" => $students);
-                    $i++;
+                        ->getClassroomStats($classroom->getClassroom()->getId(), $demoStudent);
+
+                    $result[] = [
+                        "classroom"          => $classroom->getClassroom(),
+                        "studentCount"       => $stats['studentCount'],
+                        "pendingCorrections" => $stats['pendingCorrections'],
+                        "activitiesCount"    => $stats['activitiesCount'],
+                        "students"           => [],
+                    ];
                 }
 
-                return $classrooms;
+                return $result;
+            },
+
+            'get_classroom_students' => function () {
+
+                if ($_SERVER['REQUEST_METHOD'] !== 'POST') return ["error" => "Method not Allowed"];
+                if (empty($_SESSION['id'])) return ["errorType" => "notAuthenticated"];
+
+                $classroomId = intval($_POST['classroomId'] ?? 0);
+                if (!$classroomId) return ["error" => "Missing classroomId"];
+
+                // Security: verify the current user is teacher of this classroom
+                $userId = intval($_SESSION['id']);
+                $ownerCheck = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->findOneBy(['classroom' => $classroomId, 'user' => $userId, 'rights' => 2]);
+                if (!$ownerCheck) return ["error" => "Forbidden"];
+
+                $demoStudent = $this->manageDemoStudentPseudo();
+                $students = $this->entityManager
+                    ->getRepository('Classroom\Entity\ClassroomLinkUser')
+                    ->getAllStudentsInClassroom($classroomId, 0, $demoStudent);
+
+                return ["students" => $students];
             },
             'get_by_link' => function () {
                 // accept only POST request
