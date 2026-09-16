@@ -9,6 +9,8 @@ use Classroom\Entity\Classroom;
 use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\CourseLinkUser;
 use User\Entity\User;
+use User\Entity\ClassroomUser;
+use User\Gar\GarIagEligibility;
 
 class ClassroomLinkUserRepository extends EntityRepository
 {
@@ -109,6 +111,16 @@ class ClassroomLinkUserRepository extends EntityRepository
             $coursesByUser[$clu->getUser()->getId()][] = $clu->jsonSerialize();
         }
 
+        // Batch query: fetch the GAR classroom-user record (garMs4) for all students at once.
+        $allGarUsers = $this->getEntityManager()
+            ->getRepository(ClassroomUser::class)
+            ->findBy(['id' => $studentIds]);
+
+        $iagEligibleByUser = [];
+        foreach ($allGarUsers as $garUser) {
+            $iagEligibleByUser[$garUser->getId()->getId()] = GarIagEligibility::isEligible($garUser->getGarMs4());
+        }
+
         // Build the final students array, preserving the order from getStudentsOrdered()
         $arrayStudents = [];
         foreach ($students as $student) {
@@ -117,10 +129,11 @@ class ClassroomLinkUserRepository extends EntityRepository
             }
             $userId = $student->getUser()->getId();
             $arrayStudents[] = [
-                'user'       => $student->getUser()->jsonSerialize(),
-                'activities' => $activitiesByUser[$userId] ?? [],
-                'courses'    => $coursesByUser[$userId] ?? [],
-                'pwd'        => $student->getUser()->getPassword(),
+                'user'        => $student->getUser()->jsonSerialize(),
+                'activities'  => $activitiesByUser[$userId] ?? [],
+                'courses'     => $coursesByUser[$userId] ?? [],
+                'pwd'         => $student->getUser()->getPassword(),
+                'iagEligible' => $iagEligibleByUser[$userId] ?? false,
             ];
         }
 
