@@ -135,9 +135,10 @@ class ControllerGroupAdmin extends Controller
                             $this->entityManager->flush();
 
                             // Manage the group apps for user
-                            $appsManager = $this->manageAppsFromGroups($user->getId(), $application, $groups, $group, $user);
-                            if ($appsManager != true) {
-                                return $appsManager;
+                            try {
+                                $this->manageHeritedApps($group, $user);
+                            } catch (\Exception $e) {
+                                error_log("Error while managing herited apps: " . $e->getMessage());
                             }
 
 
@@ -635,18 +636,14 @@ class ControllerGroupAdmin extends Controller
                         }
 
                         // Manage the group apps for user
-                        $appsManager = $this->manageAppsFromGroups($user_id, $application, $groups, $group, $user);
-                        
-                        if ($appsManager === true) {
-                            $this->entityManager->flush();
-                            return ['message' => 'success'];
-                        } else {
-                            if (key_exists("canAdd", $appsManager)) {
-                                if ($appsManager['canAdd'] != true) {
-                                    return $appsManager;
-                                }
-                            }
+                        try {
+                            $this->manageHeritedApps($group, $user);
+                        } catch (\Exception $e) {
+                            error_log("Error while managing herited apps: " . $e->getMessage());
                         }
+
+                        $this->entityManager->flush();
+                        return ['message' => 'success'];
                     } else {
                         return ['message' => 'missing data'];
                     }
