@@ -1200,14 +1200,12 @@ class ControllerGroupAdmin extends Controller
         if ($group != null) {
             $Apps = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group->getId()]);
             foreach ($Apps as $app) {
-                $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user, 'application' => $app]);
+                $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user, 'application' => $app->getApplication()]);
                 if (!$appFromGroupExist) {
-                    $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user]);
-                    $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app->getApplication()]);
                     $newAppFromGroup = new UsersLinkApplicationsFromGroups();
-                    $newAppFromGroup->setApplication($application);
+                    $newAppFromGroup->setApplication($app->getApplication());
                     $newAppFromGroup->setGroup($group);
-                    $newAppFromGroup->setUser($memberAppExist);
+                    $newAppFromGroup->setUser($user);
                     $this->entityManager->persist($newAppFromGroup);
                 }
             }
