@@ -135,9 +135,10 @@ class ControllerGroupAdmin extends Controller
                             $this->entityManager->flush();
 
                             // Manage the group apps for user
-                            $appsManager = $this->manageAppsFromGroups($user->getId(), $application, $groups, $group, $user);
-                            if ($appsManager != true) {
-                                return $appsManager;
+                            try {
+                                $this->manageHeritedApps($group, $user);
+                            } catch (\Exception $e) {
+                                error_log("Error while managing herited apps: " . $e->getMessage());
                             }
 
 
@@ -349,6 +350,11 @@ class ControllerGroupAdmin extends Controller
                     }
 
                     if (($userR || $gar_user) && $group) {
+                        try {
+                            $this->manageHeritedApps($group, $user);
+                        } catch (\Exception $e) {
+                            error_log("Error while managing herited apps: " . $e->getMessage());
+                        }
                         $alreadyLinked = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $user_id, 'group' => $group_id]);
                         if ($alreadyLinked) {
                             return ['message' => 'alreadylinked'];
@@ -630,18 +636,14 @@ class ControllerGroupAdmin extends Controller
                         }
 
                         // Manage the group apps for user
-                        $appsManager = $this->manageAppsFromGroups($user_id, $application, $groups, $group, $user);
-                        
-                        if ($appsManager === true) {
-                            $this->entityManager->flush();
-                            return ['message' => 'success'];
-                        } else {
-                            if (key_exists("canAdd", $appsManager)) {
-                                if ($appsManager['canAdd'] != true) {
-                                    return $appsManager;
-                                }
-                            }
+                        try {
+                            $this->manageHeritedApps($group, $user);
+                        } catch (\Exception $e) {
+                            error_log("Error while managing herited apps: " . $e->getMessage());
                         }
+
+                        $this->entityManager->flush();
+                        return ['message' => 'success'];
                     } else {
                         return ['message' => 'missing data'];
                     }
@@ -1184,5 +1186,32 @@ class ControllerGroupAdmin extends Controller
         } else {
             return ['message' => 'allowed'];
         }
+    }
+
+    private function manageHeritedApps(?Groups $group, User $user) {
+        $appFromGroupExistBefore = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findBy(['user' => $user]);
+        if ($appFromGroupExistBefore) {
+            foreach ($appFromGroupExistBefore as $key => $value) {
+                $this->entityManager->remove($value);
+            }
+        }
+        $this->entityManager->flush();
+
+        if ($group != null) {
+            $Apps = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group->getId()]);
+            foreach ($Apps as $app) {
+                $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user, 'application' => $app]);
+                if (!$appFromGroupExist) {
+                    $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user]);
+                    $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app->getApplication()]);
+                    $newAppFromGroup = new UsersLinkApplicationsFromGroups();
+                    $newAppFromGroup->setApplication($application);
+                    $newAppFromGroup->setGroup($group);
+                    $newAppFromGroup->setUser($memberAppExist);
+                    $this->entityManager->persist($newAppFromGroup);
+                }
+            }
+        }
+        $this->entityManager->flush();
     }
 }

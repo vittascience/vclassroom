@@ -72,6 +72,13 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     private $courseState;
 
 
+    /**
+     * @ORM\Column(name="journey",type="integer", nullable=true)
+     * @var int
+     */
+    private $journey;
+
+
     public function getId()
     {
         return $this->id;
@@ -156,6 +163,16 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     {
         $this->activitiesReferences = $activitiesReferences;
     }
+    
+    public function getJourney()
+    {
+        return $this->journey;
+    }
+
+    public function setJourney($journey)
+    {
+        $this->journey = $journey;
+    }
 
     public function jsonSerialize()
     {
@@ -173,7 +190,8 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'dateEnd' => $this->dateEnd,
             'courseState' => $this->courseState,
             'reference' => $this->reference,
-            'activitiesReferences' => $activitiesReferences
+            'activitiesReferences' => $activitiesReferences,
+            'journey' => $this->journey
         ];
     }
 
@@ -185,4 +203,5 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         }
         return $classInstance;
     }
+
 }

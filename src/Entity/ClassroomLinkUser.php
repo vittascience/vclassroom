@@ -34,6 +34,8 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
      * @var integer
      */
     private $rights;
+
+    
     public function __construct(User $user, Classroom $classroom, $rights = 0)
     {
         $this->setUser($user);
