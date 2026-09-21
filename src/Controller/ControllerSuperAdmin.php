@@ -562,6 +562,7 @@ class ControllerSuperAdmin extends Controller
                             $this->entityManager->persist($user);
                             $this->entityManager->flush();
 
+                            $groupForApps = null;
                             foreach ($groups as $key => $value) {
                                 if ($value[1] != -1) {
                                     $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $value[1]]);
@@ -580,7 +581,15 @@ class ControllerSuperAdmin extends Controller
                                     }
                                     $UsersLinkGroups->setRights($rights);
                                     $this->entityManager->persist($UsersLinkGroups);
+                                    $groupForApps = $group;
                                 }
+                            }
+
+                            // Manage the group apps for user
+                            try {
+                                $this->manageHeritedApps($groupForApps, $user);
+                            } catch (\Exception $e) {
+                                error_log("Error while managing herited apps: " . $e->getMessage());
                             }
 
                             $confirmationToken = bin2hex(random_bytes(16));
@@ -1039,14 +1048,12 @@ class ControllerSuperAdmin extends Controller
         if ($group != null) {
             $Apps = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group->getId()]);
             foreach ($Apps as $app) {
-                $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user, 'application' => $app]);
+                $appFromGroupExist = $this->entityManager->getRepository(UsersLinkApplicationsFromGroups::class)->findOneBy(['user' => $user, 'application' => $app->getApplication()]);
                 if (!$appFromGroupExist) {
-                    $memberAppExist = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user]);
-                    $application = $this->entityManager->getRepository(Applications::class)->findOneBy(['id' => $app->getApplication()]);
                     $newAppFromGroup = new UsersLinkApplicationsFromGroups();
-                    $newAppFromGroup->setApplication($application);
+                    $newAppFromGroup->setApplication($app->getApplication());
                     $newAppFromGroup->setGroup($group);
-                    $newAppFromGroup->setUser($memberAppExist);
+                    $newAppFromGroup->setUser($user);
                     $this->entityManager->persist($newAppFromGroup);
                 }
             }
