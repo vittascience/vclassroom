@@ -674,7 +674,7 @@ class ControllerGroupAdmin extends Controller
                     if (empty($_SESSION['id'])) return ['canRequest' => false];
 
                     $group = $this->getAdminlessGroupOfRegularUser(intval($_SESSION['id']));
-                    if (!$group) return ['canRequest' => false];
+                    if (!$group || !empty($_SESSION['group_admin_requested'][$group->getId()])) return ['canRequest' => false];
 
                     return ['canRequest' => true, 'group' => ['id' => $group->getId(), 'name' => $group->getName()]];
                 },
@@ -686,26 +686,25 @@ class ControllerGroupAdmin extends Controller
                     $group = $this->getAdminlessGroupOfRegularUser($userId);
                     if (!$group || $group->getId() !== $groupId) return ['success' => false, 'message' => 'not_allowed'];
 
-                    $link = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $userId, 'group' => $groupId]);
-                    $link->setRights(1);
-                    $this->entityManager->flush();
-
-                    // Auto-accepted: the support is only notified and can revert it from the manager panel
+                    // Nothing is granted here: the support accepts or declines from the link in the mail
                     $user = $this->entityManager->getRepository(User::class)->find($userId);
                     $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $userId]);
                     $userName = htmlspecialchars($user->getFirstname() . ' ' . $user->getSurname());
                     $userEmail = htmlspecialchars($regular->getEmail());
                     $groupName = htmlspecialchars($group->getName());
-                    $subject = "Nouvel administrateur de groupe : {$group->getName()}";
+                    $answerLink = $_ENV['VS_HOST'] . "/classroom/group_admin_request.php?user=$userId&group=$groupId";
+                    $subject = "Demande d'administration de groupe : {$group->getName()}";
                     $body = "
-                        <p>$userName ($userEmail, id $userId) est devenu administrateur du groupe <b>$groupName</b> (id $groupId), qui n'en avait pas.</p>
-                        <p>Pour annuler, retirez-lui ce rôle depuis le panneau super admin.</p>
+                        <p>$userName ($userEmail, id $userId) demande à devenir administrateur du groupe <b>$groupName</b> (id $groupId), qui n'en a pas.</p>
+                        <p>Pour accepter ou refuser (connexion en super admin requise) : <a href='$answerLink'>$answerLink</a></p>
                     ";
                     // Mailer echoes SMTP errors, which would corrupt the JSON response
                     ob_start();
-                    Mailer::sendMail($_ENV['VS_REPLY_TO_MAIL'], $subject, $body, strip_tags($body), 'fr_default');
+                    $sent = Mailer::sendMail($_ENV['VS_REPLY_TO_MAIL'], $subject, $body, strip_tags($body), 'fr_default');
                     ob_end_clean();
+                    if (!$sent) return ['success' => false, 'message' => 'mail_failed'];
 
+                    $_SESSION['group_admin_requested'][$groupId] = true;
                     return ['success' => true];
                 },
                 'finalize_registration' => function ($data) {
