@@ -40,6 +40,35 @@ class ControllerSuperAdmin extends Controller
             return false;
         } else if ($Autorisation->getIsAdmin() == true) {
             $this->actions = array(
+                'answer_group_admin_request' => function ($data) {
+                    $userId = isset($data['user_id']) ? intval($data['user_id']) : 0;
+                    $groupId = isset($data['group_id']) ? intval($data['group_id']) : 0;
+                    $decision = $data['decision'] ?? '';
+                    if (!in_array($decision, ['accept', 'decline'], true)) return ['success' => false, 'message' => 'invalid_decision'];
+
+                    $link = $this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $userId, 'group' => $groupId]);
+                    $regular = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $userId]);
+                    $group = $this->entityManager->getRepository(Groups::class)->find($groupId);
+                    if (!$link || !$regular || !$group) return ['success' => false, 'message' => 'not_found'];
+                    if ($link->getRights() == 1) return ['success' => false, 'message' => 'already_admin'];
+
+                    $groupName = htmlspecialchars($group->getName());
+                    if ($decision === 'accept') {
+                        $link->setRights(1);
+                        $this->entityManager->flush();
+                        $subject = "Vous êtes administrateur du groupe {$group->getName()}";
+                        $body = "<p>Votre demande a été acceptée : vous êtes maintenant administrateur du groupe <b>$groupName</b>. Vous pouvez gérer ses membres depuis vos paramètres, via « Passer en mode admin de groupe ».</p>";
+                    } else {
+                        $subject = "Votre demande d'administration du groupe {$group->getName()}";
+                        $body = "<p>Votre demande pour devenir administrateur du groupe <b>$groupName</b> n'a pas été acceptée. Pour plus d'informations, répondez simplement à ce mail.</p>";
+                    }
+                    // Mailer echoes SMTP errors, which would corrupt the JSON response
+                    ob_start();
+                    $sent = Mailer::sendMail($regular->getEmail(), $subject, $body, strip_tags($body), 'fr_default');
+                    ob_end_clean();
+
+                    return ['success' => true, 'decision' => $decision, 'mail' => (bool) $sent];
+                },
                 'get_all_groups' => function () {
                     return $this->entityManager->getRepository(Groups::class)->findAllWithApps();
                 },
