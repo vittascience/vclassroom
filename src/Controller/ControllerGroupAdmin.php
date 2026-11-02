@@ -20,6 +20,24 @@ use Classroom\Entity\UsersRestrictions;
 
 class ControllerGroupAdmin extends Controller
 {
+    private const PUBLIC_ACTIONS = [
+        'registerTeacher',
+        'finalize_registration',
+        'password_change',
+        'get_recovery_mail',
+        'get_new_validation_mail',
+        'registration_template',
+        'get_group_admin_status',
+    ];
+
+    public function action($action, $data = [])
+    {
+        if (empty($_SESSION['id']) && !in_array($action, self::PUBLIC_ACTIONS, true)) {
+            return ['message' => 'not_authenticated'];
+        }
+        return parent::action($action, $data);
+    }
+
     public function __construct($entityManager, $user)
     {
         parent::__construct($entityManager, $user);
@@ -47,6 +65,8 @@ class ControllerGroupAdmin extends Controller
                         $userspp = htmlspecialchars($data['userspp']);
                         $sort = htmlspecialchars($data['sort']);
 
+                        if (!$this->isAdminOfGroup($groupd_id)) return ['message' => 'not_allowed'];
+
                         return $this->entityManager->getRepository(UsersLinkGroups::class)->getAllMembersFromGroup($groupd_id, $page, $userspp, (int)$sort);
                     }
                 },
@@ -73,6 +93,11 @@ class ControllerGroupAdmin extends Controller
                         $bio = isset($data['bio']) ? htmlspecialchars($data['bio']) : null;
 
                         $application = isset($data['application']) ? json_decode($data['application']) : null;
+
+                        // Without a target group, the requester must still be the admin of at least one group
+                        if ($groups[1] == -1 && !$this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy(['user' => $_SESSION['id'], 'rights' => 1])) {
+                            return ['message' => 'noadmin'];
+                        }
 
                         $checkExist = $this->entityManager->getRepository(Regular::class)->findOneBy(['email' => $mail]);
                         if (!$checkExist) {
@@ -304,9 +329,12 @@ class ControllerGroupAdmin extends Controller
 
                     header('Content-Type: application/json');
 
-                    // bind incoming data to the value provided or null
-                    $user_id = isset($data['user_id']) ? htmlspecialchars($data['user_id']) : null;
-                    $group_id = isset($data['group_id']) ? htmlspecialchars($data['group_id']) : null;
+                    // The invitation code is what grants access to the group, and only the logged user can be linked
+                    $user_id = intval($_SESSION['id']);
+                    $groupCode = isset($data['gcode']) ? (string)$data['gcode'] : '';
+                    $group = $groupCode !== '' ? $this->entityManager->getRepository(Groups::class)->findOneBy(['link' => $groupCode]) : null;
+                    if (!$group) return ['message' => 'badlink'];
+                    $group_id = $group->getId();
 
                     // Check restrictions via applications
                     $canAddUser = $this->isGroupFull($group_id);
@@ -321,10 +349,6 @@ class ControllerGroupAdmin extends Controller
                         return ['message' => 'userInGroup'];
                     }
                     // Only one group at the same time
-
-                    $group = $this->entityManager->getRepository(Groups::class)->findOneBy(['id' => $group_id]);
-
-
 
                     $user =  $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                     $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user]);
@@ -555,6 +579,11 @@ class ControllerGroupAdmin extends Controller
                         $Authorization = $this->getAuthorization($this->entityManager, $user_id);
                         if ($Authorization['message'] == "not_allowed")
                             return ['message' => 'not_allowed'];
+
+                        // Linking or granting rights is only allowed on a group the requester administers
+                        if (!empty($groups) && $groups[1] != -1 && $this->entityManager->getRepository(Groups::class)->find((int)$groups[1]) && !$this->isAdminOfGroup($groups[1])) {
+                            return ['message' => 'not_allowed'];
+                        }
 
                         $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $user_id]);
                         $user->setFirstname($firstname);
@@ -823,6 +852,7 @@ class ControllerGroupAdmin extends Controller
                 'is_group_full' => function ($data) {
                     if (isset($data['group_id']) && $data['group_id'] != null) {
                         $group_id = htmlspecialchars($data['group_id']);
+                        if (!$this->isAdminOfGroup($group_id)) return ['message' => 'not_allowed'];
                         // Check restrictions via applications
                         $canAddUser = $this->isGroupFull($group_id);
                         if (!$canAddUser['response']) {
@@ -837,6 +867,7 @@ class ControllerGroupAdmin extends Controller
                 'is_groups_applications_outdated' => function ($data) {
                     if (isset($data['group_id']) && $data['group_id'] != null) {
                         $group_id = htmlspecialchars($data['group_id']);
+                        if (!$this->isAdminOfGroup($group_id)) return ['message' => 'not_allowed'];
                         $today = new \DateTime('NOW');
 
                         // get group
@@ -866,6 +897,7 @@ class ControllerGroupAdmin extends Controller
                 },
                 'group_monitoring'  => function ($data) {
                     $group_id = htmlspecialchars($data['group_id']);
+                    if (!$this->isAdminOfGroup($group_id)) return ['message' => 'not_allowed'];
                     $today = new \DateTime('NOW');
 
                     $applications = $this->entityManager->getRepository(GroupsLinkApplications::class)->findBy(['group' => $group_id]);
@@ -1223,6 +1255,15 @@ class ControllerGroupAdmin extends Controller
         } else {
             return ['message' => 'allowed'];
         }
+    }
+
+    private function isAdminOfGroup($groupId): bool
+    {
+        return (bool)$this->entityManager->getRepository(UsersLinkGroups::class)->findOneBy([
+            'user' => intval($_SESSION['id']),
+            'group' => intval($groupId),
+            'rights' => 1
+        ]);
     }
 
     /**
