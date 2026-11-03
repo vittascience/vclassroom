@@ -265,11 +265,8 @@ class ControllerClassroom extends Controller
                 // some errors found, return error
                 if (empty($name)) return array('errorType' => 'ClassroomNameInvalid');
 
-                // no errors found, we can proceed the data
-                //retrieve the classroom by its link
-                $classroom =  $this->entityManager
-                    ->getRepository('Classroom\Entity\Classroom')
-                    ->findOneBy(array("link" => $link));
+                $classroom = $this->findTaughtClassroom($link);
+                if (!$classroom) return array('errorType' => 'classroomNotAllowed');
 
                 $classroom->setName($name);
                 $classroom->setSchool($school);
@@ -407,10 +404,8 @@ class ControllerClassroom extends Controller
                 // no link provided, return an error
                 if (empty($link)) return array('errorClassroomLinkInvalid' => true);
 
-                // retrieve the classroom by its link
-                $classroom = $this->entityManager
-                    ->getRepository('Classroom\Entity\Classroom')
-                    ->findOneBy(array('link' => $link));
+                $classroom = $this->findTaughtClassroom($link);
+                if (!$classroom) return array('errorType' => 'classroomNotAllowed');
 
                 // get all users registered this classroom
                 $userLinkClassroom = $this->entityManager
@@ -445,7 +440,10 @@ class ControllerClassroom extends Controller
                 return $this->processEncrypt($app, $_SESSION['id']);
             },
             'get_file_names' => function () {
-                $app_name = !empty($_POST['appName']) ? htmlspecialchars(strip_tags(trim($_POST['appName']))) : '';
+                if (empty($_SESSION['id'])) return ["errorType" => "classroomNotAuthenticated"];
+
+                $app_name = !empty($_POST['appName']) ? trim($_POST['appName']) : '';
+                if (!preg_match('/^[A-Za-z0-9_-]+$/', $app_name)) return [];
 
                 $extension = ['pdf'];
                 $filesToReturn = [];
