@@ -64,6 +64,9 @@ class ControllerClassroomLinkUser extends Controller
                 $classroomLink = !empty($_POST['classroom']) ? htmlspecialchars(strip_tags(trim($_POST['classroom']))) : '';
                 if (empty($classroomLink)) return array('errorType' => 'classroomLinkMissing');
 
+                $classroom = $this->findTaughtClassroom($classroomLink);
+                if (!$classroom) return array('errorType' => 'classroomNotAllowed');
+
                 // get all classrooms for the current user
                 $classrooms = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
                     ->findBy(array("user" => $currentUserId));
@@ -160,9 +163,6 @@ class ControllerClassroomLinkUser extends Controller
                     $classroomUser->setMailTeacher(NULL);
                     $this->entityManager->persist($classroomUser);
 
-                    $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
-                        ->findOneBy(array('link' => $classroomLink));
-                    
                     // get retro attributed activities if any
                     $classroomRetroAttributedActivities = $this->entityManager
                         ->getRepository(ActivityLinkClassroom::class)
@@ -179,36 +179,6 @@ class ControllerClassroomLinkUser extends Controller
                     $linkClassroomUserToGroup->setRights(0);
                     $this->entityManager->persist($linkClassroomUserToGroup);
                 }
-                if (isset($_POST['existingUsers']) && count($_POST['existingUsers']) > 0) {
-
-                    // bind incoming users
-                    $incomingUsersToUpdate = $_POST['existingUsers'];
-                    $usersToUpdate = [];
-                    $usersToUpdateErrorFlag = false;
-                    foreach ($incomingUsersToUpdate as $incomingUserToUpdate) {
-
-                        // bind and sanitize each incoming user
-                        $studentPseudo = preg_match($regexForPseudo, $incomingUserToUpdate['pseudo'])
-                            ? htmlspecialchars(strip_tags(trim($incomingUserToUpdate['pseudo'])), ENT_QUOTES)
-                            : '';
-                        $studentId = !empty($incomingUserToUpdate['id']) ? intval($incomingUserToUpdate['id']) : 0;
-                        if (empty($studentPseudo) || empty($studentId)) $usersToUpdateErrorFlag = true;
-                        else array_push(
-                            $usersToUpdate,
-                            array('pseudo' => $studentPseudo, 'id' => $studentId)
-                        );
-                    }
-
-                    if ($usersToUpdateErrorFlag == true) return array('errorType' => "backendReplyPseudoMissingInUpdateUsersArray");
-
-
-                    foreach ($usersToUpdate as $userToUpdate) {
-                        $existingUser = $this->entityManager->getRepository('User\Entity\User')->findOneBy(['id' => $userToUpdate['id']]);
-                        $existingUser->setPseudo($userToUpdate['pseudo']);
-                        $this->entityManager->persist($existingUser);
-                    }
-                }
-
                 $this->entityManager->flush();
 
                 return ["isUsersAdded" => true, "passwords" => $passwords];
@@ -255,6 +225,9 @@ class ControllerClassroomLinkUser extends Controller
                 // sanitize the others data
                 $currentUserId = intval($_SESSION['id']);
                 $classroomLink = htmlspecialchars(strip_tags(trim($_POST['classroom'])));
+
+                $classroom = $this->findTaughtClassroom($classroomLink);
+                if (!$classroom) return array('errorType' => 'classroomNotAllowed');
 
                 // get the statuses for the current user
                 $isPremium = RegularDAO::getSharedInstance()->isTester($currentUserId);
@@ -364,11 +337,6 @@ class ControllerClassroomLinkUser extends Controller
                     $classroomUser->setMailTeacher(NULL);
                     $this->entityManager->persist($classroomUser);
 
-                    // retrieve the classroom by its link
-                    $classroom = $this->entityManager
-                        ->getRepository('Classroom\Entity\Classroom')
-                        ->findOneBy(array('link' => $classroomLink));
-
                     // get retro attributed activities if any
                     $classroomRetroAttributedActivities = $this->entityManager
                         ->getRepository(ActivityLinkClassroom::class)
@@ -400,20 +368,20 @@ class ControllerClassroomLinkUser extends Controller
                 $userId = intval($_SESSION['id']);
                 if (empty($classroomLink)) return array('errorType' => 'classroomLinkMissing');
 
+                $studyGroup = $this->entityManager
+                    ->getRepository('Classroom\Entity\Classroom')
+                    ->findOneBy(array('link' => $classroomLink));
+                if (!$studyGroup) return array('errorType' => 'studentDoesNotBelongToClassroom');
+
                 // check if the current student belong to the classroom or return an error
                 $student = $this->entityManager
                     ->getRepository(ClassroomLinkUser::class)
                     ->findOneBy(array(
                         'user' => $userId,
+                        'classroom' => $studyGroup->getId(),
                         'rights' => 0
                     ));
                 if (!$student) return array('errorType' => 'studentDoesNotBelongToClassroom');
-
-                // get the classroom
-                $studyGroup = $this->entityManager
-                    ->getRepository('Classroom\Entity\Classroom')
-                    ->findOneBy(array('link' => $classroomLink));
-
 
                 return $this->entityManager
                     ->getRepository('Classroom\Entity\ClassroomLinkUser')

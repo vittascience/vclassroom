@@ -1,6 +1,7 @@
 <?php
 namespace Classroom\Traits;
 
+use Classroom\Entity\Classroom;
 use Classroom\Entity\ClassroomLinkUser;
 
 
@@ -30,6 +31,19 @@ trait UtilsTrait {
             }
         }
         return $demoStudent;
+    }
+
+    // Returns the classroom only if the session user is its teacher
+    public function findTaughtClassroom($link) {
+        $classroom = $this->entityManager->getRepository(Classroom::class)->findOneBy(['link' => $link]);
+        if (!$classroom) return null;
+
+        $teacherLink = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy([
+            'user' => intval($_SESSION['id']),
+            'classroom' => $classroom->getId(),
+            'rights' => 2
+        ]);
+        return $teacherLink ? $classroom : null;
     }
 
 
