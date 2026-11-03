@@ -265,11 +265,13 @@ class ControllerCourseLinkUser extends Controller
                             }
 
                             if (empty($acti)) {
-                                $acti = $activityLinkUser[0];
+                                $acti = $activityLinkUser[0] ?? null;
                             }
 
-                            if (!$activityLinkUser) {
-                                $activityLinkUser = $this->attributeActivityForCourse($activity->getActivity()->getId(), $course->getCourse(), $loggedUser->getId(), $courseLinkActivities);
+                            // activity added to the course after its attribution
+                            if (!$acti) {
+                                $acti = $this->attributeActivityForCourse($activity->getActivity()->getId(), $course->getCourse(), $loggedUser->getId(), $course);
+                                if (!$acti) continue;
                             }
 
                             $activityRestriction = $this->entityManager->getRepository(Applications::class)->findOneBy(['name' => $activity->getActivity()->getType()]);
@@ -377,7 +379,7 @@ class ControllerCourseLinkUser extends Controller
             $dayeTimeEnd = new \DateTime(date('Y-m-d H:i:s', strtotime('+1 year')));
             // get my class id 
             $classroomLinkUser = $this->entityManager->getRepository(ClassroomLinkUser::class)->findOneBy(['user' => $userId]);
-            $classroomId = $classroomLinkUser->getClassroom()->getId();
+            $classroomId = $classroomLinkUser ? $classroomLinkUser->getClassroom()->getId() : 0;
 
 
             // get students in classroom
