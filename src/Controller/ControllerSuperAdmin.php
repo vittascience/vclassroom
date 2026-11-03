@@ -31,7 +31,7 @@ class ControllerSuperAdmin extends Controller
                 'is_user_admin' => function () {
                     $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => htmlspecialchars($_SESSION['id'])]);
                     $userR = $this->entityManager->getRepository(Regular::class)->findOneBy(['user' => $user]);
-                    if (!is_null($user) && $userR->getIsAdmin()) {
+                    if ($userR && $userR->getIsAdmin()) {
                         return ['Admin' => true];
                     }
                     return ['Admin' => false];

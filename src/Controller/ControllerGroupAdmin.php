@@ -315,14 +315,11 @@ class ControllerGroupAdmin extends Controller
                         }
                     }
 
-                    $emailSent = $Response['emailSent'];
-                    $accountConfirmationLink = $Response['link'];
-
+                    // never return the confirmation link: it would activate the account without owning the mailbox
                     return array(
                         'isUserAdded' => true,
                         "id" => $user->getId(),
-                        "emailSent" => $emailSent,
-                        "link" => $accountConfirmationLink
+                        "emailSent" => $Response['emailSent'] ?? null
                     );
                 },
                 'linkTeacherToGroup' => function ($data) {
@@ -1235,22 +1232,28 @@ class ControllerGroupAdmin extends Controller
      * @param Int $user_id
      * @return Array 
      */
-    private function getAuthorization(EntityManager $em, Int $user_id): ?array
+    private function getAuthorization(EntityManager $em, $user_id): ?array
     {
+        $user_id = intval($user_id);
+        $requesterId = intval($_SESSION['id']);
         $user = $em->getRepository(Regular::class)->findOneBy(['user' => $user_id]);
-        $GroupsRequesterAdmin = $em->getRepository(UsersLinkGroups::class)->findBy(['user' => $_SESSION['id'], 'rights' => 1]);
+        $requesterAdminGroupIds = array_map(function ($link) {
+            return $link->getGroup()->getId();
+        }, $em->getRepository(UsersLinkGroups::class)->findBy(['user' => $requesterId, 'rights' => 1]));
         $GroupsOfUser = $em->getRepository(UsersLinkGroups::class)->findBy(['user' => $user_id]);
 
         $isRelated = false;
-        foreach ($GroupsRequesterAdmin as $key => $value) {
-            foreach ($GroupsOfUser as $key2 => $value2) {
-                if ($value->getGroup() == $value2->getGroup()) {
-                    $isRelated = true;
-                }
-            }
+        $isGroupAdmin = false;
+        $hasForeignGroup = false;
+        foreach ($GroupsOfUser as $link) {
+            if (in_array($link->getGroup()->getId(), $requesterAdminGroupIds)) $isRelated = true;
+            else $hasForeignGroup = true;
+            if ($link->getRights() == 1) $isGroupAdmin = true;
         }
-        // Si le requester n'est pas lié par au moins un groupe à l'utilisateur ou si l'utilisateur est admin alors nous retournons une erreur
-        if (!$isRelated || ($user->getIsAdmin() && $user_id != $_SESSION['id'])) {
+
+        // Group admins are peers: no action on another admin (group or super), nor on a member of a group they don't administer
+        $isProtected = $user_id != $requesterId && (($user && $user->getIsAdmin()) || $isGroupAdmin || $hasForeignGroup);
+        if (!$isRelated || $isProtected) {
             return ['message' => 'not_allowed', 'isRelated' => $isRelated];
         } else {
             return ['message' => 'allowed'];
