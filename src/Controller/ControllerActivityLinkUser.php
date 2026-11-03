@@ -10,9 +10,11 @@ use Classroom\Entity\ClassroomLinkUser;
 use Classroom\Entity\ActivityRestrictions;
 use Classroom\Entity\ActivityLinkClassroom;
 use Classroom\Entity\Applications;
+use Classroom\Traits\UtilsTrait;
 
 class ControllerActivityLinkUser extends Controller
 {
+    use UtilsTrait;
     public function __construct($entityManager, $user)
     {
         parent::__construct($entityManager, $user);
@@ -166,7 +168,7 @@ class ControllerActivityLinkUser extends Controller
                         break;
                     }
                 }
-                if ($notTeacherErrorFlag == true) return array("errorType" => "notTeacherErrorFlagTrue");
+                if ($notTeacherErrorFlag == true || empty($classroomIds)) return array("errorType" => "notTeacherErrorFlagTrue");
 
                 // bind and sanitize the students id array
                 $incomingStudentsId = $_POST['students'];
@@ -176,6 +178,7 @@ class ControllerActivityLinkUser extends Controller
                     if (intval($incomingStudentId) == 0) continue;
                     array_push($studentsId, intval($incomingStudentId));
                 }
+                if (array_diff($studentsId, $this->findStudentIds($classroomIds))) return array("errorType" => "studentNotInClassrooms");
 
                 // bind and sanitize the rest of incoming data
                 $activityId = !empty($_POST['activity']['id']) ? intval($_POST['activity']['id']) : 0;
@@ -196,6 +199,7 @@ class ControllerActivityLinkUser extends Controller
                     $activity = $this->entityManager
                         ->getRepository(Activity::class)
                         ->find($activityId);
+                    if (!$activity) return array('errorType' => 'activityNotFound');
 
                     // step 1 => insert all new students
                     foreach ($studentsId as $studentId) {
@@ -219,12 +223,16 @@ class ControllerActivityLinkUser extends Controller
                     }
 
                     // step 2 => remove students when they are not part of the updated list of $studentsId
+                    // references are timestamps and may collide, only touch this teacher's students
+                    $taughtClassroomIds = $this->findTaughtClassroomIds();
+                    $taughtStudentsId = $this->findStudentIds($taughtClassroomIds);
                     $studentActivities = $this->entityManager
                         ->getRepository(ActivityLinkUser::class)
-                        ->findBy(array("reference" => $reference));
+                        ->findBy(array("reference" => $reference, "activity" => $activity));
 
                     foreach ($studentActivities as $studentActivity) {
-                        if (!in_array($studentActivity->getUser()->getId(), $studentsId)) {
+                        $studentId = $studentActivity->getUser()->getId();
+                        if (in_array($studentId, $taughtStudentsId) && !in_array($studentId, $studentsId)) {
                             $this->entityManager->remove($studentActivity);
                             $this->entityManager->flush();
                         }
@@ -241,6 +249,7 @@ class ControllerActivityLinkUser extends Controller
                     // step 1 remove them all by default to handle the case when retro attribution is set to false
                     if ($linkedActivityToClassrooms) {
                         foreach ($linkedActivityToClassrooms as $linkedActivityToClassroom) {
+                            if (!in_array($linkedActivityToClassroom->getClassroom()->getId(), $taughtClassroomIds)) continue;
                             $this->entityManager->remove($linkedActivityToClassroom);
                             $this->entityManager->flush();
                         }
@@ -269,6 +278,7 @@ class ControllerActivityLinkUser extends Controller
                     $activity = $this->entityManager
                         ->getRepository('Learn\Entity\Activity')
                         ->find($activityId);
+                    if (!$activity) return array('errorType' => 'activityNotFound');
 
                     // step 1 => insert students
                     foreach ($studentsId as $studentId) {
@@ -360,6 +370,7 @@ class ControllerActivityLinkUser extends Controller
                 $activity = $this->entityManager
                     ->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->findOneBy(array("id" => $activityId));
+                if (!$activity || !$this->canAccessStudentActivity($activity)) return array('errorType' => 'activityNotAllowed');
 
                 if ($optionalData) {
                     $activity->setOptionalData($optionalData);
@@ -405,6 +416,7 @@ class ControllerActivityLinkUser extends Controller
 
                 $activity = $this->entityManager->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->findOneBy(array("id" => $activityId));
+                if (!$activity || !$this->canAccessStudentActivity($activity)) return array('errorType' => 'activityNotAllowed');
 
                 $activityToSend = json_decode(json_encode($activity));
 
@@ -450,6 +462,8 @@ class ControllerActivityLinkUser extends Controller
                 // return errors if any
                 if (!empty($errors)) return array('errors' => $errors);
 
+
+                if (!in_array($classroomId, $this->findTaughtClassroomIds())) return array('errorType' => 'classroomNotAllowed');
 
                 // no errors, get all records in classroom_activities_link_classroom with the reference provided
                 $classroom = $this->entityManager->getRepository(Classroom::class)->find($classroomId);
@@ -505,6 +519,8 @@ class ControllerActivityLinkUser extends Controller
                 $classroomStudentActivity = $this->entityManager
                     ->getRepository('Classroom\Entity\ActivityLinkUser')
                     ->findOneBy(array("reference" => $reference, "user" => $user));
+
+                if (!$classroomStudentActivity) return array('errorType' => 'activityReferenceInvalid');
 
                 $previousTimePassed = $classroomStudentActivity->getTimePassed();
                 $classroomStudentActivity->setTimePassed($previousTimePassed + $timePassed);

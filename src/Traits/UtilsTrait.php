@@ -46,6 +46,34 @@ trait UtilsTrait {
         return $teacherLink ? $classroom : null;
     }
 
+    public function findTaughtClassroomIds() {
+        $teacherLinks = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy([
+            'user' => intval($_SESSION['id']),
+            'rights' => 2
+        ]);
+        return array_map(function ($link) {
+            return $link->getClassroom()->getId();
+        }, $teacherLinks);
+    }
+
+    public function findStudentIds(array $classroomIds) {
+        if (empty($classroomIds)) return [];
+        $studentLinks = $this->entityManager->getRepository(ClassroomLinkUser::class)->findBy([
+            'classroom' => $classroomIds,
+            'rights' => 0
+        ]);
+        return array_map(function ($link) {
+            return $link->getUser()->getId();
+        }, $studentLinks);
+    }
+
+    // The student or one of their teachers
+    public function canAccessStudentActivity($activityLinkUser) {
+        $studentId = $activityLinkUser->getUser()->getId();
+        if ($studentId == intval($_SESSION['id'])) return true;
+        return in_array($studentId, $this->findStudentIds($this->findTaughtClassroomIds()));
+    }
+
 
 /*     public function FixForDemoStudentBug() {
         $demoStudent = $this->envVariables['VS_DEMOSTUDENT'];
