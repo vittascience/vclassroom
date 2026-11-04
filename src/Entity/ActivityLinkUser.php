@@ -642,10 +642,16 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             $optionalData = $this->getOptionalData();
         }
 
+        $activity = $this->getActivity()->jsonSerialize();
+        // The student only gets the answers once the activity is corrected
+        if (!empty($_SESSION['id']) && $this->getUser()->getId() == $_SESSION['id'] && intval($this->getCorrection()) <= 1) {
+            $activity = self::hideAnswers($activity);
+        }
+
         return [
             'id' => $this->getId(),
             'user' => $this->getUser()->jsonSerialize(),
-            'activity' => $this->getActivity()->jsonSerialize(),
+            'activity' => $activity,
             'course' => $course,
             'note' => $this->getNote(),
             'tries' => $this->getTries(),
@@ -667,6 +673,33 @@ class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
             'optionalData' => $optionalData,
             'journey' => $this->getJourney()
         ];
+    }
+
+    // Removes the answers of the autocorrected types, keeping what the student needs to answer
+    private static function hideAnswers(array $activity): array
+    {
+        $answerFields = ['quiz' => null, 'free' => null, 'fillIn' => 'fillInFields', 'dragAndDrop' => 'dragAndDropFields'];
+        $type = $activity['type'] ?? '';
+        if (!array_key_exists($type, $answerFields)) return $activity;
+
+        $solution = null;
+        if ($type === 'dragAndDrop') {
+            // The words to drag stay available, shuffled
+            $words = json_decode((string) $activity['solution'], true);
+            if (is_array($words)) {
+                shuffle($words);
+                $solution = json_encode($words, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
+        }
+        $activity['solution'] = $solution;
+
+        $field = $answerFields[$type];
+        $content = json_decode((string) $activity['content'], true);
+        if ($field && isset($content[$field]['contentForTeacher']) && is_string($content[$field]['contentForTeacher'])) {
+            $content[$field]['contentForTeacher'] = preg_replace('/\[answer\].*?\[\/answer\]/', '[answer][/answer]', $content[$field]['contentForTeacher']);
+            $activity['content'] = json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+        return $activity;
     }
 
     public static function jsonDeserialize($jsonDecoded)
