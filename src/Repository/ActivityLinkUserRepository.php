@@ -34,7 +34,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND t.note =0 AND t.tries < :maxTries AND t.course IS NULL AND t.isFromCourse = 0)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -47,7 +48,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND (t.note >0 OR t.tries > :maxTries) AND t.course IS NULL AND t.isFromCourse = 0)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -60,7 +62,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND t.note =0 AND t.tries < :maxTries AND t.course IS NOT NULL)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -73,7 +76,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->select('COUNT(t)')
             ->from(ActivityLinkUser::class, 't')
             ->where('(t.user = :id AND (t.note >0 OR t.tries > :maxTries) AND t.course IS NOT NULL)')
-            ->setParameters(['id' => $userId, 'maxTries' => $this->maxTries])
+            ->setParameter('id', $userId)
+            ->setParameter('maxTries', $this->maxTries)
             ->getQuery()
             ->getSingleScalarResult();
         return intVal($query);
@@ -138,12 +142,8 @@ class ActivityLinkUserRepository extends EntityRepository
             ->from(ActivityLinkUser::class,'alu')
             ->leftJoin(ClassroomLinkUser::class,'clu','WITH','clu.user=alu.user')
             ->andWhere('clu.classroom= :classroomId AND alu.reference= :reference')
-            ->setParameters(
-                array(
-                    'classroomId' => $classroomId,
-                    'reference' => $reference
-                )
-            )
+            ->setParameter('classroomId', $classroomId)
+            ->setParameter('reference', $reference)
             ->getQuery()
             ->getResult();
         return $studentsActivities;

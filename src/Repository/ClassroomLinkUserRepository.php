@@ -29,7 +29,8 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->where('clu.classroom = :classroomId')
             ->andWhere('clu.rights = 0')
             ->andWhere('u.pseudo != :demoStudent')
-            ->setParameters(['classroomId' => $classroomId, 'demoStudent' => $demoStudent])
+            ->setParameter('classroomId', $classroomId)
+            ->setParameter('demoStudent', $demoStudent)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -54,7 +55,8 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->andWhere('clu.rights = 0')
             ->andWhere('alu.correction = 1')
             ->andWhere('u.pseudo != :demoStudent')
-            ->setParameters(['classroomId' => $classroomId, 'demoStudent' => $demoStudent])
+            ->setParameter('classroomId', $classroomId)
+            ->setParameter('demoStudent', $demoStudent)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -158,10 +160,8 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->where('teacher_clu.user = :teacherId')
             ->andWhere('teacher_clu.rights = 2')
             ->andWhere('u.pseudo != :demoStudent')
-            ->setParameters([
-                'teacherId' => $teacherId,
-                'demoStudent' => $demoStudent,
-            ])
+            ->setParameter('teacherId', $teacherId)
+            ->setParameter('demoStudent', $demoStudent)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -175,11 +175,9 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->where('u.firstname = :firstname')
             ->andWhere('u.surname = :surname')
             ->andWhere('u.pseudo != :name')
-            ->setParameters(array(
-                'firstname' => 'élève',
-                'surname' => 'modèl',
-                'name' => $pseudo
-            ))
+            ->setParameter('firstname', 'élève')
+            ->setParameter('surname', 'modèl')
+            ->setParameter('name', $pseudo)
             ->getQuery()
             ->getResult();
     }
@@ -196,10 +194,8 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->join('clu.user', 'u')
             ->where('clu.rights = :rights')
             ->andWhere('clu.classroom = :classroom')
-            ->setParameters([
-                'rights'    => $rights,
-                'classroom' => $classroomId,
-            ])
+            ->setParameter('rights', $rights)
+            ->setParameter('classroom', $classroomId)
             ->orderBy('u.pseudo', 'ASC')
             ->getQuery()
             ->getResult();
@@ -234,7 +230,8 @@ class ClassroomLinkUserRepository extends EntityRepository
                                 ->leftJoin(ClassroomLinkUser::class,'clu','WITH','c.id = clu.classroom')
                                 ->where('clu.user = :teacherId')
                                 ->andWhere('c.uai = :uai')
-                                ->setParameters(array('teacherId'=>$teacherId,'uai'=>$uai))
+                                ->setParameter('teacherId', $teacherId)
+                                ->setParameter('uai', $uai)
                                 ->getQuery()
                                 ->getResult();
         return  $classrooms;
@@ -250,12 +247,10 @@ class ClassroomLinkUserRepository extends EntityRepository
                             ->andWhere('c.name = :classroomName')
                             ->andWhere('c.uai = :uai')
                             ->andWhere('c.garCode = :classroomCode')
-                            ->setParameters(array(
-                                'teacherId' => $teacherId,
-                                'classroomName' => $classroomName,
-                                'uai' => $uai,
-                                'classroomCode' => $classroomCode
-                            ))
+                            ->setParameter('teacherId', $teacherId)
+                            ->setParameter('classroomName', $classroomName)
+                            ->setParameter('uai', $uai)
+                            ->setParameter('classroomCode', $classroomCode)
                             ->getQuery()
                             ->getResult();
         return $classroom;
@@ -270,10 +265,8 @@ class ClassroomLinkUserRepository extends EntityRepository
                                 ->Join(Classroom::class,'c','WITH','c.id = clu.classroom')
                                 ->where('c.id = :classroomId')
                                 ->andWhere('u.id = :studentId')
-                                ->setParameters(array(
-                                    'classroomId' => $classroomId,
-                                    'studentId' => $studentId
-                                ))
+                                ->setParameter('classroomId', $classroomId)
+                                ->setParameter('studentId', $studentId)
                                 ->getQuery()
                                 ->getOneOrNullResult();
         return $studentClassrooms;
@@ -289,11 +282,9 @@ class ClassroomLinkUserRepository extends EntityRepository
                                                     ->where('c.name = :classroomName')
                                                     ->andWhere('c.uai = :uai')
                                                     ->andWhere('clu.rights = :rights')
-                                                    ->setParameters(array(
-                                                        'classroomName'=> $classroomName,
-                                                        'uai'=> $uai,
-                                                        'rights'=> 2
-                                                    ))
+                                                    ->setParameter('classroomName', $classroomName)
+                                                    ->setParameter('uai', $uai)
+                                                    ->setParameter('rights', 2)
                                                     ->getQuery()
                                                     ->getResult();
         return $studentClassroomsAndRelatedTeacher;
@@ -308,11 +299,9 @@ class ClassroomLinkUserRepository extends EntityRepository
             ->where('u.firstname = :firstname')
             ->andWhere('u.surname = :surname')
             ->andWhere('u.pseudo = :demoStudent')
-            ->setParameters(array(
-                'demoStudent' => $demoStudent,
-                'firstname' => 'élève',
-                'surname' => 'modèl'
-            ))
+            ->setParameter('demoStudent', $demoStudent)
+            ->setParameter('firstname', 'élève')
+            ->setParameter('surname', 'modèl')
             ->getQuery()
             ->getResult();
     }

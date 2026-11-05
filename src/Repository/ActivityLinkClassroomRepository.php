@@ -16,10 +16,8 @@ class ActivityLinkClassroomRepository extends EntityRepository
             ->select('alc')
             ->from(ActivityLinkClassroom::class,'alc')
             ->where("alc.classroom = :classroom AND (alc.dateEnd >= :dateTrigger OR alc.dateEnd IS NULL)")
-            ->setParameters(array(
-                'classroom' => $classroom,
-                'dateTrigger' => new \DateTime('now')
-            ))
+            ->setParameter('classroom', $classroom)
+            ->setParameter('dateTrigger', new \DateTime('now'))
             ->getQuery()
             ->getResult();
 
