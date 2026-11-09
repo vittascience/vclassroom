@@ -6,49 +6,45 @@ use Doctrine\ORM\Mapping as ORM;
 use User\Entity\User;
 
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\UsersRestrictionsRepository")
- * @ORM\Table(name="classroom_users_restrictions")
- */
+#[ORM\Table(name: 'classroom_users_restrictions')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\UsersRestrictionsRepository::class)]
 class UsersRestrictions implements \JsonSerializable, \Utils\JsonDeserializer
 {
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity="User\Entity\User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\OneToOne(targetEntity: \User\Entity\User::class)]
     private $user;
 
 
     /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_begin', type: 'datetime', nullable: true)]
     private $dateBegin = null;
 
     /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_end', type: 'datetime', nullable: true)]
     private $dateEnd = null;
 
     /**
-     * @ORM\Column(name="max_students", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_students', type: 'integer', nullable: true)]
     private $maxStudents;
 
     /**
-     * @ORM\Column(name="max_classrooms", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_classrooms', type: 'integer', nullable: true)]
     private $maxClassrooms;
     
 

@@ -8,31 +8,29 @@ use Utils\Exceptions\EntityOperatorException;
 use User\Entity\User;
 use Classroom\Entity\Classroom;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ClassroomLinkUserRepository")
- * @ORM\Table(name="classroom_users_link_classrooms")
- */
+#[ORM\Table(name: 'classroom_users_link_classrooms')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\ClassroomLinkUserRepository::class)]
 class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
     /**
-     * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="User\Entity\User")
-     * @ORM\JoinColumn(name="id_user", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var User
      */
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\Id]
+    #[ORM\ManyToOne(targetEntity: \User\Entity\User::class)]
     private $user;
     /**
-     * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Classroom")
-     * @ORM\JoinColumn(name="id_classroom", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var Classroom
      */
+    #[ORM\JoinColumn(name: 'id_classroom', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\Id]
+    #[ORM\ManyToOne(targetEntity: \Classroom\Entity\Classroom::class)]
     private $classroom;
     /**
-     * @ORM\Column(name="rights", type="integer", length=2, nullable=true)
      * 0=student, 1=teacher, 2=superadmin
      * @var integer
      */
+    #[ORM\Column(name: 'rights', type: 'integer', length: 2, nullable: true)]
     private $rights;
 
     

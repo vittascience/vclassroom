@@ -11,156 +11,152 @@ use Learn\Entity\Course;
 use Interfaces\Entity\Project;
 use DateTime;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ActivityLinkUserRepository")
- * @ORM\Table(name="classroom_activities_link_classroom_users")
- */
+#[ORM\Table(name: 'classroom_activities_link_classroom_users')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\ActivityLinkUserRepository::class)]
 class ActivityLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
 {
     public const MAX_TRIES = 10;
 
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User\Entity\User")
-     * @ORM\JoinColumn(name="id_user", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var User
      */
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: \User\Entity\User::class)]
     private $user;
 
     /**
-     * @ORM\Column(name="reference", type="string",length=13, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'reference', type: 'string', length: 13, nullable: false)]
     private $reference;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Activity")
-     * @ORM\JoinColumn(name="id_activity", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var Activity
      */
+    #[ORM\JoinColumn(name: 'id_activity', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: \Learn\Entity\Activity::class)]
     private $activity;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Interfaces\Entity\Project")
-     * @ORM\JoinColumn(name="project", referencedColumnName="id", onDelete="CASCADE", nullable=true)
      * @var Project
      */
+    #[ORM\JoinColumn(name: 'project', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: \Interfaces\Entity\Project::class)]
     private $project;
 
     /**
-     * @ORM\Column(name="correction",type="integer", nullable=true,length=2)
      * @var int
      */
+    #[ORM\Column(name: 'correction', type: 'integer', nullable: true, length: 2)]
     private $correction;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Course")
-     * @ORM\JoinColumn(name="id_course", referencedColumnName="id", onDelete="CASCADE", nullable=true)
      * @var Course
      */
+    #[ORM\JoinColumn(name: 'id_course', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: \Learn\Entity\Course::class)]
     private $course;
 
     /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_begin', type: 'datetime', nullable: true)]
     private $dateBegin = null;
 
     /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_end', type: 'datetime', nullable: true)]
     private $dateEnd = null;
 
     /**
-     * @ORM\Column(name="date_send", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_send', type: 'datetime', nullable: true)]
     private $dateSend = null;
 
     /**
-     * @ORM\Column(name="time_passed", type="integer", length=11, nullable=true)
      * @var int
      */
+    #[ORM\Column(name: 'time_passed', type: 'integer', length: 11, nullable: true)]
     private $timePassed = 0;
 
     /**
-     * @ORM\Column(name="tries", type="integer", length=3, nullable=true)
      * @var int
      */
+    #[ORM\Column(name: 'tries', type: 'integer', length: 3, nullable: true)]
     private $tries = 0;
 
     /**
-     * @ORM\Column(name="coefficient", type="integer", length=2, nullable=true)
      * @var int
      */
+    #[ORM\Column(name: 'coefficient', type: 'integer', length: 2, nullable: true)]
     private $coefficient = 1;
 
     /**
-     * @ORM\Column(name="note", type="smallint", nullable=false)
      * @var int
      */
+    #[ORM\Column(name: 'note', type: 'smallint', nullable: false)]
     private $note = 4;
 
     /**
-     * @ORM\Column(name="commentary", type="string",length=2000, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'commentary', type: 'string', length: 2000, nullable: true)]
     private $commentary = "";
 
     /**
-     * @ORM\Column(name="introduction", type="string",length=2000, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'introduction', type: 'string', length: 2000, nullable: true)]
     private $introduction = "";
 
     /**
-     * @ORM\Column(name="is_autocorrected", type="boolean",nullable=false, options={"default":false})
      * @var bool
      */
+    #[ORM\Column(name: 'is_autocorrected', type: 'boolean', nullable: false, options: ['default' => false])]
     private $autocorrection = false;
 
     /**
-     * @ORM\Column(name="is_evaluation", type="boolean",nullable=false, options={"default":false})
      * @var bool
      */
+    #[ORM\Column(name: 'is_evaluation', type: 'boolean', nullable: false, options: ['default' => false])]
     private $evaluation = false;
 
     /**
-     * @ORM\Column(name="url", type="string",length=255, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'url', type: 'string', length: 255, nullable: true)]
     private $url="";
 
     /**
-     * @ORM\Column(name="response", type="text", nullable=true)
      * @var String
      */
+    #[ORM\Column(name: 'response', type: 'text', nullable: true)]
     private $response = null;
 
     /**
-     * @ORM\Column(name="is_from_course", type="boolean", nullable=false, options={"default":false})
      * @var bool
      */
+    #[ORM\Column(name: 'is_from_course', type: 'boolean', nullable: false, options: ['default' => false])]
     private $isFromCourse = false;
 
     /**
-     * @ORM\Column(name="optional_data", type="text", nullable=true)
      * @var String
      */
+    #[ORM\Column(name: 'optional_data', type: 'text', nullable: true)]
     private $optionalData = null;
 
 
     /**
-     * @ORM\Column(name="journey",type="integer", nullable=true)
      * @var int
      */
+    #[ORM\Column(name: 'journey', type: 'integer', nullable: true)]
     private $journey;
     
 

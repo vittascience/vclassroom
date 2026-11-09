@@ -6,57 +6,53 @@ use Doctrine\ORM\Mapping as ORM;
 use Utils\Exceptions\EntityDataIntegrityException;
 use Utils\Exceptions\EntityOperatorException;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ClassroomRepository")
- * @ORM\Table(name="classrooms")
- */
+#[ORM\Table(name: 'classrooms')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\ClassroomRepository::class)]
 class Classroom implements \JsonSerializable, \Utils\JsonDeserializer
 {
     const MAX_PICTURE_SIZE = 10000000;
     const ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyz0123456789";
-    /** 
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
     /**
-     * @ORM\Column(name="name", type="string", length=255, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 255, nullable: false)]
     private $name;
     /**
-     * @ORM\Column(name="school", type="string", length=255, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'school', type: 'string', length: 255, nullable: false)]
     private $school;
    /**
-     * @ORM\Column(name="gar_code", type="string", length=255, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'gar_code', type: 'string', length: 255, nullable: true)]
     private $garCode;
     /**
-     * @ORM\Column(name="link", type="string", length=5, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'link', type: 'string', length: 5, nullable: false)]
     private $link;
 
     /**
-     * @ORM\Column(name="is_changed", type="boolean", nullable=true)
      * @var bool
      */
+    #[ORM\Column(name: 'is_changed', type: 'boolean', nullable: true)]
     private $isChanged = false;
 
     /**
-     * @ORM\Column(name="is_blocked", type="boolean", nullable=true)
      * @var bool
      */
+    #[ORM\Column(name: 'is_blocked', type: 'boolean', nullable: true)]
     private $isBlocked = false;
 
     /**
-     * @ORM\Column(name="uai",type="string",nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'uai', type: 'string', nullable: true)]
     private $uai;
 
     public function __construct($name = "default", $school = "default")

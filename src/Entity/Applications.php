@@ -5,68 +5,64 @@ namespace Classroom\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ApplicationsRepository")
- * @ORM\Table(name="classroom_applications")
- */
+#[ORM\Table(name: 'classroom_applications')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\ApplicationsRepository::class)]
 class Applications
 {
 
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     private $id;
 
     /**
-     * @ORM\Column(name="name", type="string", length=255, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 255, nullable: false)]
     private $name;
 
     /**
-     * @ORM\Column(name="description", type="text", length=1500, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'description', type: 'text', length: 1500, nullable: true)]
     private $description;
 
     /**
-     * @ORM\Column(name="image", type="string", length=255, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'image', type: 'string', length: 255, nullable: true)]
     private $image;
 
 
     /**
-     * @ORM\Column(name="is_lti", type="boolean", nullable=true)
      * @var bool
      */
+    #[ORM\Column(name: 'is_lti', type: 'boolean', nullable: true)]
     private $isLti;
 
     /**
-     * @ORM\Column(name="color", type="string", length=10, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'color', type: 'string', length: 10, nullable: true)]
     private $color;
 
     /**
-     * @ORM\Column(name="max_per_teachers", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_per_teachers', type: 'integer', nullable: true)]
     private $maxPerTeachers;
 
 
     /**
-     * @ORM\Column(name="sort", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'sort', type: 'integer', nullable: true)]
     private $sort;
 
     /**
-     * @ORM\Column(name="background_image", type="string", length=255, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'background_image', type: 'string', length: 255, nullable: true)]
     private $backgroundImage;
 
 
