@@ -61,8 +61,8 @@ class GroupsRepository extends EntityRepository
         $ApplicationsOfGroups = $this->getEntityManager()
             ->createQueryBuilder()->select("a.id AS application_id, a.image AS application_image, a.name AS application_name, g.id AS group_id")
             ->from(Applications::class, 'a')
-            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
-            ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')
+            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::ON, 'a.id = gla.application')
+            ->innerJoin(Groups::class, 'g', Join::ON, 'g.id = gla.group')
             ->getQuery()
             ->getScalarResult();
 
@@ -143,8 +143,8 @@ class GroupsRepository extends EntityRepository
             ->createQueryBuilder()
             ->select("a.id AS application_id, a.image AS application_image, a.name AS application_name, g.id AS group_id")
             ->from(Applications::class, 'a')
-            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
-            ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')
+            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::ON, 'a.id = gla.application')
+            ->innerJoin(Groups::class, 'g', Join::ON, 'g.id = gla.group')
             ->getQuery()
             ->getScalarResult();
 
@@ -189,8 +189,8 @@ class GroupsRepository extends EntityRepository
                                         g.maxStudents as max_students_per_groups,
                                         g.maxTeachers as max_teachers_per_groups")
             ->from(Applications::class, 'a')
-            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::WITH, 'a.id = gla.application')
-            ->innerJoin(Groups::class, 'g', Join::WITH, 'g.id = gla.group')
+            ->innerJoin(GroupsLinkApplications::class, 'gla', Join::ON, 'a.id = gla.application')
+            ->innerJoin(Groups::class, 'g', Join::ON, 'g.id = gla.group')
             ->getQuery()
             ->getScalarResult();
 

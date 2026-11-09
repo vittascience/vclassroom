@@ -15,14 +15,14 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
     /**
      * @var User
      */
-    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: \User\Entity\User::class)]
     private $user;
     /**
      * @var Classroom
      */
-    #[ORM\JoinColumn(name: 'id_classroom', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_classroom', referencedColumnName: 'id', onDelete: 'CASCADE')]
     #[ORM\Id]
     #[ORM\ManyToOne(targetEntity: \Classroom\Entity\Classroom::class)]
     private $classroom;

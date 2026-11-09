@@ -140,7 +140,7 @@ class ActivityLinkUserRepository extends EntityRepository
             ->createQueryBuilder()
             ->select('alu')
             ->from(ActivityLinkUser::class,'alu')
-            ->leftJoin(ClassroomLinkUser::class,'clu','WITH','clu.user=alu.user')
+            ->leftJoin(ClassroomLinkUser::class,'clu','ON','clu.user=alu.user')
             ->andWhere('clu.classroom= :classroomId AND alu.reference= :reference')
             ->setParameter('classroomId', $classroomId)
             ->setParameter('reference', $reference)
