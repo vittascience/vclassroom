@@ -8,46 +8,42 @@ use User\Entity\User;
 use Classroom\Entity\Applications;
 use Classroom\Entity\Groups;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\GroupsLinkApplicationsRepository")
- * @ORM\Table(name="classroom_groups_link_applications")
- */
+#[ORM\Table(name: 'classroom_groups_link_applications')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\GroupsLinkApplicationsRepository::class)]
 class GroupsLinkApplications
 {
 
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Groups")
-     * @ORM\JoinColumn(name="group_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var Groups
      */
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: \Classroom\Entity\Groups::class)]
     private $group;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Applications")
-     * @ORM\JoinColumn(name="application_id", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var Applications
      */
+    #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: \Classroom\Entity\Applications::class)]
     private $application;
 
 
     /**
-     * @ORM\Column(name="max_activities_per_groups", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_activities_per_groups', type: 'integer', nullable: true)]
     private $maxActivitiesPerGroups;
 
 
     /**
-     * @ORM\Column(name="max_activities_per_teachers", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_activities_per_teachers', type: 'integer', nullable: true)]
     private $maxActivitiesPerTeachers;
 
 

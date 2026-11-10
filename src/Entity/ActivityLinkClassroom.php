@@ -12,80 +12,76 @@ use Learn\Entity\Course;
 use Interfaces\Entity\Project;
 use DateTime;
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\ActivityLinkClassroomRepository")
- * @ORM\Table(name="classroom_activities_link_classroom")
- */
+#[ORM\Table(name: 'classroom_activities_link_classroom')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\ActivityLinkClassroomRepository::class)]
 class ActivityLinkClassroom implements \JsonSerializable, \Utils\JsonDeserializer
 {
     public const MAX_TRIES = 10;
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     private $id;
     /**
-     * @ORM\ManyToOne(targetEntity="Classroom\Entity\Classroom")
-     * @ORM\JoinColumn(name="id_classroom", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var Classroom
      */
+    #[ORM\JoinColumn(name: 'id_classroom', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: \Classroom\Entity\Classroom::class)]
     private $classroom;
 
 
     /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Activity")
-     * @ORM\JoinColumn(name="id_activity", referencedColumnName="id", onDelete="CASCADE", nullable=false)
      * @var Activity
      */
+    #[ORM\JoinColumn(name: 'id_activity', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: \Learn\Entity\Activity::class)]
     private $activity;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Learn\Entity\Course")
-     * @ORM\JoinColumn(name="id_course", referencedColumnName="id", onDelete="CASCADE", nullable=true)
      * @var Course
      */
+    #[ORM\JoinColumn(name: 'id_course', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: \Learn\Entity\Course::class)]
     private $course;
     /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_begin', type: 'datetime', nullable: true)]
     private $dateBegin = null;
     /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_end', type: 'datetime', nullable: true)]
     private $dateEnd = null;
     /**
-     * @ORM\Column(name="coefficient", type="integer", length=2, nullable=true)
      * @var int
      */
+    #[ORM\Column(name: 'coefficient', type: 'integer', length: 2, nullable: true)]
     private $coefficient = 1;
     /**
-     * @ORM\Column(name="commentary", type="string",length=2000, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'commentary', type: 'string', length: 2000, nullable: true)]
     private $commentary = "";
     /**
-     * @ORM\Column(name="introduction", type="string",length=2000, nullable=true)
      * @var string
      */
+    #[ORM\Column(name: 'introduction', type: 'string', length: 2000, nullable: true)]
     private $introduction = "";
     /**
-     * @ORM\Column(name="is_autocorrected", type="boolean",nullable=false, options={"default":false})
      * @var bool
      */
+    #[ORM\Column(name: 'is_autocorrected', type: 'boolean', nullable: false, options: ['default' => false])]
     private $autocorrection = false;
     /**
-     * @ORM\Column(name="is_evaluation", type="boolean",nullable=false, options={"default":false})
      * @var bool
      */
+    #[ORM\Column(name: 'is_evaluation', type: 'boolean', nullable: false, options: ['default' => false])]
     private $evaluation = false;
 
     /**
-     * @ORM\Column(name="reference", type="string",length=13, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'reference', type: 'string', length: 13, nullable: false)]
     private $reference;
 
     public function __construct(Activity $activity, Classroom $classroom, $dateBegin = null, $dateEnd = null, $evaluation = false, $autocorrection = false,  $introduction = "", $reference = '', $commentary = "", $coefficient = 1)

@@ -6,76 +6,72 @@ use Doctrine\ORM\Mapping as ORM;
 use Utils\Exceptions\EntityDataIntegrityException;
 
 
-/**
- * @ORM\Entity(repositoryClass="Classroom\Repository\GroupsRepository")
- * @ORM\Table(name="classroom_groups")
- */
+#[ORM\Table(name: 'classroom_groups')]
+#[ORM\Entity(repositoryClass: \Classroom\Repository\GroupsRepository::class)]
 class Groups implements \JsonSerializable, \Utils\JsonDeserializer
 {
     const ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-    /** 
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     private $id;
 
     /**
-     * @ORM\Column(name="name", type="string", length=255, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 255, nullable: false)]
     private $name;
 
     /**
-     * @ORM\Column(name="link", type="string", length=5, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'link', type: 'string', length: 5, nullable: false)]
     private $link;
 
     /**
-     * @ORM\Column(name="description", type="string", length=255, nullable=false)
      * @var string
      */
+    #[ORM\Column(name: 'description', type: 'string', length: 255, nullable: false)]
     private $description;
 
 
     /**
-     * @ORM\Column(name="date_begin", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_begin', type: 'datetime', nullable: true)]
     private $dateBegin = null;
 
     /**
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
      * @var \DateTime
      */
+    #[ORM\Column(name: 'date_end', type: 'datetime', nullable: true)]
     private $dateEnd = null;
 
     /**
-     * @ORM\Column(name="max_students", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_students', type: 'integer', nullable: true)]
     private $maxStudents;
 
     /**
-     * @ORM\Column(name="max_teachers", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_teachers', type: 'integer', nullable: true)]
     private $maxTeachers;
 
 
     /**
-     * @ORM\Column(name="max_students_per_teachers", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_students_per_teachers', type: 'integer', nullable: true)]
     private $maxStudentsPerTeachers;
 
 
     /**
-     * @ORM\Column(name="max_classrooms_per_teachers", type="integer", nullable=true)
      * @var integer
      */
+    #[ORM\Column(name: 'max_classrooms_per_teachers', type: 'integer', nullable: true)]
     private $maxClassroomsPerTeachers;
 
 

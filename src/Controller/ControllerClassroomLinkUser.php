@@ -441,21 +441,6 @@ class ControllerClassroomLinkUser extends Controller
             /* 
             // @ToBeDeleted
             // last check => october 2021
-            'remove_users' => function ($data) {
-                foreach ($data['users'] as $user) {
-                    $linkClassroomUserToGroup = $this->entityManager->getRepository('Classroom\Entity\ClassroomLinkUser')
-                        ->findOneBy(array("user" => $user['id'], "studyGroup" => $data['studyGroupId']));
-
-                    $linkClassroomUserToGroup = $this->entityManager->merge($linkClassroomUserToGroup);
-                    $this->entityManager->remove($linkClassroomUserToGroup);
-                }
-                $this->entityManager->flush();
-                return true; //synchronized
-
-            },  */
-            /* 
-            // @ToBeDeleted
-            // last check => october 2021
             'get_student_activities_by_classroom' => function ($data) {
                 $activities = [];
                 $classroom = $this->entityManager->getRepository('Classroom\Entity\Classroom')
