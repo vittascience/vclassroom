@@ -97,7 +97,7 @@ class UsersLinkApplications
     }
 
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'id' => $this->getId(),

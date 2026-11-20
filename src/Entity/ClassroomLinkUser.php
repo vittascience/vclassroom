@@ -93,7 +93,7 @@ class ClassroomLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         } else
             throw new EntityDataIntegrityException("id needs to be integer and between 0 and 2");
     }
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'user' => $this->getUser()->jsonSerialize(),
