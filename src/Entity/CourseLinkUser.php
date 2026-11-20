@@ -170,7 +170,7 @@ class CourseLinkUser implements \JsonSerializable, \Utils\JsonDeserializer
         $this->journey = $journey;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         $activitiesReferences = null;
         if ($this->activitiesReferences != null) {
